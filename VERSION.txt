@@ -1,2 +1,2 @@
-0.1.3
-Home welcome banner upgraded to interactive saved-data dashboard.
+0.1.4
+Main tab swipe, edge swipe back, visible back button, browser history.

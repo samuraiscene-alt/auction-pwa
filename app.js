@@ -301,7 +301,7 @@ function note(){
  <label class="label" for="noteTitle">제목</label><input id="noteTitle" class="search" placeholder="노트 제목" value="${escapeHtml(n.title)}">
  <div class="note-content-bar"><label class="label" for="noteBody">내용</label><div class="note-mode-buttons"><button id="noteWriteMode" type="button" class="note-mode active">✎ 작성</button><button id="noteMarkMode" type="button" class="note-mode">🖍 형광펜</button></div></div>
  <textarea class="select noteArea" id="noteBody" placeholder="공부한 내용을 적어보세요.">${escapeHtml(n.body)}</textarea>
- <div id="noteMarkupArea" class="note-markup-area" hidden><div class="note-mark-guide">표시할 문장을 길게 눌러 선택한 뒤 색을 눌러주세요. 색칠된 부분을 누르면 포스트잇이 열려요.</div><div id="noteHighlightColors" class="note-color-tools"><button data-note-color="yellow" type="button" style="--marker-color:#ffe279" aria-label="노란 형광펜">노랑</button><button data-note-color="green" type="button" style="--marker-color:#b6f0bd" aria-label="초록 형광펜">초록</button><button data-note-color="pink" type="button" style="--marker-color:#ffc6d7" aria-label="분홍 형광펜">분홍</button><button data-note-color="blue" type="button" style="--marker-color:#b9ddff" aria-label="파란 형광펜">파랑</button></div><div id="noteHighlightText" class="note-highlight-text" aria-label="형광펜을 적용할 노트 내용"></div></div>
+ <div id="noteMarkupArea" class="note-markup-area" hidden><div class="note-mark-guide">첫 단어를 터치하고 마지막 단어를 터치하세요. 선택한 뒤 색상을 누르면 포스트잇이 열려요.</div><div class="note-select-tools"><div class="note-select-unit" role="group" aria-label="선택 단위"><button type="button" class="unit-active" data-note-granularity="word">단어</button><button type="button" data-note-granularity="char">글자</button></div><button type="button" id="noteClearSelection" class="note-clear-selection">선택 취소</button></div><p id="noteSelectionHint" class="note-selection-hint">시작 부분을 한 번 터치하세요.</p><div id="noteHighlightColors" class="note-color-tools"><button data-note-color="yellow" type="button" style="--marker-color:#ffe279" aria-label="노란 형광펜">노랑</button><button data-note-color="green" type="button" style="--marker-color:#b6f0bd" aria-label="초록 형광펜">초록</button><button data-note-color="pink" type="button" style="--marker-color:#ffc6d7" aria-label="분홍 형광펜">분홍</button><button data-note-color="blue" type="button" style="--marker-color:#b9ddff" aria-label="파란 형광펜">파랑</button></div><div id="noteHighlightText" class="note-highlight-text" aria-label="형광펜을 적용할 노트 내용"></div></div>
  <div class="note-footer"><p class="note-attachment-hint">▧ 사진 · PDF 첨부는 추후 지원</p><button class="primary" id="saveNote" type="button">노트 저장</button>${state.note?'<button class="secondary note-delete-btn" id="deleteNote" type="button">노트 삭제</button>':''}</div>
  <div id="stickyBackdrop" class="sticky-backdrop" hidden><section class="sticky-paper" role="dialog" aria-modal="true" aria-labelledby="stickyHeading"><div class="sticky-head"><strong id="stickyHeading">▣ 포스트잇 메모</strong><button id="stickyClose" type="button" aria-label="닫기">×</button></div><p id="stickyQuote" class="sticky-quote"></p><textarea id="stickyText" class="sticky-input" placeholder="선택한 문장에 대한 메모를 적어보세요."></textarea><div class="sticky-buttons"><button type="button" id="stickyRemove" class="sticky-remove">형광펜 제거</button><button type="button" id="stickySave" class="sticky-save">메모 저장</button></div></section></div>
  </div>`;
@@ -339,71 +339,106 @@ function highlightMarkup(text,marks){
  }
  return html+escapeHtml(text.slice(offset));
 }
+function splitNoteUnits(text,granularity){
+ const pieces=[];
+ if(typeof Intl!=='undefined'&&typeof Intl.Segmenter==='function'){
+  const segmenter=new Intl.Segmenter('ko',{granularity:granularity==='char'?'grapheme':'word'});
+  for(const item of segmenter.segment(text))pieces.push({start:item.index,end:item.index+item.segment.length,value:item.segment});
+ }else{
+  if(granularity==='word'){
+   const re=/\s+|[^\s]+/gu;
+   for(const m of text.matchAll(re))pieces.push({start:m.index,end:m.index+m[0].length,value:m[0]});
+  }else{
+   let index=0;
+   for(const ch of Array.from(text)){pieces.push({start:index,end:index+ch.length,value:ch});index+=ch.length;}
+  }
+ }
+ return pieces;
+}
 function initNoteEditor(){
  const note=saved.notes.find(x=>x.id===state.note)||{body:'',annotations:[]};
  const input=$('#noteBody'),reader=$('#noteHighlightText'),editor=$('#noteMarkupArea');
- const writeButton=$('#noteWriteMode'),markButton=$('#noteMarkMode'),popup=$('#stickyBackdrop'),popupMemo=$('#stickyText');
- let text=String(input.value),marks=normalizeNoteMarks(text,note.annotations),selected=null,currentId=null,mode='write';
- function captureSelected(){
-  if(mode!=='mark')return;
-  const sel=window.getSelection();
-  if(!sel||sel.isCollapsed||!sel.rangeCount)return;
-  const range=sel.getRangeAt(0);
-  if(!reader.contains(range.startContainer)||!reader.contains(range.endContainer))return;
-  const before=range.cloneRange();
-  before.selectNodeContents(reader);
-  before.setEnd(range.startContainer,range.startOffset);
-  const raw=range.toString(),left=(raw.match(/^\s*/)||[''])[0].length,right=(raw.match(/\s*$/)||[''])[0].length;
-  const start=before.toString().length+left,end=start+raw.length-left-right;
-  if(end>start&&end<=text.length)selected={start,end};
+ const writeButton=$('#noteWriteMode'),markButton=$('#noteMarkMode'),popup=$('#stickyBackdrop'),popupMemo=$('#stickyText'),hint=$('#noteSelectionHint');
+ let text=String(input.value),marks=normalizeNoteMarks(text,note.annotations),first=null,second=null,currentId=null,mode='write',granularity='word';
+ function selectionRange(){
+  if(!first||!second)return null;
+  const begin=first.start<=second.start?first:second,end=first.start<=second.start?second:first;
+  let start=begin.start,finish=end.end;
+  while(start<finish&&/\s/u.test(text[start]))start++;
+  while(finish>start&&/\s/u.test(text[finish-1]))finish--;
+  return finish>start?{start,end:finish}:null;
+ }
+ function updateHint(){
+  if(!text){hint.textContent='먼저 작성 모드에서 본문을 입력하세요.';return;}
+  const range=selectionRange();
+  hint.textContent=range?'선택 완료 · 원하는 형광펜 색을 눌러주세요.':first?'마지막 '+(granularity==='word'?'단어':'글자')+'를 터치하세요.':'시작 '+(granularity==='word'?'단어':'글자')+'를 한 번 터치하세요.';
  }
  function draw(){
-  reader.innerHTML=highlightMarkup(text,marks);
-  if(!text)reader.innerHTML='<span class="note-read-empty">내용을 작성하면 여기서 문장을 선택해 형광펜을 표시할 수 있어요.</span>';
+  const range=selectionRange();
+  reader.innerHTML='';
+  if(!text){reader.innerHTML='<span class="note-read-empty">내용을 작성하면 여기서 터치로 형광펜을 적용할 수 있어요.</span>';updateHint();return;}
+  for(const item of splitNoteUnits(text,granularity)){
+   const mark=marks.find(m=>item.start<m.end&&item.end>m.start);
+   const chosen=range&&item.start<range.end&&item.end>range.start;
+   const selectedStart=first&&!second&&item.start===first.start&&item.end===first.end;
+   const node=document.createElement('span');
+   node.textContent=item.value;
+   if(!/^\s+$/u.test(item.value)){
+    node.className='note-tap-unit'+(chosen||selectedStart?' note-pending-selection':'')+(mark?' note-highlight':'');
+    node.dataset.unitStart=String(item.start);
+    node.dataset.unitEnd=String(item.end);
+    if(mark){node.dataset.annotationId=mark.id;node.style.setProperty('--highlight',NOTE_COLORS[mark.color]);}
+    node.setAttribute('role','button');
+    node.setAttribute('tabindex','0');
+   }
+   reader.appendChild(node);
+  }
+  updateHint();
  }
  function openSticky(id){
   const mark=marks.find(m=>m.id===id);if(!mark)return;
-  currentId=id;
-  $('#stickyQuote').textContent='“'+text.slice(mark.start,mark.end)+'”';
-  popupMemo.value=mark.memo||'';
-  popup.hidden=false;
-  popupMemo.focus();
+  currentId=id;$('#stickyQuote').textContent='“'+text.slice(mark.start,mark.end)+'”';
+  popupMemo.value=mark.memo||'';popup.hidden=false;popupMemo.focus();
  }
  function closeSticky(){popup.hidden=true;currentId=null;}
+ function clearSelection(){first=null;second=null;draw();}
  function toMark(){
-  const next=input.value;
-  const previousCount=marks.length;
-  marks=normalizeNoteMarks(next,reconcileNoteMarks(text,next,marks));
-  text=next;
-  if(marks.length<previousCount)toast('문장이 변경된 일부 형광펜 표시를 해제했어요.');
+  const next=input.value,oldLength=marks.length;
+  marks=normalizeNoteMarks(next,reconcileNoteMarks(text,next,marks));text=next;
+  if(marks.length<oldLength)toast('본문 수정으로 일부 형광펜 표시가 해제됐어요.');
   mode='mark';input.hidden=true;editor.hidden=false;
   markButton.classList.add('active');writeButton.classList.remove('active');
-  selected=null;draw();
+  first=null;second=null;draw();
  }
  function toWrite(){
   mode='write';input.hidden=false;editor.hidden=true;input.value=text;
   markButton.classList.remove('active');writeButton.classList.add('active');
-  closeSticky();
+  first=null;second=null;closeSticky();
  }
- writeButton.onclick=toWrite;
- markButton.onclick=toMark;
- document.onselectionchange=()=>{if(mode==='mark')captureSelected();};
- reader.addEventListener('mouseup',captureSelected);
- reader.addEventListener('touchend',captureSelected,{passive:true});
- reader.addEventListener('keyup',captureSelected);
- reader.addEventListener('click',event=>{
-  const item=event.target.closest('[data-annotation-id]');
-  if(item&&reader.contains(item))openSticky(item.dataset.annotationId);
+ writeButton.onclick=toWrite;markButton.onclick=toMark;
+ $('#noteClearSelection').onclick=clearSelection;
+ document.querySelectorAll('[data-note-granularity]').forEach(button=>button.onclick=()=>{
+  granularity=button.dataset.noteGranularity;
+  document.querySelectorAll('[data-note-granularity]').forEach(b=>b.classList.toggle('unit-active',b===button));
+  first=null;second=null;draw();
  });
+ reader.addEventListener('click',event=>{
+  const node=event.target.closest('[data-unit-start]');if(!node||!reader.contains(node))return;
+  if(node.dataset.annotationId){openSticky(node.dataset.annotationId);return;}
+  const point={start:Number(node.dataset.unitStart),end:Number(node.dataset.unitEnd)};
+  if(!first||second){first=point;second=null;}
+  else second=point;
+  draw();
+ });
+ reader.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){const node=event.target.closest('[data-unit-start]');if(node){event.preventDefault();node.click();}}});
+ reader.addEventListener('contextmenu',event=>event.preventDefault());
  document.querySelectorAll('[data-note-color]').forEach(button=>{
-  button.addEventListener('pointerdown',event=>event.preventDefault());
   button.onclick=()=>{
-   captureSelected();
-   if(!selected){toast('먼저 문장을 길게 눌러 선택해 주세요.');return;}
-   const {start,end}=selected;
-   if(marks.some(m=>start<m.end&&end>m.start)){toast('기존 형광펜과 겹치지 않도록 선택해 주세요.');return;}
-   const mark={id:'mark-'+Date.now()+'-'+Math.floor(Math.random()*1000000),start,end,color:button.dataset.noteColor,memo:''};
-   marks=normalizeNoteMarks(text,[...marks,mark]);selected=null;window.getSelection()?.removeAllRanges();draw();openSticky(mark.id);
+   const range=selectionRange();
+   if(!range){toast('시작과 끝을 차례로 터치해 주세요.');return;}
+   if(marks.some(m=>range.start<m.end&&range.end>m.start)){toast('기존 형광펜과 겹치지 않도록 선택해 주세요.');return;}
+   const mark={id:'mark-'+Date.now()+'-'+Math.floor(Math.random()*1000000),start:range.start,end:range.end,color:button.dataset.noteColor,memo:''};
+   marks=normalizeNoteMarks(text,[...marks,mark]);first=null;second=null;draw();openSticky(mark.id);
   };
  });
  $('#stickyClose').onclick=closeSticky;
@@ -411,22 +446,16 @@ function initNoteEditor(){
  $('#stickySave').onclick=()=>{
   const mark=marks.find(m=>m.id===currentId);
   if(mark)mark.memo=popupMemo.value;
-  closeSticky();toast('포스트잇을 노트에 반영했어요. 노트 저장을 눌러 보관하세요.');
+  closeSticky();toast('포스트잇을 반영했어요. 노트 저장을 눌러 보관하세요.');
  };
- $('#stickyRemove').onclick=()=>{
-  marks=marks.filter(m=>m.id!==currentId);
-  closeSticky();draw();toast('형광펜 표시를 제거했어요.');
- };
+ $('#stickyRemove').onclick=()=>{marks=marks.filter(m=>m.id!==currentId);closeSticky();draw();toast('형광펜 표시를 제거했어요.');};
  draw();
  return {getData(){
-  if(mode==='write'){
-   const next=input.value;
-   marks=normalizeNoteMarks(next,reconcileNoteMarks(text,next,marks));text=next;
-  }
+  if(mode==='write'){const next=input.value;marks=normalizeNoteMarks(next,reconcileNoteMarks(text,next,marks));text=next;}
   return {body:text,annotations:marks};
  }};
 }
-function settings(){return `<div class="card"><strong>앱 정보</strong><p class="helper">부동산 경매 PWA UI 골격 v0.2.5</p><div class="divider"></div><strong>개발 상태</strong><p class="helper">화면 탐색 및 샘플 데이터만 제공. 법원 자료·실거래가·실제 사진과 자동 갱신 기능은 미연동.</p><div class="divider"></div><strong>데이터 백업</strong><p class="helper">노트와 관심물건을 JSON 파일로 내보내거나 복원할 수 있어요.</p><button class="secondary" id="export" style="width:100%">내 데이터 백업</button><label class="upload" style="margin-top:10px">백업 파일 복원<input id="import" type="file" accept="application/json,.json" hidden></label></div><div class="card"><strong>프로젝트 이관</strong><p class="helper">README.md, PROJECT_HANDOFF.md, DESIGN_SPEC.md에 작업 재개 및 배포 방법이 기록돼 있어요.</p></div>`}function render(){document.onselectionchange=null;activeNoteEditor=null;const back=document.getElementById('navBack');if(back){back.hidden=state.page==='home';back.onclick=goBack;}document.title='부동산 경매 · '+titles[state.page];$('#page-title').textContent=titles[state.page];$('#content').innerHTML=({home,search,schedule,favorites,study,advanced,special,detail,rights,note,settings}[state.page])();if($('#noteEditorShell'))activeNoteEditor=initNoteEditor();$('#tabs').innerHTML=tabs();$('#settings').onclick=()=>nav('settings');document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>nav(x.dataset.page));document.querySelectorAll('[data-detail]').forEach(x=>x.onclick=()=>nav('detail',{detail:x.dataset.detail,detailTab:'overview'}));document.querySelectorAll('[data-filter]').forEach(x=>x.onclick=()=>{state.filter=x.dataset.filter;render()});document.querySelectorAll('[data-day]').forEach(x=>x.onclick=()=>{state.selected=x.dataset.day;render();});if($('#prevMonth'))$('#prevMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,-1);state.selected=state.viewMonth+'-01';render();};if($('#nextMonth'))$('#nextMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,1);state.selected=state.viewMonth+'-01';render();};if($('#todayMonth'))$('#todayMonth').onclick=()=>{const now=new Date();state.viewMonth=calendarMonthKey(now);state.selected=state.viewMonth+'-'+String(now.getDate()).padStart(2,'0');render();};if($('#favCalendarOnly'))$('#favCalendarOnly').onchange=e=>{state.calendarFavoritesOnly=e.target.checked;render();};document.querySelectorAll('[data-note]').forEach(x=>x.onclick=()=>nav('note',{note:Number(x.dataset.note)}));if($('#favoriteSort'))$('#favoriteSort').onchange=e=>{state.favoriteSort=e.target.value;render();};
+function settings(){return `<div class="card"><strong>앱 정보</strong><p class="helper">부동산 경매 PWA UI 골격 v0.2.6</p><div class="divider"></div><strong>개발 상태</strong><p class="helper">화면 탐색 및 샘플 데이터만 제공. 법원 자료·실거래가·실제 사진과 자동 갱신 기능은 미연동.</p><div class="divider"></div><strong>데이터 백업</strong><p class="helper">노트와 관심물건을 JSON 파일로 내보내거나 복원할 수 있어요.</p><button class="secondary" id="export" style="width:100%">내 데이터 백업</button><label class="upload" style="margin-top:10px">백업 파일 복원<input id="import" type="file" accept="application/json,.json" hidden></label></div><div class="card"><strong>프로젝트 이관</strong><p class="helper">README.md, PROJECT_HANDOFF.md, DESIGN_SPEC.md에 작업 재개 및 배포 방법이 기록돼 있어요.</p></div>`}function render(){document.onselectionchange=null;activeNoteEditor=null;const back=document.getElementById('navBack');if(back){back.hidden=state.page==='home';back.onclick=goBack;}document.title='부동산 경매 · '+titles[state.page];$('#page-title').textContent=titles[state.page];$('#content').innerHTML=({home,search,schedule,favorites,study,advanced,special,detail,rights,note,settings}[state.page])();if($('#noteEditorShell'))activeNoteEditor=initNoteEditor();$('#tabs').innerHTML=tabs();$('#settings').onclick=()=>nav('settings');document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>nav(x.dataset.page));document.querySelectorAll('[data-detail]').forEach(x=>x.onclick=()=>nav('detail',{detail:x.dataset.detail,detailTab:'overview'}));document.querySelectorAll('[data-filter]').forEach(x=>x.onclick=()=>{state.filter=x.dataset.filter;render()});document.querySelectorAll('[data-day]').forEach(x=>x.onclick=()=>{state.selected=x.dataset.day;render();});if($('#prevMonth'))$('#prevMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,-1);state.selected=state.viewMonth+'-01';render();};if($('#nextMonth'))$('#nextMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,1);state.selected=state.viewMonth+'-01';render();};if($('#todayMonth'))$('#todayMonth').onclick=()=>{const now=new Date();state.viewMonth=calendarMonthKey(now);state.selected=state.viewMonth+'-'+String(now.getDate()).padStart(2,'0');render();};if($('#favCalendarOnly'))$('#favCalendarOnly').onchange=e=>{state.calendarFavoritesOnly=e.target.checked;render();};document.querySelectorAll('[data-note]').forEach(x=>x.onclick=()=>nav('note',{note:Number(x.dataset.note)}));if($('#favoriteSort'))$('#favoriteSort').onchange=e=>{state.favoriteSort=e.target.value;render();};
 document.querySelectorAll('[data-favorite-type]').forEach(btn=>btn.onclick=()=>{state.favoriteType=btn.dataset.favoriteType;render();});
 document.querySelectorAll('[data-remove-favorite]').forEach(btn=>btn.onclick=()=>{
  const id=btn.dataset.removeFavorite;

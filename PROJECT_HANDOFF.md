@@ -2,11 +2,12 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.1.8 (가격 단위 및 물건 카드 UI)
+- 현재 버전: v0.1.9 (입력창 내부 한글 금액 변환)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.
 - iOS 한글 조합: 라이브 검색 DOM 갱신 금지. 검색 완료 키 또는 화면의 검색 버튼으로 결과 반영.
+- 가격 입력 UX: #advMin/#advMax의 data-won과 data-displayed를 이용해 포커스 아웃 시 한글 금액을 입력창 안에 표시, 재포커스 시 선택 단위의 숫자 편집. 검색 실행은 원 단위 값 사용. 한글 표시 문자열을 직접 숫자로 파싱하지 말 것.
 - 가격: state.minPrice/maxPrice는 원 단위 숫자의 문자열; priceUnit은 입력 표시 단위(원/만원/억원). DEMO_PRICES 역시 원 단위. prettyPrice()가 한글 금액 표현 제공.
 - 검색: 상세검색(지역·유형·최저입찰가·사건번호) UI가 예시 물건을 필터링. 특수물건은 안내 UI만 구현, 실제 권리 필터 미작동.
 - 구현 화면: 홈, 검색, 일정, 관심, 공부방, 물건 상세, 권리분석, 공부 노트, 설정

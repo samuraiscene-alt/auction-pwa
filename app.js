@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체'};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>localStorage.setItem(STORE,JSON.stringify(saved));let activeNoteEditor=null;
+const $=s=>document.querySelector(s);const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>localStorage.setItem(STORE,JSON.stringify(saved));let activeNoteEditor=null;
 
 const ATTACH_DB='auction-note-files-v1',ATTACH_STORE='files',MAX_NOTE_ATTACH=8,MAX_FILE_BYTES=8*1024*1024;
 let attachDbPromise=null;
@@ -93,7 +93,7 @@ const DEMO_PRICES={demo1:875000000,demo2:336000000,demo3:413000000};
 const properties=[{id:'demo1',type:'아파트',name:'서울 강남구 아파트',court:'서울중앙지방법원',case:'2026타경12345',value:'12억 5,000만원',min:'8억 7,500만원',date:'2026.11.17',flag:'2회 유찰'},{id:'demo2',type:'빌라',name:'경기 성남시 다세대주택',court:'수원지방법원',case:'2026타경23456',value:'4억 8,000만원',min:'3억 3,600만원',date:'2026.11.18',flag:'추가 확인'},{id:'demo3',type:'단독주택',name:'서울 성북구 단독주택',court:'서울북부지방법원',case:'2026타경34567',value:'5억 9,000만원',min:'4억 1,300만원',date:'2026.11.20',flag:'1회 유찰'}];const titles={home:'부동산 경매',search:'통합검색',schedule:'경매일정',favorites:'관심물건',study:'경매 공부방',advanced:'상세검색',special:'특수물건 검색',detail:'물건 상세',rights:'권리분석',note:'공부 노트',settings:'설정'};function toast(t){$('#toast').textContent=t;$('#toast').classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>$('#toast').classList.remove('show'),2200)}const MAIN_TABS=['home','search','schedule','favorites','study'];
 let appDepth=0;
 const viewHistory=new Map();
-function snapshot(){return {page:state.page,filter:state.filter,selected:state.selected,viewMonth:state.viewMonth,calendarFavoritesOnly:state.calendarFavoritesOnly,detail:state.detail,note:state.note,search:state.search,region:state.region,minPrice:state.minPrice,maxPrice:state.maxPrice,priceUnit:state.priceUnit,detailTab:state.detailTab,favoriteSort:state.favoriteSort,favoriteType:state.favoriteType,noteQuery:state.noteQuery,noteSort:state.noteSort,studyCategory:state.studyCategory}}
+function snapshot(){return {page:state.page,filter:state.filter,selected:state.selected,viewMonth:state.viewMonth,calendarFavoritesOnly:state.calendarFavoritesOnly,detail:state.detail,note:state.note,search:state.search,region:state.region,minPrice:state.minPrice,maxPrice:state.maxPrice,priceUnit:state.priceUnit,detailTab:state.detailTab,favoriteSort:state.favoriteSort,favoriteType:state.favoriteType,noteQuery:state.noteQuery,noteSort:state.noteSort,studyCategory:state.studyCategory,noteTopicDraft:state.noteTopicDraft}}
 viewHistory.set(0,snapshot());
 history.replaceState({auctionApp:true,depth:0,view:snapshot()},'',location.pathname+location.search);
 function nav(page,extra={}){
@@ -346,6 +346,13 @@ const STUDY_CATEGORIES=[
 ];
 const STUDY_CATEGORY_IDS=new Set(STUDY_CATEGORIES.map(c=>c.id));
 function normalizedStudyCategory(value){return STUDY_CATEGORY_IDS.has(value)?value:'미분류';}
+function studyTopicOptions(category){
+ const group=STUDY_CATEGORIES.find(c=>c.id===category);
+ return group?group.topics.map((topic,i)=>({id:category+':'+i,name:topic})):[];
+}
+function normalizedStudyTopic(value,category){
+ return studyTopicOptions(category).some(topic=>topic.id===value)?value:'';
+}
 function visibleNotes(){
  const q=state.noteQuery.trim().normalize('NFC').toLocaleLowerCase('ko');
  const list=saved.notes.filter(n=>(state.studyCategory==='전체'||normalizedStudyCategory(n.category)===state.studyCategory)&&(!q||[n.title,n.body].some(v=>String(v||'').normalize('NFC').toLocaleLowerCase('ko').includes(q))));
@@ -358,7 +365,7 @@ function noteCard(n){
  const summary=String(n.body||'').replace(/\s+/g,' ').trim();
  const ts=Number(n.updatedAt||n.id);
  const displayDate=Number.isFinite(ts)&&ts>946684800000?new Date(ts).toLocaleDateString('ko-KR'):'';
- return `<article class="study-note-card"><button type="button" class="study-note-open" data-note="${escapeHtml(n.id)}" aria-label="${escapeHtml(n.title)} 노트 열기"><span class="study-note-icon">▤</span><span class="study-note-info"><strong>${escapeHtml(n.title)}</strong><span class="study-note-excerpt">${escapeHtml(summary.slice(0,96)||'내용 없음')}</span><span class="study-note-date"><span class="study-note-category">${escapeHtml(normalizedStudyCategory(n.category))}</span>${escapeHtml(displayDate)}</span></span><span class="arrow">›</span></button><div class="study-note-actions"><button type="button" data-note-edit="${escapeHtml(n.id)}">수정</button><button type="button" class="study-delete" data-note-remove="${escapeHtml(n.id)}">삭제</button></div></article>`;
+ return `<article class="study-note-card"><button type="button" class="study-note-open" data-note="${escapeHtml(n.id)}" aria-label="${escapeHtml(n.title)} 노트 열기"><span class="study-note-icon">▤</span><span class="study-note-info"><strong>${escapeHtml(n.title)}</strong><span class="study-note-excerpt">${escapeHtml(summary.slice(0,96)||'내용 없음')}</span><span class="study-note-date"><span class="study-note-category">${escapeHtml(normalizedStudyCategory(n.category))}</span>${normalizedStudyTopic(n.topicId,normalizedStudyCategory(n.category))?' · 학습항목 연결':''} ${escapeHtml(displayDate)}</span></span><span class="arrow">›</span></button><div class="study-note-actions"><button type="button" data-note-edit="${escapeHtml(n.id)}">수정</button><button type="button" class="study-delete" data-note-remove="${escapeHtml(n.id)}">삭제</button></div></article>`;
 }
 function study(){
  const list=visibleNotes(),count=saved.notes.length;
@@ -367,7 +374,11 @@ function study(){
   return `<button type="button" class="study-category-card ${state.studyCategory===c.id?'selected':''}" data-study-category="${escapeHtml(c.id)}"><span class="study-category-icon">${c.icon}</span><span class="study-category-text"><strong>${c.id}</strong><small>${c.desc}</small></span><span class="study-category-count">${total}개</span></button>`;
  }).join('');
  const chosen=STUDY_CATEGORIES.find(c=>c.id===state.studyCategory);
- const lesson=chosen?`<div class="study-topic-panel"><div class="study-topic-heading"><strong>${chosen.icon} ${chosen.id} 학습 체크리스트</strong><span>학습 길잡이</span></div>${chosen.topics.map((topic,i)=>`<div class="study-topic-row"><span>${i+1}</span><p>${escapeHtml(topic)}</p></div>`).join('')}<button type="button" id="createCategorizedNote" class="study-topic-create">＋ ${chosen.id} 노트 작성</button><p class="study-topic-disclaimer">위 항목은 공부용 체크리스트이며 실제 사건의 법률 판단을 대신하지 않아요.</p></div>`:null;
+ const lesson=chosen?`<div class="study-topic-panel"><div class="study-topic-heading"><strong>${chosen.icon} ${chosen.id} 학습 항목</strong><span>노트 연결</span></div>${chosen.topics.map((topic,i)=>{
+  const topicId=chosen.id+':'+i;
+  const linked=saved.notes.filter(n=>normalizedStudyCategory(n.category)===chosen.id&&normalizedStudyTopic(n.topicId,chosen.id)===topicId);
+  return `<div class="study-linked-topic"><div class="study-topic-row"><span>${i+1}</span><p>${escapeHtml(topic)}</p><small>${linked.length}개</small></div><div class="study-topic-links">${linked.map(n=>`<button type="button" class="study-linked-note" data-note="${n.id}">▤ ${escapeHtml(n.title)} <span>›</span></button>`).join('')}<button type="button" class="study-topic-new" data-create-topic="${escapeHtml(topicId)}">＋ 이 항목에 노트 작성</button></div></div>`;
+ }).join('')}<button type="button" id="createCategorizedNote" class="study-topic-create">＋ ${chosen.id} 일반 노트 작성</button><p class="study-topic-disclaimer">학습 항목별 노트를 모아 보는 용도이며 실제 사건의 법률 판단을 대신하지 않아요.</p></div>`:null;
  const uncategorized=saved.notes.filter(n=>normalizedStudyCategory(n.category)==='미분류').length;
  return `<div class="hero study-hero"><p>나만의 경매 학습 공간</p><h2>경매 공부방</h2><p>공부한 내용을 정리하고 기록하세요.</p></div>
  <div class="section"><h2>학습 카테고리</h2><button class="study-all-filter ${state.studyCategory==='전체'?'active':''}" data-study-category="전체" type="button">전체 보기</button></div>
@@ -380,9 +391,9 @@ function study(){
  <p class="helper">노트·형광펜·포스트잇은 기기에 저장돼요. 사진·PDF도 첨부할 수 있으며 중요한 자료는 설정에서 백업하세요.</p>`;
 }
 function note(){
- const n=saved.notes.find(x=>x.id===state.note)||{title:'',body:'',annotations:[],category:STUDY_CATEGORY_IDS.has(state.studyCategory)?state.studyCategory:'미분류'};
+ const n=saved.notes.find(x=>x.id===state.note)||{title:'',body:'',annotations:[],category:STUDY_CATEGORY_IDS.has(state.studyCategory)?state.studyCategory:'미분류',topicId:state.noteTopicDraft};
  return `<div class="card note-workspace" id="noteEditorShell">
- <div class="note-title-line"><label class="label" for="noteTitle">제목</label><label for="noteCategory" class="note-category-selector">분류 <select id="noteCategory" class="select">${['미분류',...STUDY_CATEGORIES.map(c=>c.id)].map(v=>`<option value="${v}" ${normalizedStudyCategory(n.category)===v?'selected':''}>${v}</option>`).join('')}</select></label></div><input id="noteTitle" class="search" placeholder="노트 제목" value="${escapeHtml(n.title)}">
+ <div class="note-title-line"><label class="label" for="noteTitle">제목</label><label for="noteCategory" class="note-category-selector">분류 <select id="noteCategory" class="select">${['미분류',...STUDY_CATEGORIES.map(c=>c.id)].map(v=>`<option value="${v}" ${normalizedStudyCategory(n.category)===v?'selected':''}>${v}</option>`).join('')}</select></label></div><input id="noteTitle" class="search" placeholder="노트 제목" value="${escapeHtml(n.title)}"><div class="note-topic-selector"><label for="noteTopic">연결할 학습 항목</label><select id="noteTopic" class="select"><option value="">연결하지 않음</option>${studyTopicOptions(normalizedStudyCategory(n.category)).map(t=>`<option value="${escapeHtml(t.id)}" ${normalizedStudyTopic(n.topicId,normalizedStudyCategory(n.category))===t.id?'selected':''}>${escapeHtml(t.name)}</option>`).join('')}</select></div>
  <div class="note-content-bar"><label class="label" for="noteBody">내용</label><div class="note-mode-buttons"><button id="noteWriteMode" type="button" class="note-mode active">✎ 작성</button><button id="noteMarkMode" type="button" class="note-mode">🖍 형광펜</button></div></div>
  <textarea class="select noteArea" id="noteBody" placeholder="공부한 내용을 적어보세요.">${escapeHtml(n.body)}</textarea>
  <div id="noteMarkupArea" class="note-markup-area" hidden><div class="note-mark-guide">첫 단어를 터치하고 마지막 단어를 터치하세요. 선택한 뒤 색상을 누르면 포스트잇이 열려요.</div><div class="note-select-tools"><div class="note-select-unit" role="group" aria-label="선택 단위"><button type="button" class="unit-active" data-note-granularity="word">단어</button><button type="button" data-note-granularity="char">글자</button></div><button type="button" id="noteClearSelection" class="note-clear-selection">선택 취소</button></div><p id="noteSelectionHint" class="note-selection-hint">시작 부분을 한 번 터치하세요.</p><div id="noteHighlightColors" class="note-color-tools"><button data-note-color="yellow" type="button" style="--marker-color:#ffe279" aria-label="노란 형광펜">노랑</button><button data-note-color="green" type="button" style="--marker-color:#b6f0bd" aria-label="초록 형광펜">초록</button><button data-note-color="pink" type="button" style="--marker-color:#ffc6d7" aria-label="분홍 형광펜">분홍</button><button data-note-color="blue" type="button" style="--marker-color:#b9ddff" aria-label="파란 형광펜">파랑</button></div><div id="noteHighlightText" class="note-highlight-text" aria-label="형광펜을 적용할 노트 내용"></div></div>
@@ -572,7 +583,7 @@ function initNoteEditor(){
   return {body:text,annotations:marks};
  }};
 }
-function settings(){return `<div class="card"><strong>앱 정보</strong><p class="helper">부동산 경매 PWA UI 골격 v0.2.8</p><div class="divider"></div><strong>개발 상태</strong><p class="helper">화면 탐색 및 샘플 데이터만 제공. 법원 자료·실거래가·실제 사진과 자동 갱신 기능은 미연동.</p><div class="divider"></div><strong>데이터 백업</strong><p class="helper">노트와 관심물건을 JSON 파일로 내보내거나 복원할 수 있어요.</p><button class="secondary" id="export" style="width:100%">내 데이터 백업</button><label class="upload" style="margin-top:10px">백업 파일 복원<input id="import" type="file" accept="application/json,.json" hidden></label></div><div class="card"><strong>프로젝트 이관</strong><p class="helper">README.md, PROJECT_HANDOFF.md, DESIGN_SPEC.md에 작업 재개 및 배포 방법이 기록돼 있어요.</p></div>`}function render(){document.onselectionchange=null;activeNoteEditor=null;const back=document.getElementById('navBack');if(back){back.hidden=state.page==='home';back.onclick=goBack;}document.title='부동산 경매 · '+titles[state.page];$('#page-title').textContent=titles[state.page];$('#content').innerHTML=({home,search,schedule,favorites,study,advanced,special,detail,rights,note,settings}[state.page])();if($('#noteEditorShell'))activeNoteEditor={...initNoteEditor(),attachments:createAttachmentEditor()};$('#tabs').innerHTML=tabs();$('#settings').onclick=()=>nav('settings');document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>nav(x.dataset.page));document.querySelectorAll('[data-detail]').forEach(x=>x.onclick=()=>nav('detail',{detail:x.dataset.detail,detailTab:'overview'}));document.querySelectorAll('[data-filter]').forEach(x=>x.onclick=()=>{state.filter=x.dataset.filter;render()});document.querySelectorAll('[data-day]').forEach(x=>x.onclick=()=>{state.selected=x.dataset.day;render();});if($('#prevMonth'))$('#prevMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,-1);state.selected=state.viewMonth+'-01';render();};if($('#nextMonth'))$('#nextMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,1);state.selected=state.viewMonth+'-01';render();};if($('#todayMonth'))$('#todayMonth').onclick=()=>{const now=new Date();state.viewMonth=calendarMonthKey(now);state.selected=state.viewMonth+'-'+String(now.getDate()).padStart(2,'0');render();};if($('#favCalendarOnly'))$('#favCalendarOnly').onchange=e=>{state.calendarFavoritesOnly=e.target.checked;render();};document.querySelectorAll('[data-note]').forEach(x=>x.onclick=()=>nav('note',{note:Number(x.dataset.note)}));if($('#favoriteSort'))$('#favoriteSort').onchange=e=>{state.favoriteSort=e.target.value;render();};
+function settings(){return `<div class="card"><strong>앱 정보</strong><p class="helper">부동산 경매 PWA UI 골격 v0.2.9</p><div class="divider"></div><strong>개발 상태</strong><p class="helper">화면 탐색 및 샘플 데이터만 제공. 법원 자료·실거래가·실제 사진과 자동 갱신 기능은 미연동.</p><div class="divider"></div><strong>데이터 백업</strong><p class="helper">노트와 관심물건을 JSON 파일로 내보내거나 복원할 수 있어요.</p><button class="secondary" id="export" style="width:100%">내 데이터 백업</button><label class="upload" style="margin-top:10px">백업 파일 복원<input id="import" type="file" accept="application/json,.json" hidden></label></div><div class="card"><strong>프로젝트 이관</strong><p class="helper">README.md, PROJECT_HANDOFF.md, DESIGN_SPEC.md에 작업 재개 및 배포 방법이 기록돼 있어요.</p></div>`}function render(){document.onselectionchange=null;activeNoteEditor=null;const back=document.getElementById('navBack');if(back){back.hidden=state.page==='home';back.onclick=goBack;}document.title='부동산 경매 · '+titles[state.page];$('#page-title').textContent=titles[state.page];$('#content').innerHTML=({home,search,schedule,favorites,study,advanced,special,detail,rights,note,settings}[state.page])();if($('#noteEditorShell'))activeNoteEditor={...initNoteEditor(),attachments:createAttachmentEditor()};$('#tabs').innerHTML=tabs();$('#settings').onclick=()=>nav('settings');document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>nav(x.dataset.page));document.querySelectorAll('[data-detail]').forEach(x=>x.onclick=()=>nav('detail',{detail:x.dataset.detail,detailTab:'overview'}));document.querySelectorAll('[data-filter]').forEach(x=>x.onclick=()=>{state.filter=x.dataset.filter;render()});document.querySelectorAll('[data-day]').forEach(x=>x.onclick=()=>{state.selected=x.dataset.day;render();});if($('#prevMonth'))$('#prevMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,-1);state.selected=state.viewMonth+'-01';render();};if($('#nextMonth'))$('#nextMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,1);state.selected=state.viewMonth+'-01';render();};if($('#todayMonth'))$('#todayMonth').onclick=()=>{const now=new Date();state.viewMonth=calendarMonthKey(now);state.selected=state.viewMonth+'-'+String(now.getDate()).padStart(2,'0');render();};if($('#favCalendarOnly'))$('#favCalendarOnly').onchange=e=>{state.calendarFavoritesOnly=e.target.checked;render();};document.querySelectorAll('[data-note]').forEach(x=>x.onclick=()=>nav('note',{note:Number(x.dataset.note)}));if($('#favoriteSort'))$('#favoriteSort').onchange=e=>{state.favoriteSort=e.target.value;render();};
 document.querySelectorAll('[data-favorite-type]').forEach(btn=>btn.onclick=()=>{state.favoriteType=btn.dataset.favoriteType;render();});
 document.querySelectorAll('[data-remove-favorite]').forEach(btn=>btn.onclick=()=>{
  const id=btn.dataset.removeFavorite;
@@ -670,7 +681,14 @@ if($('#specialBack'))$('#specialBack').onclick=()=>goBack();if($('#favBtn'))$('#
 }
 if($('#noteSort'))$('#noteSort').onchange=event=>{state.noteSort=event.target.value;render();};
 document.querySelectorAll('[data-study-category]').forEach(btn=>btn.onclick=()=>{state.studyCategory=btn.dataset.studyCategory;render();});
-if($('#createCategorizedNote'))$('#createCategorizedNote').onclick=()=>nav('note',{note:null});
+if($('#createCategorizedNote'))$('#createCategorizedNote').onclick=()=>nav('note',{note:null,noteTopicDraft:''});
+document.querySelectorAll('[data-create-topic]').forEach(btn=>btn.onclick=()=>nav('note',{note:null,noteTopicDraft:btn.dataset.createTopic}));
+if($('#noteCategory'))$('#noteCategory').onchange=()=>{
+ const select=$('#noteTopic'),category=$('#noteCategory').value;
+ const previously=select.value;
+ select.innerHTML='<option value="">연결하지 않음</option>'+studyTopicOptions(category).map(topic=>'<option value="'+escapeHtml(topic.id)+'">'+escapeHtml(topic.name)+'</option>').join('');
+ select.value=normalizedStudyTopic(previously,category);
+};
 document.querySelectorAll('[data-note-edit]').forEach(btn=>btn.onclick=()=>nav('note',{note:Number(btn.dataset.noteEdit)}));
 document.querySelectorAll('[data-note-remove]').forEach(btn=>btn.onclick=async()=>{
  const id=Number(btn.dataset.noteRemove);
@@ -681,9 +699,9 @@ document.querySelectorAll('[data-note-remove]').forEach(btn=>btn.onclick=async()
  saved.notes=saved.notes.filter(x=>x.id!==id);
  write();render();toast('노트를 삭제했어요.');
 });
-if($('#addNote'))$('#addNote').onclick=()=>nav('note',{note:null});
+if($('#addNote'))$('#addNote').onclick=()=>nav('note',{note:null,noteTopicDraft:''});
 if($('#saveNote'))$('#saveNote').onclick=async()=>{
- const title=$('#noteTitle').value.trim(),category=normalizedStudyCategory($('#noteCategory').value);
+ const title=$('#noteTitle').value.trim(),category=normalizedStudyCategory($('#noteCategory').value),topicId=normalizedStudyTopic($('#noteTopic').value,category);
  if(!title)return toast('제목을 입력하세요.');
  const {body,annotations}=activeNoteEditor?activeNoteEditor.getData():{body:$('#noteBody').value.trim(),annotations:[]};
  const button=$('#saveNote');button.disabled=true;
@@ -694,8 +712,8 @@ if($('#saveNote'))$('#saveNote').onclick=async()=>{
   const uniqueId=oldNote?oldNote.id:now+Math.max(0,...saved.notes.map(n=>Math.max(0,n.id-now+1)));
   // Commit file bytes before updating note metadata, so storage failures cannot silently lose attachments.
   if(files.length||oldNote&&activeNoteEditor.attachments.changed)await attachmentReplaceForNote(uniqueId,files);
-  if(oldNote)Object.assign(oldNote,{title,body,annotations,category,updatedAt:now});
-  else saved.notes.unshift({id:uniqueId,title,body,annotations,category,updatedAt:now});
+  if(oldNote)Object.assign(oldNote,{title,body,annotations,category,topicId,updatedAt:now});
+  else saved.notes.unshift({id:uniqueId,title,body,annotations,category,topicId,updatedAt:now});
   write();nav('study');toast('노트를 저장했어요.');
  }catch(err){toast('노트 저장 실패: '+(err.message||'첨부파일을 확인해 주세요.'));button.disabled=false;}
 };

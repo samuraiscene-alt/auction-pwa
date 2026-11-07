@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent'};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>localStorage.setItem(STORE,JSON.stringify(saved));const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=s=>document.querySelector(s);const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent'};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>localStorage.setItem(STORE,JSON.stringify(saved));let activeNoteEditor=null;const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const PRICE_FACTORS={'원':1,'만원':10000,'억원':100000000};
 function priceFromInput(value,unit){
   const text=String(value??'').replace(/,/g,'').trim();
@@ -296,10 +296,137 @@ function study(){
  <p class="helper">텍스트 노트는 현재 기기에 저장돼요. 사진·PDF 첨부와 강의 녹음은 후속 버전에서 개발합니다.</p>`;
 }
 function note(){
- const n=saved.notes.find(x=>x.id===state.note)||{title:'',body:''};
- return `<div class="card" style="margin-top:14px"><label class="label" for="noteTitle">제목</label><input id="noteTitle" class="search" placeholder="노트 제목" value="${escapeHtml(n.title)}"><label class="label" for="noteBody">내용</label><textarea class="select noteArea" id="noteBody" placeholder="공부한 내용을 적어보세요.">${escapeHtml(n.body)}</textarea><div class="section"><h2>첨부파일</h2><span class="muted">다음 버전</span></div><div class="upload">▧ 사진 · PDF 첨부 기능 예정</div><button class="primary" id="saveNote">노트 저장</button>${state.note?'<button class="secondary" id="deleteNote" style="width:100%;margin-top:9px;color:#c83d4a">노트 삭제</button>':''}</div>`;
+ const n=saved.notes.find(x=>x.id===state.note)||{title:'',body:'',annotations:[]};
+ return `<div class="card note-workspace" id="noteEditorShell">
+ <label class="label" for="noteTitle">제목</label><input id="noteTitle" class="search" placeholder="노트 제목" value="${escapeHtml(n.title)}">
+ <div class="note-content-bar"><label class="label" for="noteBody">내용</label><div class="note-mode-buttons"><button id="noteWriteMode" type="button" class="note-mode active">✎ 작성</button><button id="noteMarkMode" type="button" class="note-mode">🖍 형광펜</button></div></div>
+ <textarea class="select noteArea" id="noteBody" placeholder="공부한 내용을 적어보세요.">${escapeHtml(n.body)}</textarea>
+ <div id="noteMarkupArea" class="note-markup-area" hidden><div class="note-mark-guide">표시할 문장을 길게 눌러 선택한 뒤 색을 눌러주세요. 색칠된 부분을 누르면 포스트잇이 열려요.</div><div id="noteHighlightColors" class="note-color-tools"><button data-note-color="yellow" type="button" style="--marker-color:#ffe279" aria-label="노란 형광펜">노랑</button><button data-note-color="green" type="button" style="--marker-color:#b6f0bd" aria-label="초록 형광펜">초록</button><button data-note-color="pink" type="button" style="--marker-color:#ffc6d7" aria-label="분홍 형광펜">분홍</button><button data-note-color="blue" type="button" style="--marker-color:#b9ddff" aria-label="파란 형광펜">파랑</button></div><div id="noteHighlightText" class="note-highlight-text" aria-label="형광펜을 적용할 노트 내용"></div></div>
+ <div class="note-footer"><p class="note-attachment-hint">▧ 사진 · PDF 첨부는 추후 지원</p><button class="primary" id="saveNote" type="button">노트 저장</button>${state.note?'<button class="secondary note-delete-btn" id="deleteNote" type="button">노트 삭제</button>':''}</div>
+ <div id="stickyBackdrop" class="sticky-backdrop" hidden><section class="sticky-paper" role="dialog" aria-modal="true" aria-labelledby="stickyHeading"><div class="sticky-head"><strong id="stickyHeading">▣ 포스트잇 메모</strong><button id="stickyClose" type="button" aria-label="닫기">×</button></div><p id="stickyQuote" class="sticky-quote"></p><textarea id="stickyText" class="sticky-input" placeholder="선택한 문장에 대한 메모를 적어보세요."></textarea><div class="sticky-buttons"><button type="button" id="stickyRemove" class="sticky-remove">형광펜 제거</button><button type="button" id="stickySave" class="sticky-save">메모 저장</button></div></section></div>
+ </div>`;
 }
-function settings(){return `<div class="card"><strong>앱 정보</strong><p class="helper">부동산 경매 PWA UI 골격 v0.2.4</p><div class="divider"></div><strong>개발 상태</strong><p class="helper">화면 탐색 및 샘플 데이터만 제공. 법원 자료·실거래가·실제 사진과 자동 갱신 기능은 미연동.</p><div class="divider"></div><strong>데이터 백업</strong><p class="helper">노트와 관심물건을 JSON 파일로 내보내거나 복원할 수 있어요.</p><button class="secondary" id="export" style="width:100%">내 데이터 백업</button><label class="upload" style="margin-top:10px">백업 파일 복원<input id="import" type="file" accept="application/json,.json" hidden></label></div><div class="card"><strong>프로젝트 이관</strong><p class="helper">README.md, PROJECT_HANDOFF.md, DESIGN_SPEC.md에 작업 재개 및 배포 방법이 기록돼 있어요.</p></div>`}function render(){const back=document.getElementById('navBack');if(back){back.hidden=state.page==='home';back.onclick=goBack;}document.title='부동산 경매 · '+titles[state.page];$('#page-title').textContent=titles[state.page];$('#content').innerHTML=({home,search,schedule,favorites,study,advanced,special,detail,rights,note,settings}[state.page])();$('#tabs').innerHTML=tabs();$('#settings').onclick=()=>nav('settings');document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>nav(x.dataset.page));document.querySelectorAll('[data-detail]').forEach(x=>x.onclick=()=>nav('detail',{detail:x.dataset.detail,detailTab:'overview'}));document.querySelectorAll('[data-filter]').forEach(x=>x.onclick=()=>{state.filter=x.dataset.filter;render()});document.querySelectorAll('[data-day]').forEach(x=>x.onclick=()=>{state.selected=x.dataset.day;render();});if($('#prevMonth'))$('#prevMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,-1);state.selected=state.viewMonth+'-01';render();};if($('#nextMonth'))$('#nextMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,1);state.selected=state.viewMonth+'-01';render();};if($('#todayMonth'))$('#todayMonth').onclick=()=>{const now=new Date();state.viewMonth=calendarMonthKey(now);state.selected=state.viewMonth+'-'+String(now.getDate()).padStart(2,'0');render();};if($('#favCalendarOnly'))$('#favCalendarOnly').onchange=e=>{state.calendarFavoritesOnly=e.target.checked;render();};document.querySelectorAll('[data-note]').forEach(x=>x.onclick=()=>nav('note',{note:Number(x.dataset.note)}));if($('#favoriteSort'))$('#favoriteSort').onchange=e=>{state.favoriteSort=e.target.value;render();};
+const NOTE_COLORS={yellow:'#ffe279',green:'#b6f0bd',pink:'#ffc6d7',blue:'#b9ddff'};
+function reconcileNoteMarks(before,after,marks){
+ if(before===after)return marks;
+ let prefix=0;
+ while(prefix<before.length&&prefix<after.length&&before[prefix]===after[prefix])prefix++;
+ let suffix=0;
+ while(suffix<before.length-prefix&&suffix<after.length-prefix&&before[before.length-1-suffix]===after[after.length-1-suffix])suffix++;
+ const oldChangedEnd=before.length-suffix,shift=after.length-before.length;
+ return marks.flatMap(mark=>{
+  const m={...mark};
+  if(m.end<=prefix)return[m];
+  if(m.start>=oldChangedEnd){m.start+=shift;m.end+=shift;return[m];}
+  const quote=before.slice(mark.start,mark.end);
+  const first=after.indexOf(quote);
+  if(quote&&first>=0&&after.indexOf(quote,first+1)<0){m.start=first;m.end=first+quote.length;return[m];}
+  return[];
+ }).filter(m=>m.start>=0&&m.end<=after.length&&m.start<m.end);
+}
+function normalizeNoteMarks(text,marks){
+ const ordered=(Array.isArray(marks)?marks:[]).filter(m=>m&&Number.isInteger(m.start)&&Number.isInteger(m.end)&&m.start>=0&&m.end<=text.length&&m.start<m.end&&NOTE_COLORS[m.color]).sort((a,b)=>a.start-b.start);
+ const unique=[];
+ ordered.forEach(mark=>{if(unique.length&&mark.start<unique[unique.length-1].end)return;unique.push({...mark,id:String(mark.id||'mark-'+mark.start),memo:String(mark.memo||'')});});
+ return unique;
+}
+function highlightMarkup(text,marks){
+ let offset=0,html='';
+ for(const mark of marks){
+  html+=escapeHtml(text.slice(offset,mark.start));
+  html+=`<span class="note-highlight" data-annotation-id="${escapeHtml(mark.id)}" style="--highlight:${NOTE_COLORS[mark.color]}">${escapeHtml(text.slice(mark.start,mark.end))}</span>`;
+  offset=mark.end;
+ }
+ return html+escapeHtml(text.slice(offset));
+}
+function initNoteEditor(){
+ const note=saved.notes.find(x=>x.id===state.note)||{body:'',annotations:[]};
+ const input=$('#noteBody'),reader=$('#noteHighlightText'),editor=$('#noteMarkupArea');
+ const writeButton=$('#noteWriteMode'),markButton=$('#noteMarkMode'),popup=$('#stickyBackdrop'),popupMemo=$('#stickyText');
+ let text=String(input.value),marks=normalizeNoteMarks(text,note.annotations),selected=null,currentId=null,mode='write';
+ function captureSelected(){
+  if(mode!=='mark')return;
+  const sel=window.getSelection();
+  if(!sel||sel.isCollapsed||!sel.rangeCount)return;
+  const range=sel.getRangeAt(0);
+  if(!reader.contains(range.startContainer)||!reader.contains(range.endContainer))return;
+  const before=range.cloneRange();
+  before.selectNodeContents(reader);
+  before.setEnd(range.startContainer,range.startOffset);
+  const raw=range.toString(),left=(raw.match(/^\s*/)||[''])[0].length,right=(raw.match(/\s*$/)||[''])[0].length;
+  const start=before.toString().length+left,end=start+raw.length-left-right;
+  if(end>start&&end<=text.length)selected={start,end};
+ }
+ function draw(){
+  reader.innerHTML=highlightMarkup(text,marks);
+  if(!text)reader.innerHTML='<span class="note-read-empty">내용을 작성하면 여기서 문장을 선택해 형광펜을 표시할 수 있어요.</span>';
+ }
+ function openSticky(id){
+  const mark=marks.find(m=>m.id===id);if(!mark)return;
+  currentId=id;
+  $('#stickyQuote').textContent='“'+text.slice(mark.start,mark.end)+'”';
+  popupMemo.value=mark.memo||'';
+  popup.hidden=false;
+  popupMemo.focus();
+ }
+ function closeSticky(){popup.hidden=true;currentId=null;}
+ function toMark(){
+  const next=input.value;
+  const previousCount=marks.length;
+  marks=normalizeNoteMarks(next,reconcileNoteMarks(text,next,marks));
+  text=next;
+  if(marks.length<previousCount)toast('문장이 변경된 일부 형광펜 표시를 해제했어요.');
+  mode='mark';input.hidden=true;editor.hidden=false;
+  markButton.classList.add('active');writeButton.classList.remove('active');
+  selected=null;draw();
+ }
+ function toWrite(){
+  mode='write';input.hidden=false;editor.hidden=true;input.value=text;
+  markButton.classList.remove('active');writeButton.classList.add('active');
+  closeSticky();
+ }
+ writeButton.onclick=toWrite;
+ markButton.onclick=toMark;
+ document.onselectionchange=()=>{if(mode==='mark')captureSelected();};
+ reader.addEventListener('mouseup',captureSelected);
+ reader.addEventListener('touchend',captureSelected,{passive:true});
+ reader.addEventListener('keyup',captureSelected);
+ reader.addEventListener('click',event=>{
+  const item=event.target.closest('[data-annotation-id]');
+  if(item&&reader.contains(item))openSticky(item.dataset.annotationId);
+ });
+ document.querySelectorAll('[data-note-color]').forEach(button=>{
+  button.addEventListener('pointerdown',event=>event.preventDefault());
+  button.onclick=()=>{
+   captureSelected();
+   if(!selected){toast('먼저 문장을 길게 눌러 선택해 주세요.');return;}
+   const {start,end}=selected;
+   if(marks.some(m=>start<m.end&&end>m.start)){toast('기존 형광펜과 겹치지 않도록 선택해 주세요.');return;}
+   const mark={id:'mark-'+Date.now()+'-'+Math.floor(Math.random()*1000000),start,end,color:button.dataset.noteColor,memo:''};
+   marks=normalizeNoteMarks(text,[...marks,mark]);selected=null;window.getSelection()?.removeAllRanges();draw();openSticky(mark.id);
+  };
+ });
+ $('#stickyClose').onclick=closeSticky;
+ popup.addEventListener('click',event=>{if(event.target===popup)closeSticky();});
+ $('#stickySave').onclick=()=>{
+  const mark=marks.find(m=>m.id===currentId);
+  if(mark)mark.memo=popupMemo.value;
+  closeSticky();toast('포스트잇을 노트에 반영했어요. 노트 저장을 눌러 보관하세요.');
+ };
+ $('#stickyRemove').onclick=()=>{
+  marks=marks.filter(m=>m.id!==currentId);
+  closeSticky();draw();toast('형광펜 표시를 제거했어요.');
+ };
+ draw();
+ return {getData(){
+  if(mode==='write'){
+   const next=input.value;
+   marks=normalizeNoteMarks(next,reconcileNoteMarks(text,next,marks));text=next;
+  }
+  return {body:text,annotations:marks};
+ }};
+}
+function settings(){return `<div class="card"><strong>앱 정보</strong><p class="helper">부동산 경매 PWA UI 골격 v0.2.5</p><div class="divider"></div><strong>개발 상태</strong><p class="helper">화면 탐색 및 샘플 데이터만 제공. 법원 자료·실거래가·실제 사진과 자동 갱신 기능은 미연동.</p><div class="divider"></div><strong>데이터 백업</strong><p class="helper">노트와 관심물건을 JSON 파일로 내보내거나 복원할 수 있어요.</p><button class="secondary" id="export" style="width:100%">내 데이터 백업</button><label class="upload" style="margin-top:10px">백업 파일 복원<input id="import" type="file" accept="application/json,.json" hidden></label></div><div class="card"><strong>프로젝트 이관</strong><p class="helper">README.md, PROJECT_HANDOFF.md, DESIGN_SPEC.md에 작업 재개 및 배포 방법이 기록돼 있어요.</p></div>`}function render(){document.onselectionchange=null;activeNoteEditor=null;const back=document.getElementById('navBack');if(back){back.hidden=state.page==='home';back.onclick=goBack;}document.title='부동산 경매 · '+titles[state.page];$('#page-title').textContent=titles[state.page];$('#content').innerHTML=({home,search,schedule,favorites,study,advanced,special,detail,rights,note,settings}[state.page])();if($('#noteEditorShell'))activeNoteEditor=initNoteEditor();$('#tabs').innerHTML=tabs();$('#settings').onclick=()=>nav('settings');document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>nav(x.dataset.page));document.querySelectorAll('[data-detail]').forEach(x=>x.onclick=()=>nav('detail',{detail:x.dataset.detail,detailTab:'overview'}));document.querySelectorAll('[data-filter]').forEach(x=>x.onclick=()=>{state.filter=x.dataset.filter;render()});document.querySelectorAll('[data-day]').forEach(x=>x.onclick=()=>{state.selected=x.dataset.day;render();});if($('#prevMonth'))$('#prevMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,-1);state.selected=state.viewMonth+'-01';render();};if($('#nextMonth'))$('#nextMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,1);state.selected=state.viewMonth+'-01';render();};if($('#todayMonth'))$('#todayMonth').onclick=()=>{const now=new Date();state.viewMonth=calendarMonthKey(now);state.selected=state.viewMonth+'-'+String(now.getDate()).padStart(2,'0');render();};if($('#favCalendarOnly'))$('#favCalendarOnly').onchange=e=>{state.calendarFavoritesOnly=e.target.checked;render();};document.querySelectorAll('[data-note]').forEach(x=>x.onclick=()=>nav('note',{note:Number(x.dataset.note)}));if($('#favoriteSort'))$('#favoriteSort').onchange=e=>{state.favoriteSort=e.target.value;render();};
 document.querySelectorAll('[data-favorite-type]').forEach(btn=>btn.onclick=()=>{state.favoriteType=btn.dataset.favoriteType;render();});
 document.querySelectorAll('[data-remove-favorite]').forEach(btn=>btn.onclick=()=>{
  const id=btn.dataset.removeFavorite;
@@ -407,16 +534,17 @@ document.querySelectorAll('[data-note-remove]').forEach(btn=>btn.onclick=()=>{
 });
 if($('#addNote'))$('#addNote').onclick=()=>nav('note',{note:null});
 if($('#saveNote'))$('#saveNote').onclick=()=>{
- const title=$('#noteTitle').value.trim(),body=$('#noteBody').value.trim();
+ const title=$('#noteTitle').value.trim();
  if(!title)return toast('제목을 입력하세요.');
+ const {body,annotations}=activeNoteEditor?activeNoteEditor.getData():{body:$('#noteBody').value.trim(),annotations:[]};
  const now=Date.now();
  if(state.note){
   const n=saved.notes.find(x=>x.id===state.note);
   if(!n)return toast('노트를 찾을 수 없어요.');
-  Object.assign(n,{title,body,updatedAt:now});
+  Object.assign(n,{title,body,annotations,updatedAt:now});
  }else{
   const uniqueId=now+Math.max(0,...saved.notes.map(n=>Math.max(0,n.id-now+1)));
-  saved.notes.unshift({id:uniqueId,title,body,updatedAt:now});
+  saved.notes.unshift({id:uniqueId,title,body,annotations,updatedAt:now});
  }
  write();nav('study');toast('노트를 저장했어요.');
 };

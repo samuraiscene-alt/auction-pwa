@@ -1,2 +1,2 @@
-0.2.5
-Expanded note editor, highlight selected phrases and attach sticky-note memos saved locally.
+0.2.6
+Two-tap text range selection for highlights, with word/character modes on iPhone.

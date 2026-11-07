@@ -1,2 +1,2 @@
-0.2.0
-Remove duplicate blue amount labels; property overview/rights/market/docs tab skeleton.
+0.2.1
+Calendar month navigation, today jump, date selection and favorites-only demo event filtering.

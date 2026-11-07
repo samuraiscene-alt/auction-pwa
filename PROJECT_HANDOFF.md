@@ -2,12 +2,13 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.2.8 (공부방 카테고리 필터·학습 안내)
+- 현재 버전: v0.2.9 (학습 항목과 개인 노트 연결)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.
 - iOS 한글 조합: 라이브 검색 DOM 갱신 금지. 검색 완료 키 또는 화면의 검색 버튼으로 결과 반영.
 - 형광펜 2탭: splitNoteUnits()는 Intl.Segmenter(단어/글자)로 렌더할 선택 범위를 만들고, 형광펜 읽기 화면에서 시작·끝 두 번 터치해 선택. 기본 iOS long-press 선택 미사용. 기존 마크를 누르면 포스트잇. annotations 데이터 포맷 그대로.
+- 학습 항목 노트: note.topicId는 '권리분석:0' 같은 문자열. studyTopicOptions()와 normalizedStudyTopic()으로 검증. 선택 카테고리의 각 체크리스트 항목에 연결된 노트만 보여주고 직접 열기·작성 가능. 구버전 노트의 topicId 미존재는 빈 값으로 처리.
 - 공부방 카테고리: STUDY_CATEGORIES 4개(권리분석/경매절차/세금/명도), state.studyCategory 필터(전체/미분류 가능), note.category 신규 선택/저장. 구버전 노트는 normalizedStudyCategory()로 미분류 취급. 가이드 체크리스트는 일반 학습 항목이며 판정 아님.
 - 첨부파일: IndexedDB auction-note-files-v1/files 저장, 레코드 {id,noteId,name,type,size,data} (base64 data URL). 노트당 8개/개별 8MB. 첨부 저장 후 노트 localStorage 반영. 백업 JSON v2의 attachments 배열 및 v1 호환 복원. 파일 저장 실패 시 사용자에게 알리고 저장 중단.
 - 노트 편집: 작성 textarea와 형광펜 읽기 모드 전환. 선택 문장을 4색으로 마킹해 노란 포스트잇을 연다. notes 항목에 annotations:[{id,start,end,color,memo}] 저장. 본문 변경 시 reconcileNoteMarks()로 유효 범위를 조정하고 불확실 표시 제거. 로컬 백업·복원은 saved 전체를 저장하여 신규 필드도 포함. 팝업 변경 후 반드시 파란 노트 저장 버튼을 눌러 최종 보관. iPhone 실제 선택 동작 검증 필요.

@@ -2,9 +2,9 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.1.4 (UI 골격 + 대시보드 + 제스처 내비게이션)
+- 현재 버전: v0.1.5 (손가락 추종 스와이프 전환)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
-- 내비게이션: History API, 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
+- 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 구현 화면: 홈, 검색, 일정, 관심, 공부방, 물건 상세, 권리분석, 공부 노트, 설정
 - 실제 법원 경매 API, 자동 정보 업데이트, 사진, AI 분석은 아직 연결되지 않음. 경매 정보는 가상 데모.
 - 개인 관심물건 및 공부노트는 현재 브라우저 localStorage 저장. GitHub에는 올라가지 않으며 Safari 데이터 제거 시 소실 위험. JSON 백업 기능 사용.

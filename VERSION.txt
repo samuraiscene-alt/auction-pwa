@@ -1,2 +1,2 @@
-0.1.9
-Amount shown as Korean units inside amount field on blur, with numeric edit on focus.
+0.2.0
+Remove duplicate blue amount labels; property overview/rights/market/docs tab skeleton.

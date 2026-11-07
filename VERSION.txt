@@ -1,2 +1,2 @@
-0.2.6
-Two-tap text range selection for highlights, with word/character modes on iPhone.
+0.2.7
+Attach images/PDFs to notes with IndexedDB persistence and version-2 JSON backup/restore.

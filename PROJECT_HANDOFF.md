@@ -1,11 +1,13 @@
-# 부동산 경매 PWA 인수인계
-- 저장소: https://github.com/samuraiscene-alt/auction-pwa
-- 사이트 예정 URL: https://samuraiscene-alt.github.io/auction-pwa/
-- 목표: 개인용 경매 검색/분석/공부방 PWA, iPhone 우선
-- 현재 단계: UI 골격. 실제 법원 경매 API, 사진, 권리분석, 자동 갱신은 미구현.
-- 핵심 페이지: 홈/검색/일정/관심/공부방/물건 상세/권리분석/노트/설정
-- 디자인: DESIGN_SPEC.md 준수. 이미 승인받은 배치나 스타일은 임의 변경 금지.
-- 데이터: 개인 관심물건과 공부 노트는 현재 브라우저 localStorage에 저장. 브라우저 데이터 삭제 시 사라질 수 있으므로 JSON 백업 필요.
-- 배포: main push -> .github/workflows/pages.yml -> GitHub Pages. 실제 성공 여부와 접속 URL 확인.
-- 새 채팅에서는 GitHub 최신 코드부터 읽고, 변경 작업 후 CHANGELOG.md와 버전 기록을 함께 수정. 채팅별 연결권한은 재확인 필요.
-- 추가 목표: 자동 데이터 연계, 법원 원본과 사설 정보 구분, 사진/서류 원본 확인, 쉬운 권리해설, 경매 공부방 사진/PDF/강의 전사.
+# 부동산 경매 PWA — 다음 채팅 인수인계
+- GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
+- 메인 브랜치: main
+- 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
+- 현재 버전: v0.1.1 (UI 골격)
+- 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
+- 구현 화면: 홈, 검색, 일정, 관심, 공부방, 물건 상세, 권리분석, 공부 노트, 설정
+- 실제 법원 경매 API, 자동 정보 업데이트, 사진, AI 분석은 아직 연결되지 않음. 경매 정보는 가상 데모.
+- 개인 관심물건 및 공부노트는 현재 브라우저 localStorage 저장. GitHub에는 올라가지 않으며 Safari 데이터 제거 시 소실 위험. JSON 백업 기능 사용.
+- **중요 배포 상태(2026-11-07)**: GitHub에 전체 UI 소스 업로드 완료. GitHub Actions 실행은 확인했지만 GitHub Pages 미활성화로 실패. Actions 토큰은 Pages를 최초 생성할 권한이 없어 사용자가 저장소 Settings > Pages > Build and deployment > Source에서 **GitHub Actions**를 한 번 선택해야 함.
+- Pages 설정 후 Actions > Deploy Auction PWA > Run workflow 또는 main 브랜치에 새 커밋해 재실행. 성공 결과 확인 전 배포 완료라고 말하지 말 것.
+- 새 채팅에서는 이 파일 및 DESIGN_SPEC.md / CHANGELOG.md / VERSION.txt 확인, GitHub 최신 소스 읽기, 수정 후 main 업데이트와 Pages 실행 검증. 채팅별 GitHub 권한은 재확인 필요.
+- 사용자가 승인한 애플 스타일 UI는 임의로 바꾸지 말고 화면 비교.

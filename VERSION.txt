@@ -1,2 +1,2 @@
-0.1.4
-Main tab swipe, edge swipe back, visible back button, browser history.
+0.1.5
+Interactive finger-following swipe with spring-like smooth settling.

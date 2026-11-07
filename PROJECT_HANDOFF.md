@@ -2,12 +2,11 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.1.1 (UI 골격)
+- 현재 버전: v0.1.3 (UI 골격 + 개인 현황 대시보드)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 구현 화면: 홈, 검색, 일정, 관심, 공부방, 물건 상세, 권리분석, 공부 노트, 설정
 - 실제 법원 경매 API, 자동 정보 업데이트, 사진, AI 분석은 아직 연결되지 않음. 경매 정보는 가상 데모.
 - 개인 관심물건 및 공부노트는 현재 브라우저 localStorage 저장. GitHub에는 올라가지 않으며 Safari 데이터 제거 시 소실 위험. JSON 백업 기능 사용.
-- **중요 배포 상태(2026-11-07)**: GitHub에 전체 UI 소스 업로드 완료. GitHub Actions 실행은 확인했지만 GitHub Pages 미활성화로 실패. Actions 토큰은 Pages를 최초 생성할 권한이 없어 사용자가 저장소 Settings > Pages > Build and deployment > Source에서 **GitHub Actions**를 한 번 선택해야 함.
-- Pages 설정 후 Actions > Deploy Auction PWA > Run workflow 또는 main 브랜치에 새 커밋해 재실행. 성공 결과 확인 전 배포 완료라고 말하지 말 것.
+- GitHub Pages는 활성화되어 GitHub Actions로 자동 배포 중. 작업마다 해당 워크플로우 최종 성공 상태 확인 필수.
 - 새 채팅에서는 이 파일 및 DESIGN_SPEC.md / CHANGELOG.md / VERSION.txt 확인, GitHub 최신 소스 읽기, 수정 후 main 업데이트와 Pages 실행 검증. 채팅별 GitHub 권한은 재확인 필요.
 - 사용자가 승인한 애플 스타일 UI는 임의로 바꾸지 말고 화면 비교.

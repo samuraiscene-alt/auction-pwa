@@ -2,11 +2,12 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.2.1 (달력 월간 이동·관심 일정 필터)
+- 현재 버전: v0.2.2 (관심물건 정렬·필터·개별 해제)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.
 - iOS 한글 조합: 라이브 검색 DOM 갱신 금지. 검색 완료 키 또는 화면의 검색 버튼으로 결과 반영.
+- 관심물건 화면: favoriteSort(최근/입찰일/최저가), favoriteType(전체/종류), 상세보기, 날짜 이동, 개별 관심 해제. 데이터 포맷 변경 없음.
 - 달력: viewMonth는 YYYY-MM, selected는 YYYY-MM-DD, calendarFavoritesOnly로 샘플 경매일 필터. 오늘 이동/월 이동 지원. 실제 법원 날짜 미연동.
 - 상세 화면: 개요/권리/시세/서류 4개 탭 UI; 후속 자료 연동 전에는 미확인 상태 표시.
 - 가격 입력 UX: #advMin/#advMax의 data-won과 data-displayed를 이용해 포커스 아웃 시 한글 금액을 입력창 안에 표시, 재포커스 시 선택 단위의 숫자 편집. 검색 실행은 원 단위 값 사용. 한글 표시 문자열을 직접 숫자로 파싱하지 말 것.

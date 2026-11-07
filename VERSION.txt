@@ -1,2 +1,2 @@
-0.1.1
-UI skeleton with portable GitHub Pages deployment and chat handoff metadata.
+0.1.2
+Warm colorful UI typography refresh; structure unchanged.

@@ -1,2 +1,2 @@
-0.2.1
-Calendar month navigation, today jump, date selection and favorites-only demo event filtering.
+0.2.2
+Favorites management: sorting, filtering, quick date jump, safe removal.

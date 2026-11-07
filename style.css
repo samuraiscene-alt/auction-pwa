@@ -133,3 +133,23 @@ html,body{overflow-x:clip}
 .info-row span{color:#76859b}
 .info-row strong{color:#37465e;text-align:right}
 .auction-detail .primary{margin-top:20px}
+
+/* v0.2.1 - interactive month calendar skeleton */
+.calendar-shell{padding:16px 13px 13px}
+.calendar-toolbar{display:flex;align-items:center;gap:7px;justify-content:space-between;margin-bottom:12px}
+.calendar-toolbar strong{font-size:19px;letter-spacing:-.4px;flex:1;text-align:center}
+.calendar-arrow{width:37px;height:37px;border-radius:12px;border:0;background:#eef4ff;color:#3579ea;font-size:27px;display:grid;place-items:center}
+.calendar-today{padding:9px 12px;border-radius:11px;border:0;background:#e7f7f1;color:#218c78;font-weight:750;font-size:13px}
+.calendar-caption{display:flex;gap:13px;margin:0 5px 9px;color:#7789a2;font-size:12px}
+.calendar-caption span:first-child{color:#5585ef}.calendar-caption .favorite-key{color:#e28597}
+.calendar-day{position:relative;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:12px}
+.calendar-day.today:not(.selected){outline:2px solid #a9caf9;outline-offset:-2px}
+.calendar-day.selected{background:#347aef;color:#fff}
+.calendar-day .calendar-dot{display:block;width:5px;height:5px;background:#6c92ed;border-radius:50%}
+.calendar-day .calendar-dot.favorite-dot{background:#e4879d}
+.calendar-day.selected .calendar-dot{background:white}
+.weekday.sun{color:#df7392}
+.calendar-filter{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid #edf1f6;padding:15px 3px 2px;margin-top:12px;font-size:13px;color:#5c718f}
+.calendar-filter label{display:flex;align-items:center;gap:7px;font-weight:650}
+.calendar-filter input{accent-color:#347aef;width:17px;height:17px;margin:0}
+.calendar-filter>span{color:#98a5b6;font-size:11px}

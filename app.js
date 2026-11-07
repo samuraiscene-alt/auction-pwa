@@ -69,7 +69,7 @@ function initGestureNavigation(){
     preview=document.createElement('main');
     preview.className='swipe-preview';
     preview.setAttribute('aria-hidden','true');
-    preview.style.cssText='position:absolute;z-index:5;pointer-events:none;will-change:transform;box-sizing:border-box;left:'+ (main.left+window.scrollX)+'px;top:'+(main.top+window.scrollY)+'px;width:'+main.width+'px;min-height:'+main.height+'px;';
+    preview.style.cssText='position:absolute;z-index:2;pointer-events:none;will-change:transform;box-sizing:border-box;left:'+ (main.left+window.scrollX)+'px;top:'+(main.top+window.scrollY)+'px;width:'+main.width+'px;min-height:'+main.height+'px;';
     preview.innerHTML=nextMarkup(destinationPage);
     document.body.appendChild(preview);
     content.style.willChange='transform';

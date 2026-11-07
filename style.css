@@ -153,3 +153,28 @@ html,body{overflow-x:clip}
 .calendar-filter label{display:flex;align-items:center;gap:7px;font-weight:650}
 .calendar-filter input{accent-color:#347aef;width:17px;height:17px;margin:0}
 .calendar-filter>span{color:#98a5b6;font-size:11px}
+
+/* v0.2.2 - favorites list controls */
+.favorites-toolbar{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin:10px 2px 0}
+.favorites-title h2{font-size:20px;letter-spacing:-.4px;margin:0}
+.favorites-title h2 span{font-size:15px;color:#357bf0}
+.favorites-title p{font-size:13px;color:#8490a3;line-height:1.45;margin:6px 0 0}
+.favorite-sort-label{font-size:12px;flex-shrink:0;color:#70839d;display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.favorite-sort{width:132px;max-width:36vw;font-size:13px!important;padding:8px 7px!important;min-height:37px!important;background:#fff}
+.favorite-type-filters{margin:13px 0 16px}
+.favorite-item{background:white;border:1px solid #edf0f5;border-radius:19px;margin-bottom:12px;overflow:hidden;box-shadow:0 3px 17px #202c3c07}
+.favorite-open{display:flex;text-align:left;gap:13px;background:white;border:0;width:100%;padding:16px 14px;align-items:flex-start;color:inherit}
+.favorite-icon{flex-shrink:0;width:57px;height:62px;border-radius:13px;background:#eaf1ff;color:#6190d7;font-size:28px;display:grid;place-items:center}
+.favorite-info{min-width:0;flex:1;display:flex;flex-direction:column;gap:5px}
+.favorite-info strong{font-size:16px}
+.favorite-case,.favorite-date{font-size:12px;color:#8490a1}
+.favorite-amount{font-size:19px;font-weight:800;color:#2675e9;line-height:1.25;overflow-wrap:anywhere;margin:2px 0}
+.favorite-actions{border-top:1px solid #edf0f5;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 13px}
+.favorite-actions button{min-height:40px;background:#edf4ff;border:0;border-radius:11px;color:#3075d8;font-size:14px;font-weight:750}
+.favorite-actions button.favorite-remove{background:#fff0f3;color:#bf627a}
+.favorites-empty{padding:37px 17px}
+.empty-symbol{font-size:40px;color:#d68ba6}
+.favorites-empty strong{display:block;color:#41526c;font-size:17px;margin-top:10px}
+.favorites-empty p{font-size:14px;line-height:1.6;margin:10px auto 17px}
+.favorites-help{margin-top:12px}
+@media(max-width:370px){.favorite-open{gap:9px;padding:12px 10px}.favorite-icon{width:48px;height:54px}.favorite-amount{font-size:17px}.favorite-sort{width:120px}}

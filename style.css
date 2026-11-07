@@ -213,3 +213,42 @@ html,body{overflow-x:clip}
 .study-note-actions button{border:0;border-radius:10px;background:#eef4ff;color:#386fce;font-weight:700;min-height:40px;font-size:14px}
 .study-note-actions button.study-delete{background:#fff1f3;color:#be556e}
 @media(max-width:370px){.study-note-open{padding:12px 10px;gap:9px}.study-note-icon{width:44px;height:48px}}
+
+/* v0.2.5 wider, denser study editor with highlight and sticky notes */
+#app:has(.note-workspace) .top{padding-top:calc(9px + env(safe-area-inset-top));padding-bottom:2px}
+#app:has(.note-workspace) .top .eyebrow{display:none}
+#app:has(.note-workspace) .top h1{margin:0;font-size:25px}
+#app:has(.note-workspace) #content{padding:2px 7px 12px}
+.note-workspace{margin:1px 0 0;padding:13px 11px 12px;border-radius:17px;display:flex;flex-direction:column;min-height:calc(100dvh - 174px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
+.note-workspace>.label{margin:0 0 6px;font-size:15px}
+.note-workspace #noteTitle{height:47px;padding:0 12px;font-size:16px}
+.note-content-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0 7px}
+.note-content-bar .label{margin:0;font-size:15px}
+.note-mode-buttons{display:flex;gap:5px;padding:3px;border-radius:11px;background:#f0f3fa}
+.note-mode{padding:7px 9px;border:0;border-radius:8px;background:transparent;color:#7686a0;font-size:12px;font-weight:750;white-space:nowrap}
+.note-mode.active{background:white;color:#316fdf;box-shadow:0 1px 5px #203f6612}
+.note-workspace .noteArea{width:100%;min-height:340px;height:calc(100dvh - 375px);max-height:none;flex:1;padding:13px 12px;font-size:16px;line-height:1.65;resize:vertical;white-space:pre-wrap}
+.note-workspace .noteArea[hidden],.note-workspace .note-markup-area[hidden]{display:none!important}
+.note-workspace .note-markup-area{flex:1;min-height:340px;display:flex;flex-direction:column}
+.note-mark-guide{font-size:12px;line-height:1.4;color:#8291a5;margin:0 0 8px}
+.note-color-tools{display:flex;gap:6px;margin:0 0 10px}
+.note-color-tools button{flex:1;border:1px solid #e6e9ef;background:var(--marker-color);padding:9px 2px;border-radius:10px;color:#454752;font-size:12px;font-weight:750}
+.note-highlight-text{width:100%;background:#fff;border:1px solid #dce6f4;border-radius:13px;min-height:300px;padding:13px 12px;flex:1;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;font-size:16px;color:#263549;-webkit-user-select:text;user-select:text}
+.note-highlight{background:var(--highlight);border-radius:3px;box-decoration-break:clone;-webkit-box-decoration-break:clone;cursor:pointer;padding:1px 0}
+.note-read-empty{color:#9ca9b9}
+.note-footer{margin-top:auto;padding-top:9px}
+.note-attachment-hint{font-size:12px;color:#97a6b8;text-align:center;margin:0 0 7px}
+.note-footer .primary{margin:0;min-height:52px}
+.note-delete-btn{width:100%;margin-top:8px;color:#bf5167}
+.sticky-backdrop[hidden]{display:none!important}
+.sticky-backdrop{position:fixed;inset:0;z-index:30;background:#1a223c87;display:flex;align-items:center;justify-content:center;padding:18px}
+.sticky-paper{width:min(100%,410px);border-radius:15px;padding:17px;background:#fff1a8;color:#544719;box-shadow:0 15px 45px #1017283d;transform:rotate(-.7deg)}
+.sticky-head{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:17px}
+.sticky-head button{width:35px;height:35px;border:0;background:#f9df7c;border-radius:9px;font-size:24px;color:#675420}
+.sticky-quote{font-size:14px;line-height:1.55;color:#715f25;margin:10px 0 12px;max-height:100px;overflow:auto;overflow-wrap:anywhere}
+.sticky-input{display:block;box-sizing:border-box;width:100%;min-height:145px;padding:11px;background:#fff9d7;border:1px solid #efdb8c;border-radius:11px;color:#544719;resize:vertical;outline:none;font-size:15px;line-height:1.55}
+.sticky-buttons{display:flex;gap:9px;margin-top:13px}
+.sticky-buttons button{border:0;border-radius:10px;min-height:43px;font-weight:750;font-size:14px}
+.sticky-remove{flex:1;background:#f4da7b;color:#755e22}
+.sticky-save{flex:1.2;background:#b58a25;color:#fff}
+@media(max-width:380px){.note-workspace{padding:11px 8px}.note-mode{padding:7px 6px}.note-color-tools{gap:4px}}

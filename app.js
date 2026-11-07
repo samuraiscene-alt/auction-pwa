@@ -199,7 +199,7 @@ function advanced(){
   <label class="label" for="advRegion">지역</label><select class="select" id="advRegion">${['전체','서울','경기','인천','부산','대구'].map(v=>`<option ${state.region===v?'selected':''} value="${v}">${v==='전체'?'전국':v}</option>`).join('')}</select>
   <label class="label" for="advType">물건 종류</label><select class="select" id="advType">${['전체','아파트','빌라','단독주택'].map(v=>`<option ${state.filter===v?'selected':''} value="${v}">${v==='전체'?'전체 물건':v}</option>`).join('')}</select>
   <div class="line price-unit-line"><label class="label">최저입찰가</label><label class="label unit-picker-label" for="advPriceUnit">입력 단위 <select class="select unit-picker" id="advPriceUnit">${['원','만원','억원'].map(v=>`<option value="${v}" ${unit===v?'selected':''}>${v}</option>`).join('')}</select></label></div>
-  <div class="row price-range"><div class="price-field"><input id="advMin" class="search" type="text" inputmode="decimal" autocomplete="off" placeholder="최소 금액" value="${escapeHtml(numberInUnit(state.minPrice,unit))}"><span class="price-readable" id="advMinRead">${state.minPrice!==''?prettyPrice(state.minPrice):'최소 금액 제한 없음'}</span></div><div class="price-field"><input id="advMax" class="search" type="text" inputmode="decimal" autocomplete="off" placeholder="최대 금액" value="${escapeHtml(numberInUnit(state.maxPrice,unit))}"><span class="price-readable" id="advMaxRead">${state.maxPrice!==''?prettyPrice(state.maxPrice):'최대 금액 제한 없음'}</span></div></div>
+  <div class="row price-range"><div class="price-field"><input id="advMin" class="search" type="text" inputmode="decimal" autocomplete="off" placeholder="최소 금액" value="${escapeHtml(state.minPrice!==''?prettyPrice(state.minPrice):'')}" data-won="${escapeHtml(state.minPrice)}" data-displayed="1"><span class="price-readable" id="advMinRead">${state.minPrice!==''?prettyPrice(state.minPrice):'최소 금액 제한 없음'}</span></div><div class="price-field"><input id="advMax" class="search" type="text" inputmode="decimal" autocomplete="off" placeholder="최대 금액" value="${escapeHtml(state.maxPrice!==''?prettyPrice(state.maxPrice):'')}" data-won="${escapeHtml(state.maxPrice)}" data-displayed="1"><span class="price-readable" id="advMaxRead">${state.maxPrice!==''?prettyPrice(state.maxPrice):'최대 금액 제한 없음'}</span></div></div>
   <div class="price-help">예: 2000000000원 = 20억원 · 원/만원/억원 중 선택</div>
   <label class="label" for="advCase">사건번호·주소·건물명</label><input class="search" id="advCase" placeholder="예: 2026타경12345" value="${escapeHtml(state.search)}"><button class="primary" id="applyAdvanced">이 조건으로 검색하기</button><button class="secondary full-secondary" id="resetAdvanced">검색 조건 초기화</button></div><p class="helper">법원 실시간 경매자료는 아직 연동되지 않았으며, 검색 조건은 예시 데이터에만 적용돼요.</p>`;
 }
@@ -242,33 +242,55 @@ if($('#searchForm')){
 if($('#detailFilters'))$('#detailFilters').onclick=()=>nav('advanced');if($('#specialFilters'))$('#specialFilters').onclick=()=>nav('special');if($('#clearFilters'))$('#clearFilters').onclick=()=>{state.region='전체';state.minPrice='';state.maxPrice='';render();};if($('#advPriceUnit')){
   const unitSelect=$('#advPriceUnit');
   const fields=[['advMin','advMinRead'],['advMax','advMaxRead']];
+  const readWon=(input,unit)=>input.dataset.displayed==='1'
+    ?(input.dataset.won===''?null:Number(input.dataset.won))
+    :priceFromInput(input.value,unit);
+  const setDisplay=(input,preview,won)=>{
+    if(Number.isNaN(won)){
+      preview.textContent='숫자를 확인해 주세요';
+      preview.classList.add('price-invalid');
+      input.dataset.displayed='0';
+      return;
+    }
+    input.dataset.won=won===null?'':String(won);
+    input.dataset.displayed='1';
+    input.value=won===null?'':prettyPrice(won);
+    preview.textContent=won===null?'금액 제한 없음':prettyPrice(won);
+    preview.classList.remove('price-invalid');
+  };
   function updatePreview(input,preview){
-    const n=priceFromInput(input.value,unitSelect.value);
-    preview.textContent=input.value.trim()===''?'금액 제한 없음':Number.isNaN(n)?'숫자를 확인해 주세요':prettyPrice(n);
-    preview.classList.toggle('price-invalid',Number.isNaN(n));
+    const won=readWon(input,unitSelect.value);
+    preview.textContent=won===null?'금액 제한 없음':Number.isNaN(won)?'숫자를 확인해 주세요':prettyPrice(won);
+    preview.classList.toggle('price-invalid',Number.isNaN(won));
   }
   fields.forEach(([inputId,previewId])=>{
     const input=document.getElementById(inputId),preview=document.getElementById(previewId);
+    input.addEventListener('focus',()=>{
+      if(input.dataset.displayed!=='1')return;
+      const won=input.dataset.won;
+      input.value=won===''?'':numberInUnit(won,unitSelect.value);
+      input.dataset.displayed='0';
+    });
     input.addEventListener('input',()=>updatePreview(input,preview));
     input.addEventListener('blur',()=>{
-      const n=priceFromInput(input.value,unitSelect.value);
-      if(!Number.isNaN(n)&&n!==null)input.value=numberInUnit(n,unitSelect.value);
+      const won=readWon(input,unitSelect.value);
+      setDisplay(input,preview,won);
     });
   });
   unitSelect.addEventListener('change',()=>{
     const oldUnit=state.priceUnit||'원',newUnit=unitSelect.value;
     fields.forEach(([inputId,previewId])=>{
       const input=document.getElementById(inputId),preview=document.getElementById(previewId);
-      const won=priceFromInput(input.value,oldUnit);
-      if(won!==null&&!Number.isNaN(won))input.value=numberInUnit(won,newUnit);
-      updatePreview(input,preview);
+      const won=readWon(input,oldUnit);
+      setDisplay(input,preview,won);
     });
     state.priceUnit=newUnit;
   });
 }
 if($('#applyAdvanced'))$('#applyAdvanced').onclick=()=>{
   const region=$('#advRegion').value,filter=$('#advType').value,unit=$('#advPriceUnit').value;
-  const min=priceFromInput($('#advMin').value,unit),max=priceFromInput($('#advMax').value,unit);
+  const readField=id=>{const el=document.getElementById(id);return el.dataset.displayed==='1'?(el.dataset.won===''?null:Number(el.dataset.won)):priceFromInput(el.value,unit);};
+  const min=readField('advMin'),max=readField('advMax');
   if(Number.isNaN(min)||Number.isNaN(max)||(min!==null&&max!==null&&min>max))return toast('금액과 최소·최대 범위를 확인해주세요.');
   state.region=region;state.filter=filter;
   state.minPrice=min===null?'':String(min);state.maxPrice=max===null?'':String(max);

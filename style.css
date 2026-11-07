@@ -120,3 +120,16 @@ html,body{overflow-x:clip}
 .auction-detail .metric{min-width:0;overflow-wrap:anywhere}
 .auction-detail .detail-price{color:#1266ef}
 @media(max-width:375px){.auction-card .thumb{width:59px;height:64px}.auction-card{gap:10px;padding:12px}.auction-card .price{font-size:16px}}
+
+/* v0.2.0: nonduplicative amount labels and detail sections */
+.price-field .price-readable{display:none!important}
+.price-field .search.price-invalid{border-color:#e36b75;color:#c73247}
+.detail-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;background:#f3f5fa;padding:5px;border-radius:15px;margin:19px 0 18px}
+.detail-tab{border:0;border-radius:11px;padding:10px 3px;background:transparent;color:#78869b;font-size:14px;font-weight:700}
+.detail-tab.selected{background:white;color:#276fe4;box-shadow:0 1px 6px #26385e14}
+.detail-tab-panel{min-height:150px}
+.detail-panel-heading{font-size:17px;font-weight:800;margin:3px 0 14px}
+.info-row{border-bottom:1px solid #edf1f6;padding:14px 2px;display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:14px}
+.info-row span{color:#76859b}
+.info-row strong{color:#37465e;text-align:right}
+.auction-detail .primary{margin-top:20px}

@@ -252,3 +252,17 @@ html,body{overflow-x:clip}
 .sticky-remove{flex:1;background:#f4da7b;color:#755e22}
 .sticky-save{flex:1.2;background:#b58a25;color:#fff}
 @media(max-width:380px){.note-workspace{padding:11px 8px}.note-mode{padding:7px 6px}.note-color-tools{gap:4px}}
+
+/* v0.2.6 native-selection-free two-tap highlighter */
+.note-highlight-text{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none;touch-action:pan-y;cursor:default}
+.note-tap-unit{display:inline;border-radius:3px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.note-tap-unit.note-pending-selection:not(.note-highlight){background:#cfe0ff;color:#224c80;outline:1px solid #a2c5f4}
+.note-tap-unit.note-highlight{background:var(--highlight);box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.note-tap-unit.note-highlight.note-pending-selection{outline:2px solid #5b96e0}
+.note-select-tools{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:2px 0 7px}
+.note-select-unit{display:flex;gap:3px;background:#f1f4fa;border-radius:10px;padding:3px}
+.note-select-unit button{border:0;background:transparent;color:#8190a2;padding:6px 13px;border-radius:8px;font-size:12px;font-weight:750}
+.note-select-unit button.unit-active{background:#fff;color:#3176e6;box-shadow:0 1px 6px #172f5714}
+.note-clear-selection{border:0;background:transparent;color:#72849d;font-weight:700;font-size:12px;padding:7px}
+.note-selection-hint{margin:2px 0 8px;min-height:20px;color:#3479e8;font-size:12px;font-weight:700}
+.note-markup-area .note-mark-guide{margin-bottom:6px}

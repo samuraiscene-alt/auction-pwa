@@ -72,3 +72,9 @@
 .headerBack[hidden]{display:none}
 .top>div{flex:1;min-width:0}
 @media(prefers-reduced-motion:no-preference){#content{animation:auctionPageIn .16s ease-out}@keyframes auctionPageIn{from{opacity:.86;transform:translateY(4px)}to{opacity:1;transform:none}}}
+
+/* v0.1.5 — smooth tracking swipe: disable competing fade/vertical motion */
+html,body{overflow-x:clip}
+#content{animation:none!important;backface-visibility:hidden;transform-style:preserve-3d}
+.swipe-preview{background:#f8f9fc;padding:4px 18px 30px;backface-visibility:hidden;transform-style:preserve-3d;overflow:hidden}
+@media(prefers-reduced-motion:reduce){.swipe-preview,#content{transition-duration:0ms!important}}

@@ -1,0 +1,1 @@
+{"name":"부동산 경매","short_name":"경매","description":"개인용 부동산 경매 UI 골격","start_url":"./","scope":"./","display":"standalone","background_color":"#f7f8fb","theme_color":"#f7f8fb","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}

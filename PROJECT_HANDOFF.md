@@ -2,9 +2,10 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.1.6 (상세검색 UI 골격)
+- 현재 버전: v0.1.7 (iPhone 한글 IME 검색 입력 보정)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
+- 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.
 - 검색: 상세검색(지역·유형·최저입찰가·사건번호) UI가 예시 물건을 필터링. 특수물건은 안내 UI만 구현, 실제 권리 필터 미작동.
 - 구현 화면: 홈, 검색, 일정, 관심, 공부방, 물건 상세, 권리분석, 공부 노트, 설정
 - 실제 법원 경매 API, 자동 정보 업데이트, 사진, AI 분석은 아직 연결되지 않음. 경매 정보는 가상 데모.

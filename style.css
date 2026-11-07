@@ -65,3 +65,10 @@
 .dash-stat small{font-size:14px;font-weight:600;margin-left:3px}
 .dashboard .dash-disclaimer{font-size:12px;margin-top:13px;opacity:.92;line-height:1.45}
 @media(max-width:360px){.dash-heading h2{font-size:23px}.dash-stat{padding:11px}.dash-stat-label{font-size:13px}}
+
+/* v0.1.4 navigation: preserve existing visual design */
+.top{gap:10px}
+.headerBack{border:0;background:rgba(30,111,238,.09);color:#2974e8;border-radius:12px;width:38px;height:38px;min-width:38px;display:grid;place-items:center;font-size:32px;line-height:1;padding:0 0 4px;cursor:pointer}
+.headerBack[hidden]{display:none}
+.top>div{flex:1;min-width:0}
+@media(prefers-reduced-motion:no-preference){#content{animation:auctionPageIn .16s ease-out}@keyframes auctionPageIn{from{opacity:.86;transform:translateY(4px)}to{opacity:1;transform:none}}}

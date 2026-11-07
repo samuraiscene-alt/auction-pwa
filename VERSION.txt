@@ -1,2 +1,2 @@
-0.2.2
-Favorites management: sorting, filtering, quick date jump, safe removal.
+0.2.3
+Unify heart colors and filled/outline states for interest items across pages.

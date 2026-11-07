@@ -78,3 +78,18 @@ html,body{overflow-x:clip}
 #content{animation:none!important;backface-visibility:hidden;transform-style:preserve-3d}
 .swipe-preview{background:#f8f9fc;padding:4px 18px 30px;backface-visibility:hidden;transform-style:preserve-3d;overflow:hidden}
 @media(prefers-reduced-motion:reduce){.swipe-preview,#content{transition-duration:0ms!important}}
+
+/* v0.1.6 search builder, minimal Apple-style demo */
+.search-intro{padding:3px 1px 11px}.search-intro strong{font-size:19px;color:#2c4165}.search-intro p{font-size:14px;color:#74859f;margin:7px 0}
+.search-panel .label{margin-top:17px}.search-panel .select{min-height:49px;font-size:16px}
+.search-panel .price-range input{min-width:0;font-size:16px}
+.search-panel input[type=number]{appearance:textfield;-moz-appearance:textfield}
+.search-panel input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+.full-secondary{width:100%;margin-top:10px}
+.applied-filters{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px;align-items:center}
+.clear-filter{border:0;background:none;color:#3379e8;font-size:13px;margin-left:auto;font-weight:700}
+.result-count{font-size:15px;color:#347cf2;font-weight:750}
+.special-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:9px 0 17px}
+.special-tile{border-radius:15px;background:#f3f6fd;padding:15px 12px;display:flex;flex-direction:column;gap:7px}
+.special-tile:nth-child(4n+2){background:#eaf7f3}.special-tile:nth-child(4n+3){background:#fff2ec}.special-tile:nth-child(4n+4){background:#f2edff}
+.special-tile span{color:#5d7ed2;font-size:23px}.special-tile strong{font-size:15px}.special-tile small{font-size:12px;color:#8796a9}

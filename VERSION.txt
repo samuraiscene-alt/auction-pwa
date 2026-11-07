@@ -1,2 +1,2 @@
-0.2.8
-Interactive study categories with topic checklists and categorized notes.
+0.2.9
+Link individual study checklist topics to personal notes, with direct create/open actions.

@@ -266,3 +266,16 @@ html,body{overflow-x:clip}
 .note-clear-selection{border:0;background:transparent;color:#72849d;font-weight:700;font-size:12px;padding:7px}
 .note-selection-hint{margin:2px 0 8px;min-height:20px;color:#3479e8;font-size:12px;font-weight:700}
 .note-markup-area .note-mark-guide{margin-bottom:6px}
+
+/* v0.2.7 note attachments */
+.note-attachment-panel{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 9px}
+.note-attach-btn{border:1px solid #cdddf7;border-radius:10px;color:#2c70d6;background:#eff5ff;font-size:13px;font-weight:750;padding:10px 11px;cursor:pointer}
+.note-attach-count{font-size:11px;color:#8997a8;text-align:right}
+.note-attachment-list{display:flex;flex-direction:column;gap:6px;margin-bottom:7px}
+.note-file-row{display:flex;align-items:center;gap:7px;background:#f5f7fb;border-radius:11px;padding:5px 8px}
+.note-file-open{display:flex;min-width:0;flex:1;align-items:center;gap:7px;padding:6px;border:0;text-align:left;background:transparent;color:#3f638f}
+.note-file-open>span:first-child{font-size:22px}
+.note-file-title{font-size:13px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;flex:1;min-width:0}
+.note-file-open small{font-size:10px;color:#9daabc}
+.note-file-remove{flex-shrink:0;width:31px;height:31px;border:0;border-radius:9px;background:#fff0f2;color:#b95168;font-size:21px}
+.note-footer .primary:disabled{opacity:.5}

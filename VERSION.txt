@@ -1,2 +1,2 @@
 0.1.7
-Fix Korean IME composition and normalize Hangul search strings.
+Fix Korean iOS keyboard composition interruption in auction search.

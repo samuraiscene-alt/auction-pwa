@@ -1,0 +1,11 @@
+# 부동산 경매 PWA 인수인계
+- 저장소: https://github.com/samuraiscene-alt/auction-pwa
+- 사이트 예정 URL: https://samuraiscene-alt.github.io/auction-pwa/
+- 목표: 개인용 경매 검색/분석/공부방 PWA, iPhone 우선
+- 현재 단계: UI 골격. 실제 법원 경매 API, 사진, 권리분석, 자동 갱신은 미구현.
+- 핵심 페이지: 홈/검색/일정/관심/공부방/물건 상세/권리분석/노트/설정
+- 디자인: DESIGN_SPEC.md 준수. 이미 승인받은 배치나 스타일은 임의 변경 금지.
+- 데이터: 개인 관심물건과 공부 노트는 현재 브라우저 localStorage에 저장. 브라우저 데이터 삭제 시 사라질 수 있으므로 JSON 백업 필요.
+- 배포: main push -> .github/workflows/pages.yml -> GitHub Pages. 실제 성공 여부와 접속 URL 확인.
+- 새 채팅에서는 GitHub 최신 코드부터 읽고, 변경 작업 후 CHANGELOG.md와 버전 기록을 함께 수정. 채팅별 연결권한은 재확인 필요.
+- 추가 목표: 자동 데이터 연계, 법원 원본과 사설 정보 구분, 사진/서류 원본 확인, 쉬운 권리해설, 경매 공부방 사진/PDF/강의 전사.

@@ -1,2 +1,2 @@
-0.1.8
-Price input units (KRW/10k KRW/100m KRW), Korean amount display, improved result/detail cards.
+0.1.9
+Amount shown as Korean units inside amount field on blur, with numeric edit on focus.

@@ -178,3 +178,17 @@ html,body{overflow-x:clip}
 .favorites-empty p{font-size:14px;line-height:1.6;margin:10px auto 17px}
 .favorites-help{margin-top:12px}
 @media(max-width:370px){.favorite-open{gap:9px;padding:12px 10px}.favorite-icon{width:48px;height:54px}.favorite-amount{font-size:17px}.favorite-sort{width:120px}}
+
+/* v0.2.3 unified favorite heart states */
+:root{--heart-active:#e85b79;--heart-soft:#fff0f4;--heart-inactive:#9aa4b5}
+.favorite-heart{color:var(--heart-active);font-size:20px;font-weight:700;line-height:1;display:inline-block;vertical-align:-1px;transition:color .18s ease,transform .18s ease}
+.favorite-remove{display:flex;align-items:center;justify-content:center;gap:5px;color:#c84966!important;background:var(--heart-soft)!important}
+.favorite-remove.heart-unfilled{background:#f3f5f8!important;color:#8c98a9!important}
+.favorite-remove.heart-unfilled .favorite-heart{color:var(--heart-inactive);transform:scale(.84)}
+.favorite-remove:disabled{opacity:1}
+.detail-favorite-btn.is-favorite{background:var(--heart-soft);color:#bc4560;border:1px solid #f5c8d5}
+.detail-favorite-btn.is-not-favorite{background:#f5f7fa;color:#52637b;border:1px solid #e5eaf1}
+.detail-favorite-btn.is-not-favorite .favorite-heart{color:var(--heart-inactive)}
+#tabs button:nth-child(4).active{color:var(--heart-active)}
+.dashboard-heart{color:#ffe1e9;font-size:18px;vertical-align:-1px}
+.favorites-empty .empty-symbol{color:var(--heart-inactive)}

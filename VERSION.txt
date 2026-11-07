@@ -1,2 +1,2 @@
-0.1.7
-Fix Korean iOS keyboard composition interruption in auction search.
+0.1.8
+Price input units (KRW/10k KRW/100m KRW), Korean amount display, improved result/detail cards.

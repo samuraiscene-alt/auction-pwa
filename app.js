@@ -1,4 +1,72 @@
-const $=s=>document.querySelector(s);const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent'};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>localStorage.setItem(STORE,JSON.stringify(saved));let activeNoteEditor=null;const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=s=>document.querySelector(s);const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent'};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>localStorage.setItem(STORE,JSON.stringify(saved));let activeNoteEditor=null;
+
+const ATTACH_DB='auction-note-files-v1',ATTACH_STORE='files',MAX_NOTE_ATTACH=8,MAX_FILE_BYTES=8*1024*1024;
+let attachDbPromise=null;
+function attachmentDb(){
+ if(!('indexedDB'in window))return Promise.reject(Error('이 기기에서는 파일 저장을 지원하지 않아요.'));
+ if(!attachDbPromise)attachDbPromise=new Promise((resolve,reject)=>{
+  const req=indexedDB.open(ATTACH_DB,1);
+  req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(ATTACH_STORE)){const store=db.createObjectStore(ATTACH_STORE,{keyPath:'id'});store.createIndex('noteId','noteId');}};
+  req.onsuccess=()=>resolve(req.result);
+  req.onerror=()=>reject(req.error||Error('파일 저장소를 열 수 없어요.'));
+ }).catch(err=>{attachDbPromise=null;throw err;});
+ return attachDbPromise;
+}
+async function attachmentList(noteId){
+ const db=await attachmentDb();
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(ATTACH_STORE,'readonly');
+  const req=tx.objectStore(ATTACH_STORE).index('noteId').getAll(Number(noteId));
+  req.onsuccess=()=>resolve(req.result||[]);
+  req.onerror=()=>reject(req.error||Error('첨부파일 목록을 읽지 못했어요.'));
+ });
+}
+async function allAttachments(){
+ const db=await attachmentDb();
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(ATTACH_STORE,'readonly'),req=tx.objectStore(ATTACH_STORE).getAll();
+  req.onsuccess=()=>resolve(req.result||[]);
+  req.onerror=()=>reject(req.error||Error('첨부파일을 읽지 못했어요.'));
+ });
+}
+async function attachmentReplaceForNote(noteId,files){
+ const db=await attachmentDb();
+ const previous=await attachmentList(noteId);
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(ATTACH_STORE,'readwrite'),store=tx.objectStore(ATTACH_STORE);
+  previous.forEach(item=>store.delete(item.id));
+  files.forEach(item=>store.put({...item,noteId:Number(noteId)}));
+  tx.oncomplete=()=>resolve();
+  tx.onerror=()=>reject(tx.error||Error('첨부파일 저장에 실패했어요.'));
+  tx.onabort=()=>reject(tx.error||Error('첨부파일 저장이 취소됐어요.'));
+ });
+}
+async function attachmentDeleteNote(noteId){return attachmentReplaceForNote(noteId,[]);}
+async function attachmentRestoreAll(files){
+ const db=await attachmentDb();
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(ATTACH_STORE,'readwrite'),store=tx.objectStore(ATTACH_STORE);
+  store.clear();
+  files.forEach(item=>store.put(item));
+  tx.oncomplete=()=>resolve();
+  tx.onerror=()=>reject(tx.error||Error('첨부파일 복원 실패'));
+  tx.onabort=()=>reject(tx.error||Error('첨부파일 복원 취소'));
+ });
+}
+function attachmentId(){return 'file-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);}
+function readFileAsDataUrl(file){
+ return new Promise((resolve,reject)=>{
+  const reader=new FileReader();
+  reader.onload=()=>resolve(String(reader.result));
+  reader.onerror=()=>reject(Error('파일을 읽지 못했어요.'));
+  reader.readAsDataURL(file);
+ });
+}
+function verifyAttachment(item){
+ return item&&typeof item.id==='string'&&typeof item.noteId==='number'&&typeof item.name==='string'&&typeof item.data==='string'
+  &&item.data.startsWith('data:')&&(item.type==='application/pdf'||item.type.startsWith('image/'));
+}
+const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const PRICE_FACTORS={'원':1,'만원':10000,'억원':100000000};
 function priceFromInput(value,unit){
   const text=String(value??'').replace(/,/g,'').trim();
@@ -302,7 +370,7 @@ function note(){
  <div class="note-content-bar"><label class="label" for="noteBody">내용</label><div class="note-mode-buttons"><button id="noteWriteMode" type="button" class="note-mode active">✎ 작성</button><button id="noteMarkMode" type="button" class="note-mode">🖍 형광펜</button></div></div>
  <textarea class="select noteArea" id="noteBody" placeholder="공부한 내용을 적어보세요.">${escapeHtml(n.body)}</textarea>
  <div id="noteMarkupArea" class="note-markup-area" hidden><div class="note-mark-guide">첫 단어를 터치하고 마지막 단어를 터치하세요. 선택한 뒤 색상을 누르면 포스트잇이 열려요.</div><div class="note-select-tools"><div class="note-select-unit" role="group" aria-label="선택 단위"><button type="button" class="unit-active" data-note-granularity="word">단어</button><button type="button" data-note-granularity="char">글자</button></div><button type="button" id="noteClearSelection" class="note-clear-selection">선택 취소</button></div><p id="noteSelectionHint" class="note-selection-hint">시작 부분을 한 번 터치하세요.</p><div id="noteHighlightColors" class="note-color-tools"><button data-note-color="yellow" type="button" style="--marker-color:#ffe279" aria-label="노란 형광펜">노랑</button><button data-note-color="green" type="button" style="--marker-color:#b6f0bd" aria-label="초록 형광펜">초록</button><button data-note-color="pink" type="button" style="--marker-color:#ffc6d7" aria-label="분홍 형광펜">분홍</button><button data-note-color="blue" type="button" style="--marker-color:#b9ddff" aria-label="파란 형광펜">파랑</button></div><div id="noteHighlightText" class="note-highlight-text" aria-label="형광펜을 적용할 노트 내용"></div></div>
- <div class="note-footer"><p class="note-attachment-hint">▧ 사진 · PDF 첨부는 추후 지원</p><button class="primary" id="saveNote" type="button">노트 저장</button>${state.note?'<button class="secondary note-delete-btn" id="deleteNote" type="button">노트 삭제</button>':''}</div>
+ <div class="note-footer"><div class="note-attachment-panel"><label for="noteAttachmentInput" class="note-attach-btn">＋ 사진 · PDF 첨부</label><input type="file" id="noteAttachmentInput" accept="image/*,application/pdf,.pdf" multiple hidden><span class="note-attach-count" id="noteAttachmentCount">첨부파일 불러오는 중</span></div><div class="note-attachment-list" id="noteAttachmentList"></div><button class="primary" id="saveNote" type="button">노트 저장</button>${state.note?'<button class="secondary note-delete-btn" id="deleteNote" type="button">노트 삭제</button>':''}</div>
  <div id="stickyBackdrop" class="sticky-backdrop" hidden><section class="sticky-paper" role="dialog" aria-modal="true" aria-labelledby="stickyHeading"><div class="sticky-head"><strong id="stickyHeading">▣ 포스트잇 메모</strong><button id="stickyClose" type="button" aria-label="닫기">×</button></div><p id="stickyQuote" class="sticky-quote"></p><textarea id="stickyText" class="sticky-input" placeholder="선택한 문장에 대한 메모를 적어보세요."></textarea><div class="sticky-buttons"><button type="button" id="stickyRemove" class="sticky-remove">형광펜 제거</button><button type="button" id="stickySave" class="sticky-save">메모 저장</button></div></section></div>
  </div>`;
 }
@@ -354,6 +422,39 @@ function splitNoteUnits(text,granularity){
   }
  }
  return pieces;
+}
+function createAttachmentEditor(){
+ const input=$('#noteAttachmentInput'),list=$('#noteAttachmentList'),counter=$('#noteAttachmentCount');
+ let files=[],ready=false,changed=false;
+ const noteId=state.note;
+ const init=noteId?attachmentList(noteId):Promise.resolve([]);
+ const loaded=init.then(items=>{files=items;ready=true;draw();}).catch(err=>{counter.textContent='파일 저장 기능을 사용할 수 없어요.';throw err;});
+ function draw(){
+  counter.textContent=files.length+'개 / 최대 '+MAX_NOTE_ATTACH+'개 · 파일당 8MB';
+  list.innerHTML=files.map(file=>`<div class="note-file-row"><button type="button" class="note-file-open" data-open-attachment="${escapeHtml(file.id)}"><span>${file.type==='application/pdf'?'▣':'▧'}</span><span class="note-file-title">${escapeHtml(file.name)}</span><small>${(file.size/1024/1024).toFixed(1)}MB</small></button><button type="button" class="note-file-remove" data-remove-attachment="${escapeHtml(file.id)}" aria-label="${escapeHtml(file.name)} 제거">×</button></div>`).join('');
+  list.querySelectorAll('[data-remove-attachment]').forEach(btn=>btn.onclick=()=>{files=files.filter(x=>x.id!==btn.dataset.removeAttachment);changed=true;draw();});
+  list.querySelectorAll('[data-open-attachment]').forEach(btn=>btn.onclick=()=>{
+   const f=files.find(x=>x.id===btn.dataset.openAttachment);if(!f)return;
+   const a=document.createElement('a');a.href=f.data;a.target='_blank';a.rel='noopener';a.download=f.name;
+   document.body.appendChild(a);a.click();a.remove();
+  });
+ }
+ input.onchange=async()=>{
+  try{
+   await loaded;
+   for(const file of Array.from(input.files||[])){
+    if(files.length>=MAX_NOTE_ATTACH){toast('노트당 최대 8개까지 첨부할 수 있어요.');break;}
+    if(file.size>MAX_FILE_BYTES){toast('8MB 이하의 파일을 선택해 주세요.');continue;}
+    if(file.type!=='application/pdf'&&!file.type.startsWith('image/')&&!/\.pdf$/i.test(file.name)){toast('사진 또는 PDF만 첨부할 수 있어요.');continue;}
+    files.push({id:attachmentId(),noteId:Number(noteId||0),name:file.name,type:/\.pdf$/i.test(file.name)?'application/pdf':file.type,size:file.size,data:await readFileAsDataUrl(file)});
+    changed=true;
+   }
+   draw();
+  }catch(err){toast('첨부파일을 읽지 못했어요.');}
+  input.value='';
+ };
+ draw();
+ return {async getFiles(){await loaded;return files;},get changed(){return changed;}};
 }
 function initNoteEditor(){
  const note=saved.notes.find(x=>x.id===state.note)||{body:'',annotations:[]};
@@ -455,7 +556,7 @@ function initNoteEditor(){
   return {body:text,annotations:marks};
  }};
 }
-function settings(){return `<div class="card"><strong>앱 정보</strong><p class="helper">부동산 경매 PWA UI 골격 v0.2.6</p><div class="divider"></div><strong>개발 상태</strong><p class="helper">화면 탐색 및 샘플 데이터만 제공. 법원 자료·실거래가·실제 사진과 자동 갱신 기능은 미연동.</p><div class="divider"></div><strong>데이터 백업</strong><p class="helper">노트와 관심물건을 JSON 파일로 내보내거나 복원할 수 있어요.</p><button class="secondary" id="export" style="width:100%">내 데이터 백업</button><label class="upload" style="margin-top:10px">백업 파일 복원<input id="import" type="file" accept="application/json,.json" hidden></label></div><div class="card"><strong>프로젝트 이관</strong><p class="helper">README.md, PROJECT_HANDOFF.md, DESIGN_SPEC.md에 작업 재개 및 배포 방법이 기록돼 있어요.</p></div>`}function render(){document.onselectionchange=null;activeNoteEditor=null;const back=document.getElementById('navBack');if(back){back.hidden=state.page==='home';back.onclick=goBack;}document.title='부동산 경매 · '+titles[state.page];$('#page-title').textContent=titles[state.page];$('#content').innerHTML=({home,search,schedule,favorites,study,advanced,special,detail,rights,note,settings}[state.page])();if($('#noteEditorShell'))activeNoteEditor=initNoteEditor();$('#tabs').innerHTML=tabs();$('#settings').onclick=()=>nav('settings');document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>nav(x.dataset.page));document.querySelectorAll('[data-detail]').forEach(x=>x.onclick=()=>nav('detail',{detail:x.dataset.detail,detailTab:'overview'}));document.querySelectorAll('[data-filter]').forEach(x=>x.onclick=()=>{state.filter=x.dataset.filter;render()});document.querySelectorAll('[data-day]').forEach(x=>x.onclick=()=>{state.selected=x.dataset.day;render();});if($('#prevMonth'))$('#prevMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,-1);state.selected=state.viewMonth+'-01';render();};if($('#nextMonth'))$('#nextMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,1);state.selected=state.viewMonth+'-01';render();};if($('#todayMonth'))$('#todayMonth').onclick=()=>{const now=new Date();state.viewMonth=calendarMonthKey(now);state.selected=state.viewMonth+'-'+String(now.getDate()).padStart(2,'0');render();};if($('#favCalendarOnly'))$('#favCalendarOnly').onchange=e=>{state.calendarFavoritesOnly=e.target.checked;render();};document.querySelectorAll('[data-note]').forEach(x=>x.onclick=()=>nav('note',{note:Number(x.dataset.note)}));if($('#favoriteSort'))$('#favoriteSort').onchange=e=>{state.favoriteSort=e.target.value;render();};
+function settings(){return `<div class="card"><strong>앱 정보</strong><p class="helper">부동산 경매 PWA UI 골격 v0.2.7</p><div class="divider"></div><strong>개발 상태</strong><p class="helper">화면 탐색 및 샘플 데이터만 제공. 법원 자료·실거래가·실제 사진과 자동 갱신 기능은 미연동.</p><div class="divider"></div><strong>데이터 백업</strong><p class="helper">노트와 관심물건을 JSON 파일로 내보내거나 복원할 수 있어요.</p><button class="secondary" id="export" style="width:100%">내 데이터 백업</button><label class="upload" style="margin-top:10px">백업 파일 복원<input id="import" type="file" accept="application/json,.json" hidden></label></div><div class="card"><strong>프로젝트 이관</strong><p class="helper">README.md, PROJECT_HANDOFF.md, DESIGN_SPEC.md에 작업 재개 및 배포 방법이 기록돼 있어요.</p></div>`}function render(){document.onselectionchange=null;activeNoteEditor=null;const back=document.getElementById('navBack');if(back){back.hidden=state.page==='home';back.onclick=goBack;}document.title='부동산 경매 · '+titles[state.page];$('#page-title').textContent=titles[state.page];$('#content').innerHTML=({home,search,schedule,favorites,study,advanced,special,detail,rights,note,settings}[state.page])();if($('#noteEditorShell'))activeNoteEditor={...initNoteEditor(),attachments:createAttachmentEditor()};$('#tabs').innerHTML=tabs();$('#settings').onclick=()=>nav('settings');document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>nav(x.dataset.page));document.querySelectorAll('[data-detail]').forEach(x=>x.onclick=()=>nav('detail',{detail:x.dataset.detail,detailTab:'overview'}));document.querySelectorAll('[data-filter]').forEach(x=>x.onclick=()=>{state.filter=x.dataset.filter;render()});document.querySelectorAll('[data-day]').forEach(x=>x.onclick=()=>{state.selected=x.dataset.day;render();});if($('#prevMonth'))$('#prevMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,-1);state.selected=state.viewMonth+'-01';render();};if($('#nextMonth'))$('#nextMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,1);state.selected=state.viewMonth+'-01';render();};if($('#todayMonth'))$('#todayMonth').onclick=()=>{const now=new Date();state.viewMonth=calendarMonthKey(now);state.selected=state.viewMonth+'-'+String(now.getDate()).padStart(2,'0');render();};if($('#favCalendarOnly'))$('#favCalendarOnly').onchange=e=>{state.calendarFavoritesOnly=e.target.checked;render();};document.querySelectorAll('[data-note]').forEach(x=>x.onclick=()=>nav('note',{note:Number(x.dataset.note)}));if($('#favoriteSort'))$('#favoriteSort').onchange=e=>{state.favoriteSort=e.target.value;render();};
 document.querySelectorAll('[data-favorite-type]').forEach(btn=>btn.onclick=()=>{state.favoriteType=btn.dataset.favoriteType;render();});
 document.querySelectorAll('[data-remove-favorite]').forEach(btn=>btn.onclick=()=>{
  const id=btn.dataset.removeFavorite;
@@ -553,33 +654,58 @@ if($('#specialBack'))$('#specialBack').onclick=()=>goBack();if($('#favBtn'))$('#
 }
 if($('#noteSort'))$('#noteSort').onchange=event=>{state.noteSort=event.target.value;render();};
 document.querySelectorAll('[data-note-edit]').forEach(btn=>btn.onclick=()=>nav('note',{note:Number(btn.dataset.noteEdit)}));
-document.querySelectorAll('[data-note-remove]').forEach(btn=>btn.onclick=()=>{
+document.querySelectorAll('[data-note-remove]').forEach(btn=>btn.onclick=async()=>{
  const id=Number(btn.dataset.noteRemove);
  const n=saved.notes.find(x=>x.id===id);
  if(!n)return;
  if(!confirm('노트 "'+n.title+'"을(를) 삭제할까요?'))return;
+ try{await attachmentDeleteNote(id);}catch(err){toast('첨부파일 삭제 실패');return;}
  saved.notes=saved.notes.filter(x=>x.id!==id);
  write();render();toast('노트를 삭제했어요.');
 });
 if($('#addNote'))$('#addNote').onclick=()=>nav('note',{note:null});
-if($('#saveNote'))$('#saveNote').onclick=()=>{
+if($('#saveNote'))$('#saveNote').onclick=async()=>{
  const title=$('#noteTitle').value.trim();
  if(!title)return toast('제목을 입력하세요.');
  const {body,annotations}=activeNoteEditor?activeNoteEditor.getData():{body:$('#noteBody').value.trim(),annotations:[]};
- const now=Date.now();
- if(state.note){
-  const n=saved.notes.find(x=>x.id===state.note);
-  if(!n)return toast('노트를 찾을 수 없어요.');
-  Object.assign(n,{title,body,annotations,updatedAt:now});
- }else{
-  const uniqueId=now+Math.max(0,...saved.notes.map(n=>Math.max(0,n.id-now+1)));
-  saved.notes.unshift({id:uniqueId,title,body,annotations,updatedAt:now});
- }
- write();nav('study');toast('노트를 저장했어요.');
+ const button=$('#saveNote');button.disabled=true;
+ try{
+  const files=activeNoteEditor?await activeNoteEditor.attachments.getFiles():[];
+  const now=Date.now(),oldNote=state.note?saved.notes.find(x=>x.id===state.note):null;
+  if(state.note&&!oldNote)throw Error('노트를 찾지 못했어요.');
+  const uniqueId=oldNote?oldNote.id:now+Math.max(0,...saved.notes.map(n=>Math.max(0,n.id-now+1)));
+  // Commit file bytes before updating note metadata, so storage failures cannot silently lose attachments.
+  if(files.length||oldNote&&activeNoteEditor.attachments.changed)await attachmentReplaceForNote(uniqueId,files);
+  if(oldNote)Object.assign(oldNote,{title,body,annotations,updatedAt:now});
+  else saved.notes.unshift({id:uniqueId,title,body,annotations,updatedAt:now});
+  write();nav('study');toast('노트를 저장했어요.');
+ }catch(err){toast('노트 저장 실패: '+(err.message||'첨부파일을 확인해 주세요.'));button.disabled=false;}
 };
-if($('#deleteNote'))$('#deleteNote').onclick=()=>{
+if($('#deleteNote'))$('#deleteNote').onclick=async()=>{
  if(!confirm('노트를 삭제할까요?'))return;
+ try{await attachmentDeleteNote(state.note);}catch(err){toast('첨부파일 삭제에 실패했어요.');return;}
  saved.notes=saved.notes.filter(x=>x.id!==state.note);
  write();nav('study');toast('노트를 삭제했어요.');
 };
-if($('#export'))$('#export').onclick=()=>{const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),data:saved},null,2)],{type:'application/json'}));a.href=url;a.download='auction-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};if($('#import'))$('#import').onchange=async e=>{try{const x=JSON.parse(await e.target.files[0].text());if(!x.data||!Array.isArray(x.data.favorites)||!Array.isArray(x.data.notes))throw Error('형식 오류');if(confirm('현재 데이터를 백업 파일로 교체할까요?')){saved=x.data;write();render();toast('복원 완료')}}catch{toast('복원 파일을 확인해주세요.')}}}render();initGestureNavigation();if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
+if($('#export'))$('#export').onclick=async()=>{
+ try{
+  const attachments=await allAttachments();
+  const payload={version:2,exportedAt:new Date().toISOString(),data:saved,attachments};
+  const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
+  const a=document.createElement('a');a.href=url;a.download='auction-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),6000);
+  toast('노트와 첨부파일을 함께 백업했어요.');
+ }catch(err){toast('백업 실패: 첨부파일 저장소를 확인해 주세요.');}
+};
+if($('#import'))$('#import').onchange=async event=>{
+ try{
+  const file=event.target.files?.[0];if(!file)return;
+  const payload=JSON.parse(await file.text());
+  if(!payload.data||!Array.isArray(payload.data.favorites)||!Array.isArray(payload.data.notes))throw Error('백업 파일 형식 오류');
+  const attachments=payload.version>=2?payload.attachments:[];
+  if(!Array.isArray(attachments)||attachments.some(x=>!verifyAttachment(x)))throw Error('첨부파일 형식 오류');
+  if(!confirm('현재 노트·관심물건·첨부파일을 백업 파일 내용으로 교체할까요?'))return;
+  await attachmentRestoreAll(attachments);
+  saved=payload.data;write();render();toast('노트와 첨부파일 복원을 완료했어요.');
+ }catch(err){toast('복원 실패: '+(err.message||'파일을 확인해 주세요.'));}
+ finally{event.target.value='';}
+}}render();initGestureNavigation();if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});

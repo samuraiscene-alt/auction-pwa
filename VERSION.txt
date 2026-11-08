@@ -1,2 +1,2 @@
-0.2.9
-Link individual study checklist topics to personal notes, with direct create/open actions.
+0.3.0
+PWA home-screen update status, safe reload gating and verified local note writes.

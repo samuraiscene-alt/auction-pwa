@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.3.9';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.4.0';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -618,29 +618,94 @@ async function loadPdfTextEngine(){
 function createAttachmentViewer(){
  const overlay=$('#attachmentViewer'),content=$('#attachmentViewerContent'),bar=$('#attachmentViewerName'),zoom=$('#attachmentViewerZoom'),pdfControls=$('#attachmentPdfControls');
  const extractActions=$('#attachmentExtractActions'),extractToggle=$('#attachmentExtractToggle'),extractInsert=$('#attachmentExtractInsert'),extractHint=$('#attachmentExtractHint');
- let url=null,scale=1,page=1,currentFile=null,loadedBlob=null,pdfDocument=null,extractMode=false,extractText='',extractTokens=[],firstToken=null,lastToken=null,viewerSeq=0;
+ let url=null,scale=1,page=1,currentFile=null,loadedBlob=null,pdfDocument=null,extractMode=false,extractText='',extractTokens=[],firstToken=null,lastToken=null,viewerSeq=0,renderSeq=0,renderTask=null,pdfAvailable=false;
+ function cancelRendering(){
+  renderSeq++;
+  if(renderTask){try{renderTask.cancel();}catch(error){}renderTask=null;}
+ }
  function resetExtract(){
-  pdfDocument=null;extractMode=false;extractText='';extractTokens=[];firstToken=null;lastToken=null;
+  pdfDocument=null;pdfAvailable=false;extractMode=false;extractText='';extractTokens=[];firstToken=null;lastToken=null;
   extractActions.hidden=true;extractInsert.hidden=true;extractHint.hidden=true;extractToggle.textContent='문장 선택';
  }
- const close=()=>{
-  viewerSeq++;
+ function close(){
+  viewerSeq++;cancelRendering();
   overlay.hidden=true;content.replaceChildren();
   if(url){URL.revokeObjectURL(url);url=null;}
   currentFile=null;loadedBlob=null;resetExtract();document.body.classList.remove('attachment-viewing');
- };
- function setZoom(next){
-  scale=Math.min(4,Math.max(1,Math.round(next*10)/10));
-  const img=content.querySelector('img');if(img){img.style.width=scale*100+'%';img.style.maxWidth='none';}
-  $('#attachmentZoomValue').textContent=Math.round(scale*100)+'%';
  }
- function showEmbeddedPdf(){
-  content.replaceChildren();
+ function updatePageControls(){
+  const max=pdfDocument?.numPages||0;
+  $('#attachmentPdfPage').textContent=page+(max?' / '+max:'')+'페이지';
+  $('#attachmentPdfPrev').disabled=page<=1;
+  $('#attachmentPdfNext').disabled=max>0&&page>=max;
+ }
+ function showZoomControls(isPdf){
+  zoom.hidden=false;
+  $('#attachmentZoomValue').textContent=Math.round(scale*100)+'%';
+  $('#attachmentZoomReset').textContent=isPdf?'화면 맞춤':'원래 크기';
+ }
+ function setZoom(next){
+  scale=Math.min(3,Math.max(1,Math.round(next*10)/10));
+  const img=content.querySelector('img');
+  if(img){img.style.width=scale*100+'%';img.style.maxWidth='none';}
+  $('#attachmentZoomValue').textContent=Math.round(scale*100)+'%';
+  if(pdfAvailable&&!extractMode)renderPdfPage();
+ }
+ function fallbackPdf(){
+  if(!url||!currentFile)return;
+  pdfAvailable=false;cancelRendering();content.replaceChildren();
   const frame=document.createElement('iframe');
-  frame.className='attachment-pdf-frame';frame.title=currentFile?.name||'PDF';frame.src=url+'#page='+page+'&view=FitH';
-  content.appendChild(frame);
-  extractMode=false;firstToken=null;lastToken=null;
-  extractToggle.textContent='문장 선택';extractInsert.hidden=true;extractHint.hidden=true;
+  frame.className='attachment-pdf-frame';frame.title=currentFile.name;frame.src=url+'#page='+page+'&view=FitH';
+  content.appendChild(frame);zoom.hidden=true;
+  extractHint.hidden=false;extractHint.textContent='기본 PDF 뷰어로 표시 중 · 페이지 이동은 기기에 따라 제한될 수 있어요.';
+  extractToggle.textContent='문장 선택';
+ }
+ async function openPdfDocument(){
+  if(pdfDocument)return pdfDocument;
+  const initial=viewerSeq,fileId=currentFile?.id;
+  const engine=await loadPdfTextEngine();
+  if(initial!==viewerSeq||currentFile?.id!==fileId)throw Error('첨부파일 화면이 변경됐어요.');
+  const bytes=new Uint8Array(await loadedBlob.arrayBuffer());
+  if(initial!==viewerSeq||currentFile?.id!==fileId)throw Error('첨부파일 화면이 변경됐어요.');
+  const doc=await engine.getDocument({data:bytes}).promise;
+  if(initial!==viewerSeq||currentFile?.id!==fileId){try{await doc.destroy();}catch(e){}throw Error('첨부파일 화면이 변경됐어요.');}
+  pdfDocument=doc;pdfAvailable=true;
+  page=Math.max(1,Math.min(page,doc.numPages));updatePageControls();
+  return doc;
+ }
+ async function renderPdfPage(){
+  if(!pdfDocument||!currentFile||extractMode)return;
+  cancelRendering();
+  const seq=viewerSeq,request=renderSeq,fileId=currentFile.id,pageNo=page;
+  extractHint.hidden=true;
+  const loading=document.createElement('div');loading.className='attachment-pdf-loading';loading.textContent='PDF '+pageNo+'페이지를 표시하는 중…';
+  content.replaceChildren(loading);
+  try{
+   const pdfPage=await pdfDocument.getPage(pageNo);
+   if(seq!==viewerSeq||request!==renderSeq||currentFile?.id!==fileId||extractMode)return;
+   const natural=pdfPage.getViewport({scale:1});
+   const containerWidth=Math.max(240,content.clientWidth-18);
+   const fitWidth=containerWidth/natural.width;
+   const viewport=pdfPage.getViewport({scale:fitWidth*scale});
+   const dpr=Math.min(window.devicePixelRatio||1,2);
+   const canvas=document.createElement('canvas');
+   canvas.className='attachment-pdf-canvas';
+   canvas.width=Math.ceil(viewport.width*dpr);
+   canvas.height=Math.ceil(viewport.height*dpr);
+   canvas.style.width=Math.ceil(viewport.width)+'px';
+   canvas.style.height=Math.ceil(viewport.height)+'px';
+   const ctx=canvas.getContext('2d');
+   if(!ctx)throw Error('캔버스 표시 불가');
+   ctx.setTransform(dpr,0,0,dpr,0,0);
+   content.replaceChildren(canvas);
+   content.scrollTop=0;content.scrollLeft=0;
+   renderTask=pdfPage.render({canvasContext:ctx,viewport,canvas});
+   await renderTask.promise;
+   if(seq===viewerSeq&&request===renderSeq)renderTask=null;
+  }catch(err){
+   if(seq!==viewerSeq||request!==renderSeq||err?.name==='RenderingCancelledException')return;
+   content.innerHTML='<div class="attachment-extract-empty">이 페이지를 표시하지 못했어요. 다시 시도하거나 파일을 내보내 주세요.</div>';
+  }
  }
  function selectedRange(){
   if(firstToken===null||lastToken===null)return null;
@@ -674,25 +739,26 @@ function createAttachmentViewer(){
  }
  async function showExtractedPage(){
   if(!pdfDocument||!currentFile)return;
-  const sequence=viewerSeq,filename=currentFile.id;
-  extractHint.hidden=false;extractHint.textContent='PDF '+page+'페이지에서 문장을 추출하는 중…';
+  cancelRendering();
+  const sequence=viewerSeq,fileId=currentFile.id,pageNo=page,request=renderSeq;
+  extractHint.hidden=false;extractHint.textContent='PDF '+pageNo+'페이지에서 문장을 추출하는 중…';
   extractInsert.hidden=true;content.replaceChildren();
   try{
-   const pdfPage=await pdfDocument.getPage(page);
+   const pdfPage=await pdfDocument.getPage(pageNo);
    const textContent=await pdfPage.getTextContent();
-   if(sequence!==viewerSeq||currentFile?.id!==filename||!extractMode)return;
+   if(sequence!==viewerSeq||request!==renderSeq||currentFile?.id!==fileId||!extractMode)return;
    extractText=textContent.items.map(item=>String(item.str||'')+(item.hasEOL?'\n':' ')).join('').replace(/[ \t]+\n/g,'\n').trim();
    extractTokens=splitNoteUnits(extractText,'word');
    firstToken=null;lastToken=null;
    if(!extractText){
     content.innerHTML='<div class="attachment-extract-empty">이 페이지에서 선택할 수 있는 문장을 찾지 못했어요.<p>스캔 PDF라면 별도의 문자 인식(OCR)이 필요해요.</p></div>';
-    extractHint.textContent='문장 추출 불가 · 일반 PDF 뷰어는 그대로 사용할 수 있어요.';
+    extractHint.textContent='문장 추출 불가 · PDF 보기로 돌아갈 수 있어요.';
     return;
    }
    drawExtractedPage();
   }catch(err){
-   if(sequence!==viewerSeq)return;
-   content.innerHTML='<div class="attachment-extract-empty">이 페이지의 글자를 읽을 수 없어요. 다른 페이지나 일반 PDF 뷰어를 이용해 주세요.</div>';
+   if(sequence!==viewerSeq||request!==renderSeq)return;
+   content.innerHTML='<div class="attachment-extract-empty">이 페이지의 글자를 읽을 수 없어요. 다른 페이지나 PDF 보기로 돌아가 주세요.</div>';
    extractHint.textContent='PDF 텍스트 추출 실패';
   }
  }
@@ -702,42 +768,45 @@ function createAttachmentViewer(){
   extractMode=true;extractToggle.disabled=true;
   extractHint.hidden=false;extractHint.textContent='PDF 문자 분석 기능을 불러오는 중…';
   try{
-   if(!pdfDocument){
-    const engine=await loadPdfTextEngine();
-    if(sequence!==viewerSeq||currentFile?.id!==fileId)return;
-    const bytes=new Uint8Array(await loadedBlob.arrayBuffer());
-    if(sequence!==viewerSeq||currentFile?.id!==fileId)return;
-    pdfDocument=await engine.getDocument({data:bytes}).promise;
-   }
+   await openPdfDocument();
    if(sequence!==viewerSeq||currentFile?.id!==fileId)return;
-   $('#attachmentPdfPage').textContent=page+' / '+pdfDocument.numPages+'페이지';
+   zoom.hidden=true;
    await showExtractedPage();extractToggle.textContent='PDF 보기';
   }catch(err){
    if(sequence!==viewerSeq)return;
-   extractMode=false;showEmbeddedPdf();
-   toast('PDF 글자 분석을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.');
+   extractMode=false;
+   if(pdfAvailable){showZoomControls(true);renderPdfPage();}
+   else fallbackPdf();
+   toast('PDF 문자 분석에 실패했어요. 인터넷 연결을 확인해 주세요.');
   }finally{extractToggle.disabled=false;}
  }
  function pageChange(delta){
   if(!currentFile||!(currentFile.type==='application/pdf'||/\.pdf$/i.test(currentFile.name)))return;
   const max=pdfDocument?.numPages||10000;
-  page=Math.max(1,Math.min(max,page+delta));
-  $('#attachmentPdfPage').textContent=page+(pdfDocument?' / '+pdfDocument.numPages:'')+'페이지';
+  const next=Math.max(1,Math.min(max,page+delta));
+  if(next===page)return;
+  page=next;updatePageControls();
   if(extractMode)showExtractedPage();
-  else{const frame=content.querySelector('iframe');if(frame&&url)frame.src=url+'#page='+page+'&view=FitH';}
+  else if(pdfAvailable)renderPdfPage();
+  else fallbackPdf();
  }
  $('#attachmentViewerClose').onclick=close;
- overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
+ overlay.addEventListener('click',event=>{if(event.target===overlay)close();});
  $('#attachmentZoomIn').onclick=()=>setZoom(scale+.5);
  $('#attachmentZoomOut').onclick=()=>setZoom(scale-.5);
  $('#attachmentZoomReset').onclick=()=>setZoom(1);
  $('#attachmentPdfPrev').onclick=()=>pageChange(-1);
  $('#attachmentPdfNext').onclick=()=>pageChange(1);
- extractToggle.onclick=()=>{if(extractMode){showEmbeddedPdf();}else startExtraction();};
+ extractToggle.onclick=()=>{
+  if(extractMode){
+   extractMode=false;cancelRendering();
+   extractToggle.textContent='문장 선택';extractInsert.hidden=true;extractHint.hidden=true;
+   showZoomControls(true);renderPdfPage();
+  }else startExtraction();
+ };
  extractInsert.onclick=()=>{
   const range=selectedRange();if(!range||!extractText)return;
-  const quote=extractText.slice(range.start,range.end).trim();
-  if(!quote)return;
+  const quote=extractText.slice(range.start,range.end).trim();if(!quote)return;
   const source={fileId:currentFile?.id||'',filename:currentFile?.name||'PDF',page};
   close();
   const editor=activeNoteEditor;
@@ -747,7 +816,8 @@ function createAttachmentViewer(){
  $('#attachmentViewerExport').onclick=()=>{
   if(!currentFile||!url)return;
   const a=document.createElement('a');a.href=url;a.download=currentFile.name||'첨부파일';a.rel='noopener';
-  document.body.appendChild(a);a.click();a.remove();toast('파일 저장 화면이 열리지 않으면 공유 메뉴를 이용해 주세요.');
+  document.body.appendChild(a);a.click();a.remove();
+  toast('파일 저장 화면이 열리지 않으면 공유 메뉴를 이용해 주세요.');
  };
  content.addEventListener('touchstart',event=>{
   if(event.touches.length!==2||!content.querySelector('img'))return;
@@ -763,7 +833,8 @@ function createAttachmentViewer(){
  return {
   async open(file,initialPage=1){
    if(!file||typeof file.data!=='string')return toast('첨부파일을 찾지 못했어요.');
-   close();currentFile=file;const sequence=viewerSeq;bar.textContent=file.name;page=Math.max(1,Math.floor(Number(initialPage)||1));scale=1;
+   close();currentFile=file;
+   const sequence=viewerSeq;bar.textContent=file.name;page=Math.max(1,Math.floor(Number(initialPage)||1));scale=1;
    content.replaceChildren();zoom.hidden=true;pdfControls.hidden=true;overlay.hidden=false;document.body.classList.add('attachment-viewing');
    try{
     const response=await fetch(file.data),blob=await response.blob();
@@ -772,12 +843,26 @@ function createAttachmentViewer(){
     const isPdf=file.type==='application/pdf'||/\.pdf$/i.test(file.name);
     if(isPdf){
      extractActions.hidden=false;pdfControls.hidden=false;
-     $('#attachmentPdfPage').textContent=page+'페이지';showEmbeddedPdf();
+     extractHint.hidden=false;extractHint.textContent='PDF 페이지 정보를 불러오는 중…';
+     updatePageControls();
+     try{
+      await openPdfDocument();
+      if(sequence!==viewerSeq||currentFile?.id!==file.id)return;
+      showZoomControls(true);await renderPdfPage();
+     }catch(err){
+      if(sequence!==viewerSeq)return;
+      fallbackPdf();
+      toast('PDF 전용 뷰어를 불러오지 못해 기본 뷰어로 열었어요.');
+     }
     }else{
      const img=document.createElement('img');img.className='attachment-preview-image';img.alt=file.name;img.src=url;
-     content.appendChild(img);zoom.hidden=false;setZoom(1);
+     content.appendChild(img);showZoomControls(false);setZoom(1);
     }
-   }catch(err){if(sequence!==viewerSeq)return;content.textContent='미리보기를 열 수 없어요. 파일 내보내기를 이용해 주세요.';toast('첨부파일 미리보기 실패');}
+   }catch(err){
+    if(sequence!==viewerSeq)return;
+    content.textContent='미리보기를 열 수 없어요. 파일 내보내기를 이용해 주세요.';
+    toast('첨부파일 미리보기 실패');
+   }
   },close
  };
 }

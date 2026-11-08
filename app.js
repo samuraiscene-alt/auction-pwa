@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.4.0';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.4.1';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -617,6 +617,10 @@ async function loadPdfTextEngine(){
 }
 function createAttachmentViewer(){
  const overlay=$('#attachmentViewer'),content=$('#attachmentViewerContent'),bar=$('#attachmentViewerName'),zoom=$('#attachmentViewerZoom'),pdfControls=$('#attachmentPdfControls');
+ // Mount outside the scrolling/transformed app so iOS fixed positioning uses the actual viewport.
+ const overlayHome=overlay.parentNode;
+ function mountViewer(){if(overlay.parentNode!==document.body)document.body.appendChild(overlay);}
+ function restoreViewer(){if(overlayHome.isConnected&&overlay.parentNode!==overlayHome)overlayHome.appendChild(overlay);}
  const extractActions=$('#attachmentExtractActions'),extractToggle=$('#attachmentExtractToggle'),extractInsert=$('#attachmentExtractInsert'),extractHint=$('#attachmentExtractHint');
  let url=null,scale=1,page=1,currentFile=null,loadedBlob=null,pdfDocument=null,extractMode=false,extractText='',extractTokens=[],firstToken=null,lastToken=null,viewerSeq=0,renderSeq=0,renderTask=null,pdfAvailable=false;
  function cancelRendering(){
@@ -631,7 +635,7 @@ function createAttachmentViewer(){
   viewerSeq++;cancelRendering();
   overlay.hidden=true;content.replaceChildren();
   if(url){URL.revokeObjectURL(url);url=null;}
-  currentFile=null;loadedBlob=null;resetExtract();document.body.classList.remove('attachment-viewing');
+  currentFile=null;loadedBlob=null;resetExtract();document.body.classList.remove('attachment-viewing');restoreViewer();
  }
  function updatePageControls(){
   const max=pdfDocument?.numPages||0;
@@ -835,7 +839,7 @@ function createAttachmentViewer(){
    if(!file||typeof file.data!=='string')return toast('첨부파일을 찾지 못했어요.');
    close();currentFile=file;
    const sequence=viewerSeq;bar.textContent=file.name;page=Math.max(1,Math.floor(Number(initialPage)||1));scale=1;
-   content.replaceChildren();zoom.hidden=true;pdfControls.hidden=true;overlay.hidden=false;document.body.classList.add('attachment-viewing');
+   mountViewer();content.replaceChildren();zoom.hidden=true;pdfControls.hidden=true;overlay.hidden=false;document.body.classList.add('attachment-viewing');
    try{
     const response=await fetch(file.data),blob=await response.blob();
     if(sequence!==viewerSeq||currentFile?.id!==file.id)return;

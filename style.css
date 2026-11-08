@@ -596,3 +596,54 @@ body.attachment-viewing{overflow:hidden!important}
  .attachment-main-controls .attachment-zoom button{min-width:24px!important}
  .attachment-main-controls .attachment-page-field input{width:24px!important;min-width:24px!important}
 }
+
+/* v0.4.5 iOS keyboard-free scroll-wheel PDF page picker */
+.attachment-main-controls .attachment-page-field .attachment-page-trigger{
+ appearance:none;
+ width:30px!important;min-width:26px!important;flex:1 1 auto!important;
+ border:0;background:transparent;color:#fff;
+ font-size:15px!important;font-weight:800;
+ height:30px!important;min-height:30px!important;
+ padding:0!important;text-align:right;white-space:nowrap;
+}
+.attachment-page-picker[hidden]{display:none!important}
+.attachment-page-picker{
+ position:absolute;z-index:20;inset:0;background:rgba(0,0,0,.43);
+ display:flex;align-items:flex-end;justify-content:center;
+}
+.attachment-picker-sheet{
+ width:100%;max-width:600px;background:#f7f8fc;
+ color:#1f2838;border-radius:18px 18px 0 0;
+ padding:0 14px max(20px,env(safe-area-inset-bottom));
+ box-shadow:0 -6px 30px rgba(0,0,0,.24);
+ box-sizing:border-box;
+}
+.attachment-picker-top{height:54px;display:flex;align-items:center;justify-content:space-between}
+.attachment-picker-top strong{font-size:16px}
+.attachment-picker-top button{
+ border:0;background:transparent;color:#276bd6;font-size:16px;font-weight:700;
+ min-width:60px;min-height:44px;
+}
+.attachment-picker-wheel-wrap{position:relative;height:220px;overflow:hidden}
+.attachment-picker-wheel{
+ height:220px;overflow-y:auto;
+ overscroll-behavior:contain;
+ scroll-snap-type:y mandatory;
+ -webkit-overflow-scrolling:touch;
+ padding:88px 0;
+ box-sizing:border-box;
+ scrollbar-width:none;
+}
+.attachment-picker-wheel::-webkit-scrollbar{display:none}
+.attachment-picker-item{
+ display:flex;width:100%;height:44px;min-height:44px;align-items:center;justify-content:center;
+ border:0;background:transparent;color:#7b8796;font-size:21px;
+ font-weight:500;scroll-snap-align:center;
+}
+.attachment-picker-item.selected{color:#152237;font-weight:800;font-size:27px}
+.attachment-picker-selection{
+ pointer-events:none;position:absolute;left:0;right:0;top:88px;height:44px;
+ border-top:1px solid #cad2de;border-bottom:1px solid #cad2de;
+ background:rgba(85,130,194,.06);border-radius:9px;
+}
+.attachment-picker-caption{text-align:center;font-size:12px;color:#74829a;padding:5px 0 2px}

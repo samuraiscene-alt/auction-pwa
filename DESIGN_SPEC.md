@@ -63,3 +63,6 @@
 
 ## v0.3.2 아이콘 캐시 우회
 승인 이미지 자체 변경 없이 iOS apple-touch-icon에 새로운 고유 파일명 apple-touch-icon-v032.png 적용. HTML과 manifest 파일명 일치, SW 캐시 v032. 기존 설치 아이콘의 iOS 캐시는 재설치 전까지 유지될 수 있음. 삭제 전에 홈 화면 앱의 노트·사진·PDF 포함 데이터 백업 필요.
+
+## v0.3.3 Safari 홈 화면 미리보기 식별 강화
+승인된 법봉·집 그림 자체 변경 없이 경매 전용 파일명 auction-icon-v033.png로 배포. HTML apple-touch-icon, apple-touch-icon-precomposed, PNG favicon과 og:image 메타데이터를 단일 PNG 파일에 연결. manifest id /auction-pwa/?pwa=auction-v033, start_url ./?pwa=auction-v033, scope ./ 유지. 동일 GitHub Pages 호스트의 Safari 사이트 아이콘 캐시가 타 프로젝트와 섞여 보일 가능성이 있어 실제 기기 미리보기 확인 필요. 기존 설치 앱 삭제 전에 데이터 백업.

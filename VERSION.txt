@@ -1,2 +1,2 @@
-0.4.2
-Direct PDF page number input and go action for long auction documents.
+0.4.3
+Compact two-line PDF toolbar with zoom, page navigation, text selection and export.

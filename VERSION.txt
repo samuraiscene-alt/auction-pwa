@@ -1,2 +1,2 @@
-0.3.3
-Dedicated auction app icon metadata and isolated Safari installation preview.
+0.3.4
+Verified RGB iPhone icon, corrected Apple touch icon and stable PWA identity.

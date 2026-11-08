@@ -1,2 +1,2 @@
-0.3.7
-In-app image and PDF attachment viewer with zoom, PDF page controls and file export.
+0.3.8
+Extract selectable text from attached PDFs and insert it in notes with highlights and sticky memos.

@@ -1,2 +1,2 @@
-0.4.0
-Render exact PDF page in a canvas, support reliable page navigation and zoom on iPhone.
+0.4.1
+Keep PDF/photo viewer bottom controls visible in iPhone home-screen PWA.

@@ -391,3 +391,50 @@ body.attachment-viewing{overflow:hidden}
 .attachment-pdf-controls button:disabled{opacity:.32}
 .attachment-viewer-content:has(.attachment-pdf-canvas){align-items:flex-start;justify-content:flex-start;display:block;overflow:auto;padding:9px}
 .attachment-viewer-content:has(.attachment-pdf-canvas) canvas{max-width:none}
+
+/* v0.4.1: fixed attachment toolbar in iPhone standalone viewport */
+.attachment-viewer{
+ position:fixed!important;
+ inset:0!important;
+ width:100%!important;
+ height:100vh;
+ height:100dvh;
+ max-height:100dvh;
+ padding-top:env(safe-area-inset-top);
+ padding-bottom:env(safe-area-inset-bottom);
+ box-sizing:border-box;
+ overflow:hidden;
+ display:flex;
+ flex-direction:column;
+ isolation:isolate;
+}
+.attachment-viewer-bar{flex:0 0 auto;box-sizing:border-box}
+.attachment-viewer-content{
+ flex:1 1 0!important;
+ min-height:0!important;
+ max-height:none;
+ overflow:auto;
+ overscroll-behavior:contain;
+ -webkit-overflow-scrolling:touch;
+}
+.attachment-viewer-controls{
+ flex:0 0 auto!important;
+ box-sizing:border-box;
+ width:100%;
+ max-height:42dvh;
+ overflow-y:auto;
+ overscroll-behavior:contain;
+ padding:8px 12px max(9px,env(safe-area-inset-bottom));
+ gap:6px;
+ position:relative;
+ z-index:2;
+ box-shadow:0 -3px 15px rgba(0,0,0,.18);
+}
+.attachment-zoom,.attachment-pdf-controls{flex:0 0 auto;min-height:39px}
+.attachment-viewer-controls button{touch-action:manipulation}
+body.attachment-viewing{overflow:hidden!important}
+@media(max-height:640px){
+ .attachment-viewer-controls{max-height:48dvh;padding-top:5px;padding-bottom:max(5px,env(safe-area-inset-bottom))}
+ .attachment-viewer-bar{min-height:47px;padding-top:5px;padding-bottom:5px}
+ .attachment-export{min-height:37px}
+}

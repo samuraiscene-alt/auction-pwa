@@ -81,3 +81,6 @@
 
 ## v0.3.8 PDF 문장→노트 가져오기
 현재 공부 노트에서 첨부된 PDF 뷰어를 열고 문장 선택 버튼을 누르면 PDF.js 5.4.149 CDN ESM과 worker를 지연 로드해 현재 페이지의 getTextContent()를 읽는다. 긴 누르기 대신 단어 시작/끝 2회 터치. '선택 문장을 노트로'는 기존 본문 끝에 [PDF: 파일명 · n페이지] 출처와 문장을 삽입하고 해당 문장에 yellow annotation을 만들어 포스트잇을 곧바로 연다. 이후 중앙 노트 저장 버튼을 눌러 정식 보관하고 임시저장은 자동으로 수행. CDN 네트워크 의존, 스캔 이미지 PDF는 OCR 미지원, PDF 엔진 iOS 실제 동작 확인 필요.
+
+## v0.3.9 PDF 출처 바로가기
+PDF 문장 선택 후 노트에 삽입할 때 노트 메타데이터 sources [{id,fileId,filename,page,quote}] 기록. 노트 편집 상단에 연결된 PDF 목록(이름/페이지/원문 보기), 각 항목 터치 시 기존 첨부파일의 id 검색해 해당 페이지 번호로 내부 PDF 뷰어 open(). 삭제는 출처 링크만 삭제하며 본문·형광펜·PDF 자체는 유지. 기존 notes 구버전은 sources 부재 시 빈 목록, draft와 백업에는 sources 그대로 포함. 실제 Safari PDF iframe의 #page 탐색은 기기마다 달라 검증 필요.

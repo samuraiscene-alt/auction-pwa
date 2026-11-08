@@ -384,3 +384,10 @@ body.attachment-viewing{overflow:hidden}
 .note-pdf-source-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;font-size:12px;font-weight:700}
 .note-pdf-source-open small{font-size:11px;white-space:nowrap;color:#6590bf}
 .note-pdf-source-remove{width:30px;height:33px;flex-shrink:0;border:0;border-radius:9px;background:#fff;color:#b15360;font-size:20px}
+
+/* v0.4.0 exact-page PDF rendering within home-screen PWA */
+.attachment-pdf-canvas{display:block;flex-shrink:0;margin:0 auto 20px;background:#fff;box-shadow:0 3px 20px rgba(0,0,0,.2)}
+.attachment-pdf-loading{padding:26px;text-align:center;color:#e0eaf5;align-self:center}
+.attachment-pdf-controls button:disabled{opacity:.32}
+.attachment-viewer-content:has(.attachment-pdf-canvas){align-items:flex-start;justify-content:flex-start;display:block;overflow:auto;padding:9px}
+.attachment-viewer-content:has(.attachment-pdf-canvas) canvas{max-width:none}

@@ -1,2 +1,2 @@
-0.4.3
-Compact two-line PDF toolbar with zoom, page navigation, text selection and export.
+0.4.4
+Full-width PDF controls and unclipped current page input.

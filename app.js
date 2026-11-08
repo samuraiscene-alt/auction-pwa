@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.3.4';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.3.5';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -157,7 +157,30 @@ function prettyPrice(won){
   return [jo?jo.toLocaleString('ko-KR')+'조':'',eok?eok.toLocaleString('ko-KR')+'억':'',man?man.toLocaleString('ko-KR')+'만':'',value?value.toLocaleString('ko-KR'):''].filter(Boolean).join(' ')+'원';
 }
 const DEMO_PRICES={demo1:875000000,demo2:336000000,demo3:413000000};
-const properties=[{id:'demo1',type:'아파트',name:'서울 강남구 아파트',court:'서울중앙지방법원',case:'2026타경12345',value:'12억 5,000만원',min:'8억 7,500만원',date:'2026.11.17',flag:'2회 유찰'},{id:'demo2',type:'빌라',name:'경기 성남시 다세대주택',court:'수원지방법원',case:'2026타경23456',value:'4억 8,000만원',min:'3억 3,600만원',date:'2026.11.18',flag:'추가 확인'},{id:'demo3',type:'단독주택',name:'서울 성북구 단독주택',court:'서울북부지방법원',case:'2026타경34567',value:'5억 9,000만원',min:'4억 1,300만원',date:'2026.11.20',flag:'1회 유찰'}];const titles={home:'부동산 경매',search:'통합검색',schedule:'경매일정',favorites:'관심물건',study:'경매 공부방',advanced:'상세검색',special:'특수물건 검색',detail:'물건 상세',rights:'권리분석',note:'공부 노트',settings:'설정'};function toast(t){$('#toast').textContent=t;$('#toast').classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>$('#toast').classList.remove('show'),2200)}const MAIN_TABS=['home','search','schedule','favorites','study'];
+const properties=[{id:'demo1',type:'아파트',name:'서울 강남구 아파트',court:'서울중앙지방법원',case:'2026타경12345',value:'12억 5,000만원',min:'8억 7,500만원',date:'2026.11.17',flag:'2회 유찰'},{id:'demo2',type:'빌라',name:'경기 성남시 다세대주택',court:'수원지방법원',case:'2026타경23456',value:'4억 8,000만원',min:'3억 3,600만원',date:'2026.11.18',flag:'추가 확인'},{id:'demo3',type:'단독주택',name:'서울 성북구 단독주택',court:'서울북부지방법원',case:'2026타경34567',value:'5억 9,000만원',min:'4억 1,300만원',date:'2026.11.20',flag:'1회 유찰'}];const titles={home:'부동산 경매',search:'통합검색',schedule:'경매일정',favorites:'관심물건',study:'경매 공부방',advanced:'상세검색',special:'특수물건 검색',detail:'물건 상세',rights:'권리분석',note:'공부 노트',settings:'설정'};function toast(t){$('#toast').textContent=t;$('#toast').classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>$('#toast').classList.remove('show'),2200)}
+let saveCheckTimer=0;
+function showSavedCheck(message='저장 완료'){
+ let overlay=document.getElementById('saveCheckOverlay');
+ if(!overlay){
+  overlay=document.createElement('div');
+  overlay.id='saveCheckOverlay';
+  overlay.className='save-check-overlay';
+  overlay.setAttribute('role','status');
+  overlay.setAttribute('aria-live','polite');
+  overlay.innerHTML='<div class="save-check-circle"><svg viewBox="0 0 96 96" aria-hidden="true"><path d="M23 49 41 66 75 31"/></svg></div><strong id="saveCheckLabel"></strong>';
+  document.body.appendChild(overlay);
+ }
+ overlay.querySelector('#saveCheckLabel').textContent=message;
+ clearTimeout(saveCheckTimer);
+ overlay.classList.remove('visible');
+ void overlay.offsetWidth;
+ overlay.classList.add('visible');
+ saveCheckTimer=setTimeout(()=>overlay.classList.remove('visible'),1450);
+}
+function backupSummary(data,attachments){
+ return '관심물건 '+data.favorites.length+'개 · 노트 '+data.notes.length+'개 · 첨부파일 '+attachments.length+'개';
+}
+const MAIN_TABS=['home','search','schedule','favorites','study'];
 let appDepth=0;
 const viewHistory=new Map();
 function snapshot(){return {page:state.page,filter:state.filter,selected:state.selected,viewMonth:state.viewMonth,calendarFavoritesOnly:state.calendarFavoritesOnly,detail:state.detail,note:state.note,search:state.search,region:state.region,minPrice:state.minPrice,maxPrice:state.maxPrice,priceUnit:state.priceUnit,detailTab:state.detailTab,favoriteSort:state.favoriteSort,favoriteType:state.favoriteType,noteQuery:state.noteQuery,noteSort:state.noteSort,studyCategory:state.studyCategory,noteTopicDraft:state.noteTopicDraft}}
@@ -793,7 +816,7 @@ if($('#saveNote'))$('#saveNote').onclick=async()=>{
   if(files.length||oldNote&&activeNoteEditor.attachments.changed)await attachmentReplaceForNote(uniqueId,files);
   if(oldNote)Object.assign(oldNote,{title,body,annotations,category,topicId,updatedAt:now});
   else saved.notes.unshift({id:uniqueId,title,body,annotations,category,topicId,updatedAt:now});
-  write();setEditorDirty(false);nav('study');toast('노트를 저장했어요.');
+  write();setEditorDirty(false);nav('study');showSavedCheck('노트 저장 완료');
  }catch(err){toast('노트 저장 실패: '+(err.message||'첨부파일을 확인해 주세요.'));button.disabled=false;}
 };
 if($('#deleteNote'))$('#deleteNote').onclick=async()=>{
@@ -805,6 +828,7 @@ if($('#deleteNote'))$('#deleteNote').onclick=async()=>{
 if($('#export'))$('#export').onclick=async()=>{
  try{
   const attachments=await allAttachments();
+  if(!confirm('백업할 자료를 확인해 주세요.\n'+backupSummary(saved,attachments)+'\n\n현재 저장된 데이터만 백업됩니다. 아직 노트 저장 버튼을 누르지 않은 편집 내용은 포함되지 않아요.\n\n백업 파일을 생성할까요?'))return;
   const payload={version:2,exportedAt:new Date().toISOString(),data:saved,attachments};
   const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
   const a=document.createElement('a');a.href=url;a.download='auction-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),6000);
@@ -816,11 +840,27 @@ if($('#import'))$('#import').onchange=async event=>{
   const file=event.target.files?.[0];if(!file)return;
   const payload=JSON.parse(await file.text());
   if(!payload.data||!Array.isArray(payload.data.favorites)||!Array.isArray(payload.data.notes))throw Error('백업 파일 형식 오류');
+  if(payload.data.notes.some(n=>!n||!Number.isFinite(Number(n.id))||typeof n.title!=='string'||typeof n.body!=='string'))throw Error('노트 데이터 형식 오류');
   const attachments=payload.version>=2?payload.attachments:[];
   if(!Array.isArray(attachments)||attachments.some(x=>!verifyAttachment(x)))throw Error('첨부파일 형식 오류');
-  if(!confirm('현재 노트·관심물건·첨부파일을 백업 파일 내용으로 교체할까요?'))return;
-  await attachmentRestoreAll(attachments);
-  saved=payload.data;write();render();toast('노트와 첨부파일 복원을 완료했어요.');
+  const before=await allAttachments();
+  const destination=payload.data;
+  const summary='백업 파일 ('+backupSummary(destination,attachments)+')\\n현재 앱 ('+backupSummary(saved,before)+')';
+  if(!confirm(summary+'\\n\\n복원하면 현재 앱의 저장 자료를 백업 내용으로 교체합니다. 계속할까요?'))return;
+  if(destination.notes.length===0&&saved.notes.length>0){
+   if(!confirm('주의: 선택한 백업 파일에는 노트가 0개입니다.\\n현재 노트 '+saved.notes.length+'개가 모두 없어질 수 있어요.\\n\\n그래도 빈 노트 백업으로 교체할까요?'))return;
+  }
+  const oldSaved=saved;
+  try{
+   await attachmentRestoreAll(attachments);
+   saved=destination;
+   write();
+  }catch(err){
+   saved=oldSaved;
+   try{await attachmentRestoreAll(before);}catch(rollbackError){toast('복구 실패: 기존 백업 파일을 보존해 주세요.');throw rollbackError;}
+   throw err;
+  }
+  render();showSavedCheck('복원 완료');
  }catch(err){toast('복원 실패: '+(err.message||'파일을 확인해 주세요.'));}
  finally{event.target.value='';}
 }}render();initGestureNavigation();if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});initUpdateMonitoring();

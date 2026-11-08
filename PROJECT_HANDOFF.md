@@ -2,12 +2,13 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.3.3 (Safari 아이콘 미리보기 프로젝트별 분리)
+- 현재 버전: v0.3.4 (아이폰 PNG RGB 호환성 개선)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.
 - iOS 한글 조합: 라이브 검색 DOM 갱신 금지. 검색 완료 키 또는 화면의 검색 버튼으로 결과 반영.
 - 형광펜 2탭: splitNoteUnits()는 Intl.Segmenter(단어/글자)로 렌더할 선택 범위를 만들고, 형광펜 읽기 화면에서 시작·끝 두 번 터치해 선택. 기본 iOS long-press 선택 미사용. 기존 마크를 누르면 포스트잇. annotations 데이터 포맷 그대로.
+- 실제 iPhone 화면 녹화: 공유 시트 상단에는 오토바이 이미지, 홈 화면 추가 미리보기에는 기본 '경' 아이콘이 나온다. 원인 확정 아님. v0.3.4 RGB PNG auction-ios-icon-v034.png로 교체하고 Apple touch icon/manifest/OG/fav 경로 통일, manifest id를 안정적으로 /auction-pwa/로 고정. 앱 데이터 보호를 위해 기존 설치 제거 금지, 현장 재검증 필요.
 - Safari 홈화면 아이콘: 새 파일 auction-icon-v033.png를 HTML apple-touch-icon/precomposed/favicon/og:image와 manifest에 모두 적용. manifest id와 start_url에 경매앱 고유값 명시, SW auction-shell-v033, APP_VERSION 0.3.3. GitHub Pages 같은 호스트에 다른 PWA가 존재할 수 있으므로 iOS 실제 추가 미리보기 필수.
 - 홈 화면 아이콘 갱신: 새 경로 apple-touch-icon-v032.png를 index.html과 manifest에서 명시; 재설치 이전에 홈 화면 앱 자체에서 백업 필수. Cache auction-shell-v032, VERSION/APP_VERSION 0.3.2.
 - 홈 화면 아이콘: 승인한 노랑 법봉·빨간 지붕 집 그림을 icon.svg와 apple-touch-icon.png(180x180)에 적용, manifest와 index.html 명시. 캐시 auction-shell-v031. iOS 기존 설치 아이콘 캐시는 기기에서 늦게 반영될 수 있음. 재설치 전 반드시 백업.

@@ -375,3 +375,12 @@ body.attachment-viewing{overflow:hidden}
 .attachment-extract-word.selected{background:#ffe37c;color:#203347}
 .attachment-extract-empty{align-self:center;padding:24px;color:#fff;line-height:1.8;text-align:center;font-size:15px}
 .attachment-extract-empty p{font-size:13px;color:#cbd5e1}
+
+/* v0.3.9 PDF sources linked to source files */
+.note-pdf-sources[hidden]{display:none!important}
+.note-pdf-sources{display:flex;flex-direction:column;gap:5px;margin-top:8px;padding:8px;border-radius:12px;background:#edf5ff;border:1px solid #dce9fb}
+.note-pdf-source{display:flex;align-items:center;gap:5px;min-width:0}
+.note-pdf-source-open{display:flex;align-items:center;gap:7px;flex:1;min-width:0;text-align:left;border:0;background:#fff;padding:8px;border-radius:9px;color:#315c98}
+.note-pdf-source-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;font-size:12px;font-weight:700}
+.note-pdf-source-open small{font-size:11px;white-space:nowrap;color:#6590bf}
+.note-pdf-source-remove{width:30px;height:33px;flex-shrink:0;border:0;border-radius:9px;background:#fff;color:#b15360;font-size:20px}

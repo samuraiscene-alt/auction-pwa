@@ -84,3 +84,6 @@
 
 ## v0.3.9 PDF 출처 바로가기
 PDF 문장 선택 후 노트에 삽입할 때 노트 메타데이터 sources [{id,fileId,filename,page,quote}] 기록. 노트 편집 상단에 연결된 PDF 목록(이름/페이지/원문 보기), 각 항목 터치 시 기존 첨부파일의 id 검색해 해당 페이지 번호로 내부 PDF 뷰어 open(). 삭제는 출처 링크만 삭제하며 본문·형광펜·PDF 자체는 유지. 기존 notes 구버전은 sources 부재 시 빈 목록, draft와 백업에는 sources 그대로 포함. 실제 Safari PDF iframe의 #page 탐색은 기기마다 달라 검증 필요.
+
+## v0.4.0 PDF 정확한 페이지 표시
+PDF.js 5.4.149 엔진으로 PDF 전체 페이지 수를 확인하고, pdfDocument.getPage(n).render()를 canvas에 렌더한다. 출처 링크 initialPage를 1~numPages로 제한하고 실제 그 페이지를 표시한다. 이전/다음 버튼은 범위 제한, 현재/총 페이지를 노출하며 사진과 공통 확대 버튼은 PDF에서도 적용된다(최대 300%). 렌더 요청 교체 시 작업 취소 및 화면 제거 이후 결과 무시. PDF.js/CDN 로딩 실패 시 원래 iframe 기본 뷰어로 대체하되 페이지 이동은 iOS 호환성에 따라 제한될 수 있다. 기존 첨부 DB·노트 데이터 변경 없음.

@@ -1,4 +1,12 @@
 # 부동산 경매 변경 기록
+## v0.3.4 — 2026-11-08
+- iPhone 홈 화면에 '경' 글자 기본 아이콘이 나오고 Safari 공유 메뉴에는 오토바이 아이콘이 나오는 실제 영상 확인
+- 기존 180px 팔레트 PNG 대신 동일 그림을 RGB PNG로 변환하여 새 URL auction-ios-icon-v034.png 등록
+- Apple touch icon, precomposed, favicon, 공유 미리보기 및 manifest의 이미지 URL 통일
+- manifest id와 start_url을 앱의 고정 경로로 유지(매 버전 설치 ID 변화 방지)
+- SW 캐시 v034 및 VERSION 동기화, 사용자 노트/첨부파일/백업 데이터 로직 미변경
+- 공유창의 아이콘은 iOS 캐시에 영향을 받을 수 있어 실제 기기에서 설치 미리보기 재검증 필요
+
 ## v0.3.3 — 2026-11-08
 - iPhone Safari 홈화면 설치 미리보기에서 타 앱 이미지가 표시되는 문제 대응
 - 경매 전용 PNG 파일명 auction-icon-v033.png, apple-touch-icon/precomposed/icon 세 가지 링크 일치

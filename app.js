@@ -1,4 +1,71 @@
-const $=s=>document.querySelector(s);const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>localStorage.setItem(STORE,JSON.stringify(saved));let activeNoteEditor=null;
+const $=s=>document.querySelector(s);const APP_VERSION='0.3.0';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+ const encoded=JSON.stringify(saved);
+ localStorage.setItem(STORE,encoded);
+ if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
+};
+let activeNoteEditor=null;
+let updateState={checking:false,available:false,latest:APP_VERSION,registration:null,network:false};
+const STORAGE_STAMP_KEY='auction_pwa_lastbackup_v1';
+let editorDirty=false;
+function setEditorDirty(value){editorDirty=Boolean(value);updateUpdateStatus();}
+function statusText(){
+ if(updateState.checking)return '업데이트 확인 중…';
+ if(updateState.available)return '새 버전 v'+updateState.latest+' 준비됨';
+ if(!navigator.onLine)return '오프라인 · 저장한 자료 사용 가능';
+ return '최신 버전 v'+APP_VERSION;
+}
+function updateUpdateStatus(){
+ const info=$('#appUpdateState');
+ if(info)info.textContent=statusText();
+ const button=$('#checkUpdate');
+ if(button){button.disabled=updateState.checking;button.textContent=updateState.available?'업데이트 적용':'업데이트 확인';}
+ const row=$('#updateAvailableMessage');
+ if(row)row.hidden=!updateState.available;
+}
+async function inspectAppUpdate(announce=false){
+ if(!('serviceWorker'in navigator)||location.protocol==='file:'){
+  if(announce)toast('이 환경에서는 자동 업데이트를 사용할 수 없어요.');return;
+ }
+ if(updateState.checking)return;
+ updateState.checking=true;updateUpdateStatus();
+ try{
+  const reg=await navigator.serviceWorker.getRegistration('./');
+  if(reg){updateState.registration=reg;await reg.update();}
+  const response=await fetch('./VERSION.txt?check='+Date.now(),{cache:'no-store'});
+  if(!response.ok)throw Error('버전 확인 응답 오류');
+  const remote=(await response.text()).trim().split(/\s+/)[0];
+  if(!/^\d+\.\d+\.\d+$/.test(remote))throw Error('버전 정보 오류');
+  updateState.latest=remote;
+  const toNums=v=>v.split('.').map(Number);
+  const local=toNums(APP_VERSION),next=toNums(remote);
+  updateState.available=next.some((n,i)=>n>local[i]&&next.slice(0,i).every((x,j)=>x===local[j]));
+  updateState.network=true;
+  if(announce)toast(updateState.available?'업데이트가 준비됐어요.':'현재 최신 버전입니다.');
+ }catch(err){
+  updateState.network=false;
+  if(announce)toast(navigator.onLine?'업데이트 확인 실패 · 연결을 확인해 주세요.':'인터넷에 연결한 뒤 확인해 주세요.');
+ }finally{updateState.checking=false;updateUpdateStatus();}
+}
+function applyAppUpdate(){
+ if(editorDirty){
+  toast('작성 중인 노트를 먼저 저장해 주세요.');
+  return;
+ }
+ if(updateState.available)location.reload();
+ else inspectAppUpdate(true);
+}
+function initUpdateMonitoring(){
+ window.addEventListener('online',()=>inspectAppUpdate(false));
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)inspectAppUpdate(false);});
+ window.addEventListener('pageshow',event=>{if(event.persisted)inspectAppUpdate(false);});
+ if('serviceWorker'in navigator){
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+   if(updateState.available)updateUpdateStatus();
+  });
+ }
+ inspectAppUpdate(false);
+}
+
 
 const ATTACH_DB='auction-note-files-v1',ATTACH_STORE='files',MAX_NOTE_ATTACH=8,MAX_FILE_BYTES=8*1024*1024;
 let attachDbPromise=null;
@@ -583,7 +650,17 @@ function initNoteEditor(){
   return {body:text,annotations:marks};
  }};
 }
-function settings(){return `<div class="card"><strong>앱 정보</strong><p class="helper">부동산 경매 PWA UI 골격 v0.2.9</p><div class="divider"></div><strong>개발 상태</strong><p class="helper">화면 탐색 및 샘플 데이터만 제공. 법원 자료·실거래가·실제 사진과 자동 갱신 기능은 미연동.</p><div class="divider"></div><strong>데이터 백업</strong><p class="helper">노트와 관심물건을 JSON 파일로 내보내거나 복원할 수 있어요.</p><button class="secondary" id="export" style="width:100%">내 데이터 백업</button><label class="upload" style="margin-top:10px">백업 파일 복원<input id="import" type="file" accept="application/json,.json" hidden></label></div><div class="card"><strong>프로젝트 이관</strong><p class="helper">README.md, PROJECT_HANDOFF.md, DESIGN_SPEC.md에 작업 재개 및 배포 방법이 기록돼 있어요.</p></div>`}function render(){document.onselectionchange=null;activeNoteEditor=null;const back=document.getElementById('navBack');if(back){back.hidden=state.page==='home';back.onclick=goBack;}document.title='부동산 경매 · '+titles[state.page];$('#page-title').textContent=titles[state.page];$('#content').innerHTML=({home,search,schedule,favorites,study,advanced,special,detail,rights,note,settings}[state.page])();if($('#noteEditorShell'))activeNoteEditor={...initNoteEditor(),attachments:createAttachmentEditor()};$('#tabs').innerHTML=tabs();$('#settings').onclick=()=>nav('settings');document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>nav(x.dataset.page));document.querySelectorAll('[data-detail]').forEach(x=>x.onclick=()=>nav('detail',{detail:x.dataset.detail,detailTab:'overview'}));document.querySelectorAll('[data-filter]').forEach(x=>x.onclick=()=>{state.filter=x.dataset.filter;render()});document.querySelectorAll('[data-day]').forEach(x=>x.onclick=()=>{state.selected=x.dataset.day;render();});if($('#prevMonth'))$('#prevMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,-1);state.selected=state.viewMonth+'-01';render();};if($('#nextMonth'))$('#nextMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,1);state.selected=state.viewMonth+'-01';render();};if($('#todayMonth'))$('#todayMonth').onclick=()=>{const now=new Date();state.viewMonth=calendarMonthKey(now);state.selected=state.viewMonth+'-'+String(now.getDate()).padStart(2,'0');render();};if($('#favCalendarOnly'))$('#favCalendarOnly').onchange=e=>{state.calendarFavoritesOnly=e.target.checked;render();};document.querySelectorAll('[data-note]').forEach(x=>x.onclick=()=>nav('note',{note:Number(x.dataset.note)}));if($('#favoriteSort'))$('#favoriteSort').onchange=e=>{state.favoriteSort=e.target.value;render();};
+function settings(){const standalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;const backupDate=localStorage.getItem(STORAGE_STAMP_KEY);return `<div class="card"><strong>앱 정보</strong><p class="helper">부동산 경매 v${APP_VERSION} · ${standalone?'홈 화면 웹앱':'브라우저 실행'}</p><p class="helper" id="appUpdateState">${statusText()}</p><button class="secondary" id="checkUpdate" style="width:100%">${updateState.available?'업데이트 적용':'업데이트 확인'}</button><p id="updateAvailableMessage" class="update-available-message" ${updateState.available?'':'hidden'}>새 버전이 준비돼 있어요. 작성 중인 내용은 먼저 저장해 주세요.</p><div class="divider"></div><strong>개발 상태</strong><p class="helper">화면 탐색 및 샘플 데이터만 제공. 법원 자료·실거래가·실제 사진과 자동 갱신 기능은 미연동.</p><div class="divider"></div><strong>데이터 백업</strong><p class="helper">노트·관심물건·첨부파일을 한 번에 백업합니다. Safari와 홈 화면 웹앱은 저장 데이터가 분리될 수 있으니 홈 화면 웹앱에서 백업하세요.</p><p class="helper">마지막 백업 생성 요청: ${backupDate?new Date(backupDate).toLocaleString('ko-KR'):'기록 없음'}</p><button class="secondary" id="export" style="width:100%">내 데이터 백업</button><label class="upload" style="margin-top:10px">백업 파일 복원<input id="import" type="file" accept="application/json,.json" hidden></label></div><div class="card"><strong>프로젝트 이관</strong><p class="helper">README.md, PROJECT_HANDOFF.md, DESIGN_SPEC.md에 작업 재개 및 배포 방법이 기록돼 있어요.</p></div>`}function render(){document.onselectionchange=null;activeNoteEditor=null;editorDirty=false;const back=document.getElementById('navBack');if(back){back.hidden=state.page==='home';back.onclick=goBack;}document.title='부동산 경매 · '+titles[state.page];$('#page-title').textContent=titles[state.page];$('#content').innerHTML=({home,search,schedule,favorites,study,advanced,special,detail,rights,note,settings}[state.page])();if($('#noteEditorShell')){
+ activeNoteEditor={...initNoteEditor(),attachments:createAttachmentEditor()};
+ $('#noteTitle').addEventListener('input',()=>setEditorDirty(true));
+ $('#noteCategory').addEventListener('change',()=>setEditorDirty(true));
+ $('#noteTopic').addEventListener('change',()=>setEditorDirty(true));
+ $('#noteBody').addEventListener('input',()=>setEditorDirty(true));
+ $('#noteAttachmentInput').addEventListener('change',()=>setEditorDirty(true));
+ document.querySelectorAll('[data-note-color]').forEach(btn=>btn.addEventListener('click',()=>setEditorDirty(true)));
+ $('#stickySave').addEventListener('click',()=>setEditorDirty(true));
+ $('#stickyRemove').addEventListener('click',()=>setEditorDirty(true));
+ }$('#tabs').innerHTML=tabs();$('#settings').onclick=()=>nav('settings');document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>nav(x.dataset.page));document.querySelectorAll('[data-detail]').forEach(x=>x.onclick=()=>nav('detail',{detail:x.dataset.detail,detailTab:'overview'}));document.querySelectorAll('[data-filter]').forEach(x=>x.onclick=()=>{state.filter=x.dataset.filter;render()});document.querySelectorAll('[data-day]').forEach(x=>x.onclick=()=>{state.selected=x.dataset.day;render();});if($('#prevMonth'))$('#prevMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,-1);state.selected=state.viewMonth+'-01';render();};if($('#nextMonth'))$('#nextMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,1);state.selected=state.viewMonth+'-01';render();};if($('#todayMonth'))$('#todayMonth').onclick=()=>{const now=new Date();state.viewMonth=calendarMonthKey(now);state.selected=state.viewMonth+'-'+String(now.getDate()).padStart(2,'0');render();};if($('#favCalendarOnly'))$('#favCalendarOnly').onchange=e=>{state.calendarFavoritesOnly=e.target.checked;render();};document.querySelectorAll('[data-note]').forEach(x=>x.onclick=()=>nav('note',{note:Number(x.dataset.note)}));if($('#favoriteSort'))$('#favoriteSort').onchange=e=>{state.favoriteSort=e.target.value;render();};
 document.querySelectorAll('[data-favorite-type]').forEach(btn=>btn.onclick=()=>{state.favoriteType=btn.dataset.favoriteType;render();});
 document.querySelectorAll('[data-remove-favorite]').forEach(btn=>btn.onclick=()=>{
  const id=btn.dataset.removeFavorite;
@@ -680,6 +757,8 @@ if($('#specialBack'))$('#specialBack').onclick=()=>goBack();if($('#favBtn'))$('#
  });
 }
 if($('#noteSort'))$('#noteSort').onchange=event=>{state.noteSort=event.target.value;render();};
+if($('#checkUpdate'))$('#checkUpdate').onclick=()=>updateState.available?applyAppUpdate():inspectAppUpdate(true);
+updateUpdateStatus();
 document.querySelectorAll('[data-study-category]').forEach(btn=>btn.onclick=()=>{state.studyCategory=btn.dataset.studyCategory;render();});
 if($('#createCategorizedNote'))$('#createCategorizedNote').onclick=()=>nav('note',{note:null,noteTopicDraft:''});
 document.querySelectorAll('[data-create-topic]').forEach(btn=>btn.onclick=()=>nav('note',{note:null,noteTopicDraft:btn.dataset.createTopic}));
@@ -714,7 +793,7 @@ if($('#saveNote'))$('#saveNote').onclick=async()=>{
   if(files.length||oldNote&&activeNoteEditor.attachments.changed)await attachmentReplaceForNote(uniqueId,files);
   if(oldNote)Object.assign(oldNote,{title,body,annotations,category,topicId,updatedAt:now});
   else saved.notes.unshift({id:uniqueId,title,body,annotations,category,topicId,updatedAt:now});
-  write();nav('study');toast('노트를 저장했어요.');
+  write();setEditorDirty(false);nav('study');toast('노트를 저장했어요.');
  }catch(err){toast('노트 저장 실패: '+(err.message||'첨부파일을 확인해 주세요.'));button.disabled=false;}
 };
 if($('#deleteNote'))$('#deleteNote').onclick=async()=>{
@@ -729,7 +808,7 @@ if($('#export'))$('#export').onclick=async()=>{
   const payload={version:2,exportedAt:new Date().toISOString(),data:saved,attachments};
   const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
   const a=document.createElement('a');a.href=url;a.download='auction-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),6000);
-  toast('노트와 첨부파일을 함께 백업했어요.');
+  localStorage.setItem(STORAGE_STAMP_KEY,new Date().toISOString());toast('백업 파일 생성 요청을 보냈어요. 아이폰 파일 앱에서 저장 여부를 확인해 주세요.');
  }catch(err){toast('백업 실패: 첨부파일 저장소를 확인해 주세요.');}
 };
 if($('#import'))$('#import').onchange=async event=>{
@@ -744,4 +823,4 @@ if($('#import'))$('#import').onchange=async event=>{
   saved=payload.data;write();render();toast('노트와 첨부파일 복원을 완료했어요.');
  }catch(err){toast('복원 실패: '+(err.message||'파일을 확인해 주세요.'));}
  finally{event.target.value='';}
-}}render();initGestureNavigation();if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}}render();initGestureNavigation();if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});initUpdateMonitoring();

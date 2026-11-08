@@ -1,2 +1,2 @@
-0.3.0
-PWA home-screen update status, safe reload gating and verified local note writes.
+0.3.1
+Approved gavel striking house icon for iPhone home screen and PWA manifest.

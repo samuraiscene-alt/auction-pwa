@@ -2,12 +2,13 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.3.1 (법봉·집 홈 화면 앱 아이콘)
+- 현재 버전: v0.3.2 (iOS 홈 화면 아이콘 캐시 갱신)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.
 - iOS 한글 조합: 라이브 검색 DOM 갱신 금지. 검색 완료 키 또는 화면의 검색 버튼으로 결과 반영.
 - 형광펜 2탭: splitNoteUnits()는 Intl.Segmenter(단어/글자)로 렌더할 선택 범위를 만들고, 형광펜 읽기 화면에서 시작·끝 두 번 터치해 선택. 기본 iOS long-press 선택 미사용. 기존 마크를 누르면 포스트잇. annotations 데이터 포맷 그대로.
+- 홈 화면 아이콘 갱신: 새 경로 apple-touch-icon-v032.png를 index.html과 manifest에서 명시; 재설치 이전에 홈 화면 앱 자체에서 백업 필수. Cache auction-shell-v032, VERSION/APP_VERSION 0.3.2.
 - 홈 화면 아이콘: 승인한 노랑 법봉·빨간 지붕 집 그림을 icon.svg와 apple-touch-icon.png(180x180)에 적용, manifest와 index.html 명시. 캐시 auction-shell-v031. iOS 기존 설치 아이콘 캐시는 기기에서 늦게 반영될 수 있음. 재설치 전 반드시 백업.
 - PWA 안정화: APP_VERSION='0.3.0'과 VERSION.txt 비교. 설정에서 업데이트 확인/적용; online/visibility/pageshow 시 점검, 노트 편집 중이면 적용 금지. SW auction-shell-v030, 네트워크 우선/오프라인 캐시. Safari와 홈 화면 앱은 저장소 분리(서버 없는 동기화 불가능). 로컬 저장 검증, JSON 백업은 수동 이전. iPhone 실기기 확인 필요.
 - 학습 항목 노트: note.topicId는 '권리분석:0' 같은 문자열. studyTopicOptions()와 normalizedStudyTopic()으로 검증. 선택 카테고리의 각 체크리스트 항목에 연결된 노트만 보여주고 직접 열기·작성 가능. 구버전 노트의 topicId 미존재는 빈 값으로 처리.

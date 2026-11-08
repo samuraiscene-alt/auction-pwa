@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.3.7';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.3.8';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -553,7 +553,7 @@ function note(){
  <div id="noteMarkupArea" class="note-markup-area" hidden><div class="note-mark-guide">첫 단어를 터치하고 마지막 단어를 터치하세요. 선택한 뒤 색상을 누르면 포스트잇이 열려요.</div><div class="note-select-tools"><div class="note-select-unit" role="group" aria-label="선택 단위"><button type="button" class="unit-active" data-note-granularity="word">단어</button><button type="button" data-note-granularity="char">글자</button></div><button type="button" id="noteClearSelection" class="note-clear-selection">선택 취소</button></div><p id="noteSelectionHint" class="note-selection-hint">시작 부분을 한 번 터치하세요.</p><div id="noteHighlightColors" class="note-color-tools"><button data-note-color="yellow" type="button" style="--marker-color:#ffe279" aria-label="노란 형광펜">노랑</button><button data-note-color="green" type="button" style="--marker-color:#b6f0bd" aria-label="초록 형광펜">초록</button><button data-note-color="pink" type="button" style="--marker-color:#ffc6d7" aria-label="분홍 형광펜">분홍</button><button data-note-color="blue" type="button" style="--marker-color:#b9ddff" aria-label="파란 형광펜">파랑</button></div><div id="noteHighlightText" class="note-highlight-text" aria-label="형광펜을 적용할 노트 내용"></div></div>
  <div class="note-footer"><div class="note-attachment-panel"><label for="noteAttachmentInput" class="note-attach-btn">＋ 사진 · PDF 첨부</label><input type="file" id="noteAttachmentInput" accept="image/*,application/pdf,.pdf" multiple hidden><span class="note-attach-count" id="noteAttachmentCount">첨부파일 불러오는 중</span></div><div class="note-attachment-list" id="noteAttachmentList"></div><button class="primary" id="saveNote" type="button">노트 저장</button>${state.note?'<button class="secondary note-delete-btn" id="deleteNote" type="button">노트 삭제</button>':''}</div>
  <div id="stickyBackdrop" class="sticky-backdrop" hidden><section class="sticky-paper" role="dialog" aria-modal="true" aria-labelledby="stickyHeading"><div class="sticky-head"><strong id="stickyHeading">▣ 포스트잇 메모</strong><button id="stickyClose" type="button" aria-label="닫기">×</button></div><p id="stickyQuote" class="sticky-quote"></p><textarea id="stickyText" class="sticky-input" placeholder="선택한 문장에 대한 메모를 적어보세요."></textarea><div class="sticky-buttons"><button type="button" id="stickyRemove" class="sticky-remove">형광펜 제거</button><button type="button" id="stickySave" class="sticky-save">메모 저장</button></div></section></div>
- <div id="attachmentViewer" class="attachment-viewer" role="dialog" aria-modal="true" aria-label="첨부파일 보기" hidden><div class="attachment-viewer-bar"><strong id="attachmentViewerName"></strong><button type="button" id="attachmentViewerClose" aria-label="첨부파일 닫기">✕</button></div><div class="attachment-viewer-content" id="attachmentViewerContent"></div><div class="attachment-viewer-controls"><div id="attachmentViewerZoom" class="attachment-zoom" hidden><button type="button" id="attachmentZoomOut" aria-label="축소">−</button><span id="attachmentZoomValue">100%</span><button type="button" id="attachmentZoomIn" aria-label="확대">＋</button><button type="button" id="attachmentZoomReset">원래 크기</button></div><div id="attachmentPdfControls" class="attachment-pdf-controls" hidden><button type="button" id="attachmentPdfPrev">이전</button><span id="attachmentPdfPage">1페이지</span><button type="button" id="attachmentPdfNext">다음</button></div><button type="button" class="attachment-export" id="attachmentViewerExport">파일 내보내기</button></div></div>
+ <div id="attachmentViewer" class="attachment-viewer" role="dialog" aria-modal="true" aria-label="첨부파일 보기" hidden><div class="attachment-viewer-bar"><strong id="attachmentViewerName"></strong><button type="button" id="attachmentViewerClose" aria-label="첨부파일 닫기">✕</button></div><div class="attachment-viewer-content" id="attachmentViewerContent"></div><div class="attachment-viewer-controls"><div id="attachmentViewerZoom" class="attachment-zoom" hidden><button type="button" id="attachmentZoomOut" aria-label="축소">−</button><span id="attachmentZoomValue">100%</span><button type="button" id="attachmentZoomIn" aria-label="확대">＋</button><button type="button" id="attachmentZoomReset">원래 크기</button></div><div id="attachmentPdfControls" class="attachment-pdf-controls" hidden><button type="button" id="attachmentPdfPrev">이전</button><span id="attachmentPdfPage">1페이지</span><button type="button" id="attachmentPdfNext">다음</button></div><div class="attachment-pdf-extract-actions" id="attachmentExtractActions" hidden><button type="button" id="attachmentExtractToggle">문장 선택</button><button type="button" id="attachmentExtractInsert" hidden>선택 문장을 노트로</button></div><div id="attachmentExtractHint" class="attachment-extract-hint" hidden></div><button type="button" class="attachment-export" id="attachmentViewerExport">파일 내보내기</button></div></div>
  </div>`;
 }
 const NOTE_COLORS={yellow:'#ffe279',green:'#b6f0bd',pink:'#ffc6d7',blue:'#b9ddff'};
@@ -605,26 +605,126 @@ function splitNoteUnits(text,granularity){
  }
  return pieces;
 }
+const PDFJS_CDN='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/';
+let pdfJsPromise=null;
+async function loadPdfTextEngine(){
+ if(!pdfJsPromise)pdfJsPromise=import(PDFJS_CDN+'pdf.min.mjs').then(module=>{
+  module.GlobalWorkerOptions.workerSrc=PDFJS_CDN+'pdf.worker.min.mjs';
+  return module;
+ }).catch(err=>{pdfJsPromise=null;throw err;});
+ return pdfJsPromise;
+}
 function createAttachmentViewer(){
  const overlay=$('#attachmentViewer'),content=$('#attachmentViewerContent'),bar=$('#attachmentViewerName'),zoom=$('#attachmentViewerZoom'),pdfControls=$('#attachmentPdfControls');
- let url=null,scale=1,page=1,currentFile=null,loadedBlob=null;
+ const extractActions=$('#attachmentExtractActions'),extractToggle=$('#attachmentExtractToggle'),extractInsert=$('#attachmentExtractInsert'),extractHint=$('#attachmentExtractHint');
+ let url=null,scale=1,page=1,currentFile=null,loadedBlob=null,pdfDocument=null,extractMode=false,extractText='',extractTokens=[],firstToken=null,lastToken=null,viewerSeq=0;
+ function resetExtract(){
+  pdfDocument=null;extractMode=false;extractText='';extractTokens=[];firstToken=null;lastToken=null;
+  extractActions.hidden=true;extractInsert.hidden=true;extractHint.hidden=true;extractToggle.textContent='문장 선택';
+ }
  const close=()=>{
+  viewerSeq++;
   overlay.hidden=true;content.replaceChildren();
   if(url){URL.revokeObjectURL(url);url=null;}
-  currentFile=null;loadedBlob=null;document.body.classList.remove('attachment-viewing');
+  currentFile=null;loadedBlob=null;resetExtract();document.body.classList.remove('attachment-viewing');
  };
  function setZoom(next){
   scale=Math.min(4,Math.max(1,Math.round(next*10)/10));
   const img=content.querySelector('img');if(img){img.style.width=scale*100+'%';img.style.maxWidth='none';}
   $('#attachmentZoomValue').textContent=Math.round(scale*100)+'%';
- };
- const pageChange=delta=>{
-  if(!currentFile||currentFile.type!=='application/pdf')return;
-  page=Math.max(1,page+delta);
-  $('#attachmentPdfPage').textContent=page+'페이지';
-  const frame=content.querySelector('iframe');
-  if(frame&&url)frame.src=url+'#page='+page+'&view=FitH';
- };
+ }
+ function showEmbeddedPdf(){
+  content.replaceChildren();
+  const frame=document.createElement('iframe');
+  frame.className='attachment-pdf-frame';frame.title=currentFile?.name||'PDF';frame.src=url+'#page='+page+'&view=FitH';
+  content.appendChild(frame);
+  extractMode=false;firstToken=null;lastToken=null;
+  extractToggle.textContent='문장 선택';extractInsert.hidden=true;extractHint.hidden=true;
+ }
+ function selectedRange(){
+  if(firstToken===null||lastToken===null)return null;
+  const left=Math.min(firstToken,lastToken),right=Math.max(firstToken,lastToken);
+  return {start:extractTokens[left].start,end:extractTokens[right].end};
+ }
+ function drawExtractedPage(){
+  content.replaceChildren();
+  const paper=document.createElement('div');paper.className='attachment-extracted-page';
+  for(let i=0;i<extractTokens.length;i++){
+   const token=extractTokens[i],span=document.createElement('span');
+   span.textContent=token.value;
+   if(!/^\s+$/u.test(token.value)){
+    span.className='attachment-extract-word';
+    const range=selectedRange();
+    if(range&&token.start<range.end&&token.end>range.start)span.classList.add('selected');
+    else if(firstToken===i&&lastToken===null)span.classList.add('selected');
+    span.dataset.token=String(i);
+    span.onclick=()=>{
+     if(firstToken===null||lastToken!==null){firstToken=i;lastToken=null;}else lastToken=i;
+     drawExtractedPage();
+    };
+   }
+   paper.appendChild(span);
+  }
+  content.appendChild(paper);
+  const range=selectedRange();
+  extractInsert.hidden=!range;
+  extractHint.hidden=false;
+  extractHint.textContent=range?'선택 완료 · 노트로 가져오기를 누르세요.':firstToken!==null?'마지막 단어를 터치하세요.':'가져올 문장의 첫 단어와 마지막 단어를 차례로 터치하세요.';
+ }
+ async function showExtractedPage(){
+  if(!pdfDocument||!currentFile)return;
+  const sequence=viewerSeq,filename=currentFile.id;
+  extractHint.hidden=false;extractHint.textContent='PDF '+page+'페이지에서 문장을 추출하는 중…';
+  extractInsert.hidden=true;content.replaceChildren();
+  try{
+   const pdfPage=await pdfDocument.getPage(page);
+   const textContent=await pdfPage.getTextContent();
+   if(sequence!==viewerSeq||currentFile?.id!==filename||!extractMode)return;
+   extractText=textContent.items.map(item=>String(item.str||'')+(item.hasEOL?'\n':' ')).join('').replace(/[ \t]+\n/g,'\n').trim();
+   extractTokens=splitNoteUnits(extractText,'word');
+   firstToken=null;lastToken=null;
+   if(!extractText){
+    content.innerHTML='<div class="attachment-extract-empty">이 페이지에서 선택할 수 있는 문장을 찾지 못했어요.<p>스캔 PDF라면 별도의 문자 인식(OCR)이 필요해요.</p></div>';
+    extractHint.textContent='문장 추출 불가 · 일반 PDF 뷰어는 그대로 사용할 수 있어요.';
+    return;
+   }
+   drawExtractedPage();
+  }catch(err){
+   if(sequence!==viewerSeq)return;
+   content.innerHTML='<div class="attachment-extract-empty">이 페이지의 글자를 읽을 수 없어요. 다른 페이지나 일반 PDF 뷰어를 이용해 주세요.</div>';
+   extractHint.textContent='PDF 텍스트 추출 실패';
+  }
+ }
+ async function startExtraction(){
+  if(!currentFile||!loadedBlob)return;
+  const sequence=viewerSeq,fileId=currentFile.id;
+  extractMode=true;extractToggle.disabled=true;
+  extractHint.hidden=false;extractHint.textContent='PDF 문자 분석 기능을 불러오는 중…';
+  try{
+   if(!pdfDocument){
+    const engine=await loadPdfTextEngine();
+    if(sequence!==viewerSeq||currentFile?.id!==fileId)return;
+    const bytes=new Uint8Array(await loadedBlob.arrayBuffer());
+    if(sequence!==viewerSeq||currentFile?.id!==fileId)return;
+    pdfDocument=await engine.getDocument({data:bytes}).promise;
+   }
+   if(sequence!==viewerSeq||currentFile?.id!==fileId)return;
+   $('#attachmentPdfPage').textContent=page+' / '+pdfDocument.numPages+'페이지';
+   await showExtractedPage();extractToggle.textContent='PDF 보기';
+  }catch(err){
+   if(sequence!==viewerSeq)return;
+   extractMode=false;showEmbeddedPdf();
+   toast('PDF 글자 분석을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.');
+  }finally{extractToggle.disabled=false;}
+ }
+ function pageChange(delta){
+  if(!currentFile||!(currentFile.type==='application/pdf'||/\.pdf$/i.test(currentFile.name)))return;
+  const max=pdfDocument?.numPages||10000;
+  page=Math.max(1,Math.min(max,page+delta));
+  $('#attachmentPdfPage').textContent=page+(pdfDocument?' / '+pdfDocument.numPages:'')+'페이지';
+  if(extractMode)showExtractedPage();
+  else{const frame=content.querySelector('iframe');if(frame&&url)frame.src=url+'#page='+page+'&view=FitH';}
+ }
  $('#attachmentViewerClose').onclick=close;
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
  $('#attachmentZoomIn').onclick=()=>setZoom(scale+.5);
@@ -632,53 +732,51 @@ function createAttachmentViewer(){
  $('#attachmentZoomReset').onclick=()=>setZoom(1);
  $('#attachmentPdfPrev').onclick=()=>pageChange(-1);
  $('#attachmentPdfNext').onclick=()=>pageChange(1);
+ extractToggle.onclick=()=>{if(extractMode){showEmbeddedPdf();}else startExtraction();};
+ extractInsert.onclick=()=>{
+  const range=selectedRange();if(!range||!extractText)return;
+  const quote=extractText.slice(range.start,range.end).trim();
+  if(!quote)return;
+  const source={filename:currentFile?.name||'PDF',page};
+  close();
+  const editor=activeNoteEditor;
+  if(editor&&typeof editor.appendFromPdf==='function')editor.appendFromPdf(quote,source);
+  else toast('공부 노트를 열고 다시 시도해 주세요.');
+ };
  $('#attachmentViewerExport').onclick=()=>{
   if(!currentFile||!url)return;
-  const a=document.createElement('a');
-  a.href=url;a.download=currentFile.name||'첨부파일';a.rel='noopener';
-  document.body.appendChild(a);a.click();a.remove();
-  toast('파일 저장 화면이 열리지 않으면 공유 메뉴를 이용해 주세요.');
+  const a=document.createElement('a');a.href=url;a.download=currentFile.name||'첨부파일';a.rel='noopener';
+  document.body.appendChild(a);a.click();a.remove();toast('파일 저장 화면이 열리지 않으면 공유 메뉴를 이용해 주세요.');
  };
  content.addEventListener('touchstart',event=>{
   if(event.touches.length!==2||!content.querySelector('img'))return;
-  const d=Math.hypot(event.touches[0].clientX-event.touches[1].clientX,event.touches[0].clientY-event.touches[1].clientY);
-  content.dataset.pinchStart=String(d);content.dataset.pinchScale=String(scale);
+  content.dataset.pinchStart=String(Math.hypot(event.touches[0].clientX-event.touches[1].clientX,event.touches[0].clientY-event.touches[1].clientY));
+  content.dataset.pinchScale=String(scale);
  },{passive:true});
  content.addEventListener('touchmove',event=>{
   if(event.touches.length!==2||!content.querySelector('img'))return;
-  const d=Math.hypot(event.touches[0].clientX-event.touches[1].clientX,event.touches[0].clientY-event.touches[1].clientY);
+  const distance=Math.hypot(event.touches[0].clientX-event.touches[1].clientX,event.touches[0].clientY-event.touches[1].clientY);
   const base=Number(content.dataset.pinchStart);
-  if(base>0){event.preventDefault();setZoom(Number(content.dataset.pinchScale)*d/base);}
+  if(base>0){event.preventDefault();setZoom(Number(content.dataset.pinchScale)*distance/base);}
  },{passive:false});
  return {
   async open(file){
    if(!file||typeof file.data!=='string')return toast('첨부파일을 찾지 못했어요.');
-   close();currentFile=file;bar.textContent=file.name;page=1;scale=1;
-   content.replaceChildren();
-   zoom.hidden=true;pdfControls.hidden=true;
-   overlay.hidden=false;document.body.classList.add('attachment-viewing');
+   close();currentFile=file;const sequence=viewerSeq;bar.textContent=file.name;page=1;scale=1;
+   content.replaceChildren();zoom.hidden=true;pdfControls.hidden=true;overlay.hidden=false;document.body.classList.add('attachment-viewing');
    try{
-    const response=await fetch(file.data);
-    loadedBlob=await response.blob();
-    if(!currentFile||currentFile.id!==file.id)return;
-    url=URL.createObjectURL(loadedBlob);
+    const response=await fetch(file.data),blob=await response.blob();
+    if(sequence!==viewerSeq||currentFile?.id!==file.id)return;
+    loadedBlob=blob;url=URL.createObjectURL(blob);
     const isPdf=file.type==='application/pdf'||/\.pdf$/i.test(file.name);
     if(isPdf){
-     const frame=document.createElement('iframe');
-     frame.className='attachment-pdf-frame';
-     frame.title=file.name;frame.src=url+'#page=1&view=FitH';
-     content.appendChild(frame);
-     pdfControls.hidden=false;
-     $('#attachmentPdfPage').textContent='1페이지';
+     extractActions.hidden=false;pdfControls.hidden=false;
+     $('#attachmentPdfPage').textContent='1페이지';showEmbeddedPdf();
     }else{
-     const img=document.createElement('img');
-     img.className='attachment-preview-image';
-     img.alt=file.name;img.src=url;content.appendChild(img);zoom.hidden=false;setZoom(1);
+     const img=document.createElement('img');img.className='attachment-preview-image';img.alt=file.name;img.src=url;
+     content.appendChild(img);zoom.hidden=false;setZoom(1);
     }
-   }catch(error){
-    content.textContent='미리보기를 열 수 없어요. 파일 내보내기를 이용해 주세요.';
-    toast('첨부파일 미리보기 실패');
-   }
+   }catch(err){if(sequence!==viewerSeq)return;content.textContent='미리보기를 열 수 없어요. 파일 내보내기를 이용해 주세요.';toast('첨부파일 미리보기 실패');}
   },close
  };
 }
@@ -813,6 +911,15 @@ function initNoteEditor(){
  return {getData(){
   if(mode==='write'){const next=input.value;marks=normalizeNoteMarks(next,reconcileNoteMarks(text,next,marks));text=next;}
   return {body:text,annotations:marks};
+ },appendFromPdf(quote,source){
+  if(mode==='write')toMark();
+  const label='[PDF: '+String(source.filename||'문서')+' · '+source.page+'페이지]';
+  const separator=text?'\n\n':'',start=text.length+separator.length+label.length+1;
+  text+=separator+label+'\n'+quote;
+  const marker={id:'mark-'+Date.now()+'-'+Math.floor(Math.random()*1000000),start,end:start+quote.length,color:'yellow',memo:''};
+  marks=normalizeNoteMarks(text,[...marks,marker]);
+  input.value=text;first=null;second=null;draw();openSticky(marker.id);
+  setEditorDirty(true);scheduleNoteDraft();
  },setData(data){
   text=String(data.body||'');
   marks=normalizeNoteMarks(text,data.annotations);

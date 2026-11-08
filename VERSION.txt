@@ -1,2 +1,2 @@
-0.4.4
-Full-width PDF controls and unclipped current page input.
+0.4.5
+Replace PDF page number keyboard with iPhone-style scrolling wheel selector.

@@ -1,2 +1,2 @@
-0.4.1
-Keep PDF/photo viewer bottom controls visible in iPhone home-screen PWA.
+0.4.2
+Direct PDF page number input and go action for long auction documents.

@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.3.8';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.3.9';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -20,7 +20,7 @@ function clearDraft(noteId){
 function captureNoteDraft(){
  if(!activeNoteEditor||state.page!=='note')return null;
  const data=activeNoteEditor.getData(),category=normalizedStudyCategory($('#noteCategory').value);
- return {noteId:state.note==null?null:Number(state.note),title:$('#noteTitle').value,category,topicId:normalizedStudyTopic($('#noteTopic').value,category),body:data.body,annotations:data.annotations,updatedAt:Date.now()};
+ return {noteId:state.note==null?null:Number(state.note),title:$('#noteTitle').value,category,topicId:normalizedStudyTopic($('#noteTopic').value,category),body:data.body,annotations:data.annotations,sources:data.sources,updatedAt:Date.now()};
 }
 function persistNoteDraft(){
  clearTimeout(draftTimer);draftTimer=null;
@@ -61,7 +61,7 @@ function recoverNoteDraft(){
  const topic=$('#noteTopic');
  topic.innerHTML='<option value="">연결하지 않음</option>'+studyTopicOptions(category).map(t=>'<option value="'+escapeHtml(t.id)+'">'+escapeHtml(t.name)+'</option>').join('');
  topic.value=normalizedStudyTopic(draft.topicId,category);
- activeNoteEditor.setData({body:draft.body,annotations:draft.annotations});
+ activeNoteEditor.setData({body:draft.body,annotations:draft.annotations,sources:draft.sources});
  setEditorDirty(true);
  const indicator=$('#noteDraftStatus');
  if(indicator)indicator.textContent='임시기록 복구됨 · 노트 저장을 눌러주세요';
@@ -548,6 +548,7 @@ function note(){
  const n=saved.notes.find(x=>x.id===state.note)||{title:'',body:'',annotations:[],category:STUDY_CATEGORY_IDS.has(state.studyCategory)?state.studyCategory:'미분류',topicId:state.noteTopicDraft};
  return `<div class="card note-workspace" id="noteEditorShell">
  <div class="note-title-line"><label class="label" for="noteTitle">제목</label><label for="noteCategory" class="note-category-selector">분류 <select id="noteCategory" class="select">${['미분류',...STUDY_CATEGORIES.map(c=>c.id)].map(v=>`<option value="${v}" ${normalizedStudyCategory(n.category)===v?'selected':''}>${v}</option>`).join('')}</select></label></div><input id="noteTitle" class="search" placeholder="노트 제목" value="${escapeHtml(n.title)}"><div class="note-topic-selector"><label for="noteTopic">연결할 학습 항목</label><select id="noteTopic" class="select"><option value="">연결하지 않음</option>${studyTopicOptions(normalizedStudyCategory(n.category)).map(t=>`<option value="${escapeHtml(t.id)}" ${normalizedStudyTopic(n.topicId,normalizedStudyCategory(n.category))===t.id?'selected':''}>${escapeHtml(t.name)}</option>`).join('')}</select></div>
+ <div id="notePdfSources" class="note-pdf-sources" hidden></div>
  <div id="noteDraftStatus" class="note-draft-status">작성 내용은 자동 임시저장 · 노트 저장으로 확정</div><div class="note-content-bar"><label class="label" for="noteBody">내용</label><div class="note-mode-buttons"><button id="noteWriteMode" type="button" class="note-mode active">✎ 작성</button><button id="noteMarkMode" type="button" class="note-mode">🖍 형광펜</button></div></div>
  <textarea class="select noteArea" id="noteBody" placeholder="공부한 내용을 적어보세요.">${escapeHtml(n.body)}</textarea>
  <div id="noteMarkupArea" class="note-markup-area" hidden><div class="note-mark-guide">첫 단어를 터치하고 마지막 단어를 터치하세요. 선택한 뒤 색상을 누르면 포스트잇이 열려요.</div><div class="note-select-tools"><div class="note-select-unit" role="group" aria-label="선택 단위"><button type="button" class="unit-active" data-note-granularity="word">단어</button><button type="button" data-note-granularity="char">글자</button></div><button type="button" id="noteClearSelection" class="note-clear-selection">선택 취소</button></div><p id="noteSelectionHint" class="note-selection-hint">시작 부분을 한 번 터치하세요.</p><div id="noteHighlightColors" class="note-color-tools"><button data-note-color="yellow" type="button" style="--marker-color:#ffe279" aria-label="노란 형광펜">노랑</button><button data-note-color="green" type="button" style="--marker-color:#b6f0bd" aria-label="초록 형광펜">초록</button><button data-note-color="pink" type="button" style="--marker-color:#ffc6d7" aria-label="분홍 형광펜">분홍</button><button data-note-color="blue" type="button" style="--marker-color:#b9ddff" aria-label="파란 형광펜">파랑</button></div><div id="noteHighlightText" class="note-highlight-text" aria-label="형광펜을 적용할 노트 내용"></div></div>
@@ -737,7 +738,7 @@ function createAttachmentViewer(){
   const range=selectedRange();if(!range||!extractText)return;
   const quote=extractText.slice(range.start,range.end).trim();
   if(!quote)return;
-  const source={filename:currentFile?.name||'PDF',page};
+  const source={fileId:currentFile?.id||'',filename:currentFile?.name||'PDF',page};
   close();
   const editor=activeNoteEditor;
   if(editor&&typeof editor.appendFromPdf==='function')editor.appendFromPdf(quote,source);
@@ -760,9 +761,9 @@ function createAttachmentViewer(){
   if(base>0){event.preventDefault();setZoom(Number(content.dataset.pinchScale)*distance/base);}
  },{passive:false});
  return {
-  async open(file){
+  async open(file,initialPage=1){
    if(!file||typeof file.data!=='string')return toast('첨부파일을 찾지 못했어요.');
-   close();currentFile=file;const sequence=viewerSeq;bar.textContent=file.name;page=1;scale=1;
+   close();currentFile=file;const sequence=viewerSeq;bar.textContent=file.name;page=Math.max(1,Math.floor(Number(initialPage)||1));scale=1;
    content.replaceChildren();zoom.hidden=true;pdfControls.hidden=true;overlay.hidden=false;document.body.classList.add('attachment-viewing');
    try{
     const response=await fetch(file.data),blob=await response.blob();
@@ -771,7 +772,7 @@ function createAttachmentViewer(){
     const isPdf=file.type==='application/pdf'||/\.pdf$/i.test(file.name);
     if(isPdf){
      extractActions.hidden=false;pdfControls.hidden=false;
-     $('#attachmentPdfPage').textContent='1페이지';showEmbeddedPdf();
+     $('#attachmentPdfPage').textContent=page+'페이지';showEmbeddedPdf();
     }else{
      const img=document.createElement('img');img.className='attachment-preview-image';img.alt=file.name;img.src=url;
      content.appendChild(img);zoom.hidden=false;setZoom(1);
@@ -811,13 +812,40 @@ function createAttachmentEditor(){
   input.value='';
  };
  draw();
- return {async getFiles(){await loaded;return files;},get changed(){return changed;},closeViewer:viewer.close};
+ return {async getFiles(){await loaded;return files;},async openById(fileId,pageNumber){
+  await loaded;
+  const file=files.find(item=>item.id===fileId);
+  if(!file){toast('연결된 PDF 첨부파일이 없어요. 삭제했거나 복원되지 않았을 수 있어요.');return false;}
+  if(file.type!=='application/pdf'&&!/\.pdf$/i.test(file.name)){toast('PDF 파일이 아니에요.');return false;}
+  await viewer.open(file,pageNumber);return true;
+ },get changed(){return changed;},closeViewer:viewer.close};
+}
+function normalizePdfSources(value){
+ if(!Array.isArray(value))return [];
+ return value.filter(x=>x&&typeof x.fileId==='string'&&x.fileId.length>0&&typeof x.filename==='string'&&Number.isInteger(x.page)&&x.page>0)
+  .map(x=>({id:String(x.id||'pdf-'+x.fileId+'-'+x.page),fileId:x.fileId,filename:x.filename,page:x.page,quote:String(x.quote||'').slice(0,2500)}))
+  .slice(0,200);
 }
 function initNoteEditor(){
  const note=saved.notes.find(x=>x.id===state.note)||{body:'',annotations:[]};
  const input=$('#noteBody'),reader=$('#noteHighlightText'),editor=$('#noteMarkupArea');
  const writeButton=$('#noteWriteMode'),markButton=$('#noteMarkMode'),popup=$('#stickyBackdrop'),popupMemo=$('#stickyText'),hint=$('#noteSelectionHint');
- let text=String(input.value),marks=normalizeNoteMarks(text,note.annotations),first=null,second=null,currentId=null,mode='write',granularity='word';
+ let text=String(input.value),marks=normalizeNoteMarks(text,note.annotations),sources=normalizePdfSources(note.sources),first=null,second=null,currentId=null,mode='write',granularity='word';
+ const sourcesPanel=$('#notePdfSources');
+ function renderPdfSources(){
+  sourcesPanel.hidden=sources.length===0;
+  sourcesPanel.innerHTML=sources.map((src,i)=>`<div class="note-pdf-source"><button type="button" class="note-pdf-source-open" data-source-index="${i}"><span>▤</span><span class="note-pdf-source-name">${escapeHtml(src.filename)}</span><small>${src.page}페이지 · 원문 보기</small></button><button type="button" class="note-pdf-source-remove" data-remove-source="${i}" aria-label="원문 연결 제거">×</button></div>`).join('');
+  sourcesPanel.querySelectorAll('[data-source-index]').forEach(button=>button.onclick=async()=>{
+   const src=sources[Number(button.dataset.sourceIndex)];
+   if(src&&activeNoteEditor?.attachments)await activeNoteEditor.attachments.openById(src.fileId,src.page);
+  });
+  sourcesPanel.querySelectorAll('[data-remove-source]').forEach(button=>button.onclick=()=>{
+   const index=Number(button.dataset.removeSource);
+   if(!confirm('원문 바로가기만 제거할까요? 노트의 문장·형광펜·첨부 PDF 파일은 그대로 보관됩니다.'))return;
+   sources.splice(index,1);renderPdfSources();setEditorDirty(true);scheduleNoteDraft();
+  });
+ }
+ renderPdfSources();
  function selectionRange(){
   if(!first||!second)return null;
   const begin=first.start<=second.start?first:second,end=first.start<=second.start?second:first;
@@ -910,7 +938,7 @@ function initNoteEditor(){
  draw();
  return {getData(){
   if(mode==='write'){const next=input.value;marks=normalizeNoteMarks(next,reconcileNoteMarks(text,next,marks));text=next;}
-  return {body:text,annotations:marks};
+  return {body:text,annotations:marks,sources:sources.map(x=>({...x}))};
  },appendFromPdf(quote,source){
   if(mode==='write')toMark();
   const label='[PDF: '+String(source.filename||'문서')+' · '+source.page+'페이지]';
@@ -918,11 +946,18 @@ function initNoteEditor(){
   text+=separator+label+'\n'+quote;
   const marker={id:'mark-'+Date.now()+'-'+Math.floor(Math.random()*1000000),start,end:start+quote.length,color:'yellow',memo:''};
   marks=normalizeNoteMarks(text,[...marks,marker]);
-  input.value=text;first=null;second=null;draw();openSticky(marker.id);
+  input.value=text;first=null;second=null;
+  if(source.fileId){
+   sources.push({id:'pdf-'+Date.now()+'-'+Math.floor(Math.random()*1000000),fileId:source.fileId,filename:String(source.filename||'PDF'),page:Number(source.page)||1,quote:quote.slice(0,2500)});
+   renderPdfSources();
+  }
+  draw();openSticky(marker.id);
   setEditorDirty(true);scheduleNoteDraft();
  },setData(data){
   text=String(data.body||'');
   marks=normalizeNoteMarks(text,data.annotations);
+  sources=normalizePdfSources(data.sources);
+  renderPdfSources();
   input.value=text;first=null;second=null;
   draw();
  }};
@@ -1067,7 +1102,7 @@ if($('#addNote'))$('#addNote').onclick=()=>nav('note',{note:null,noteTopicDraft:
 if($('#saveNote'))$('#saveNote').onclick=async()=>{
  const title=$('#noteTitle').value.trim(),category=normalizedStudyCategory($('#noteCategory').value),topicId=normalizedStudyTopic($('#noteTopic').value,category);
  if(!title)return toast('제목을 입력하세요.');
- const {body,annotations}=activeNoteEditor?activeNoteEditor.getData():{body:$('#noteBody').value.trim(),annotations:[]};
+ const {body,annotations,sources}=activeNoteEditor?activeNoteEditor.getData():{body:$('#noteBody').value.trim(),annotations:[],sources:[]};
  const button=$('#saveNote');button.disabled=true;
  try{
   const files=activeNoteEditor?await activeNoteEditor.attachments.getFiles():[];
@@ -1076,8 +1111,8 @@ if($('#saveNote'))$('#saveNote').onclick=async()=>{
   const uniqueId=oldNote?oldNote.id:now+Math.max(0,...saved.notes.map(n=>Math.max(0,n.id-now+1)));
   // Commit file bytes before updating note metadata, so storage failures cannot silently lose attachments.
   if(files.length||oldNote&&activeNoteEditor.attachments.changed)await attachmentReplaceForNote(uniqueId,files);
-  if(oldNote)Object.assign(oldNote,{title,body,annotations,category,topicId,updatedAt:now});
-  else saved.notes.unshift({id:uniqueId,title,body,annotations,category,topicId,updatedAt:now});
+  if(oldNote)Object.assign(oldNote,{title,body,annotations,sources,category,topicId,updatedAt:now});
+  else saved.notes.unshift({id:uniqueId,title,body,annotations,sources,category,topicId,updatedAt:now});
   write();setEditorDirty(false);clearDraft(state.note);nav('study');showSavedCheck('노트 저장 완료');
  }catch(err){toast('노트 저장 실패: '+(err.message||'첨부파일을 확인해 주세요.'));button.disabled=false;}
 };

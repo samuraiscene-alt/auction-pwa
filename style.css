@@ -438,3 +438,13 @@ body.attachment-viewing{overflow:hidden!important}
  .attachment-viewer-bar{min-height:47px;padding-top:5px;padding-bottom:5px}
  .attachment-export{min-height:37px}
 }
+
+/* v0.4.2 direct PDF page navigation */
+.attachment-pdf-controls{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px}
+.attachment-page-field{display:flex;align-items:center;gap:3px;min-width:0;color:#e6eef9;border:1px solid #52617a;background:#202b3c;border-radius:9px;padding:3px 8px;max-width:112px}
+.attachment-page-field input{width:40px;min-width:0;height:31px;border:0;outline:0;color:#fff;background:transparent;text-align:center;font-size:15px;font-weight:800;appearance:textfield;-moz-appearance:textfield}
+.attachment-page-field input::-webkit-inner-spin-button,.attachment-page-field input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.attachment-page-field span{font-size:12px;white-space:nowrap;color:#b8c8dc}
+.attachment-pdf-controls #attachmentPdfGo{min-width:38px;background:#397dec;color:#fff}
+.attachment-pdf-reader-status{display:none!important}
+@media(max-width:360px){.attachment-pdf-controls{gap:4px}.attachment-pdf-controls button{min-width:35px;padding:5px 7px}.attachment-page-field{padding:3px 5px}}

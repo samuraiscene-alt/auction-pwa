@@ -9,6 +9,10 @@ self.addEventListener('activate',event=>{
 self.addEventListener('fetch',event=>{
  if(event.request.method!=='GET'||new URL(event.request.url).origin!==location.origin)return;
  const request=event.request;
+ // Version probes use unique URLs; avoid filling offline cache with timestamped copies.
+ if(new URL(request.url).pathname.endsWith('/VERSION.txt')&&new URL(request.url).searchParams.has('check')){
+  event.respondWith(fetch(request));return;
+ }
  event.respondWith(fetch(request).then(response=>{
   if(response.ok&&new URL(request.url).origin===location.origin){
    const copy=response.clone();

@@ -845,10 +845,10 @@ if($('#import'))$('#import').onchange=async event=>{
   if(!Array.isArray(attachments)||attachments.some(x=>!verifyAttachment(x)))throw Error('첨부파일 형식 오류');
   const before=await allAttachments();
   const destination=payload.data;
-  const summary='백업 파일 ('+backupSummary(destination,attachments)+')\\n현재 앱 ('+backupSummary(saved,before)+')';
-  if(!confirm(summary+'\\n\\n복원하면 현재 앱의 저장 자료를 백업 내용으로 교체합니다. 계속할까요?'))return;
+  const summary='백업 파일 ('+backupSummary(destination,attachments)+')\n현재 앱 ('+backupSummary(saved,before)+')';
+  if(!confirm(summary+'\n\n복원하면 현재 앱의 저장 자료를 백업 내용으로 교체합니다. 계속할까요?'))return;
   if(destination.notes.length===0&&saved.notes.length>0){
-   if(!confirm('주의: 선택한 백업 파일에는 노트가 0개입니다.\\n현재 노트 '+saved.notes.length+'개가 모두 없어질 수 있어요.\\n\\n그래도 빈 노트 백업으로 교체할까요?'))return;
+   if(!confirm('주의: 선택한 백업 파일에는 노트가 0개입니다.\n현재 노트 '+saved.notes.length+'개가 모두 없어질 수 있어요.\n\n그래도 빈 노트 백업으로 교체할까요?'))return;
   }
   const oldSaved=saved;
   try{

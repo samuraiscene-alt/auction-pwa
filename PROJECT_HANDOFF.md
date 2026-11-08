@@ -2,12 +2,13 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.3.7 (사진·PDF 앱 내부 뷰어)
+- 현재 버전: v0.3.8 (PDF 텍스트를 노트/형광펜/포스트잇 연결)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.
 - iOS 한글 조합: 라이브 검색 DOM 갱신 금지. 검색 완료 키 또는 화면의 검색 버튼으로 결과 반영.
 - 형광펜 2탭: splitNoteUnits()는 Intl.Segmenter(단어/글자)로 렌더할 선택 범위를 만들고, 형광펜 읽기 화면에서 시작·끝 두 번 터치해 선택. 기본 iOS long-press 선택 미사용. 기존 마크를 누르면 포스트잇. annotations 데이터 포맷 그대로.
+- PDF 텍스트 추출: loadPdfTextEngine()은 PDF.js 5.4.149 CDN에서 ESM/worker를 동적으로 불러와 getTextContent로 현재 페이지 텍스트 추출. 두 번 터치 단어 범위, 선택 문장 노트 삽입, 출처 표기, 자동 yellow annotation과 포스트잇. 스캔 PDF는 OCR 불가. 최초 인터넷 연결과 iOS 실기기 검증 필요. cache v038 APP_VERSION 0.3.8.
 - 첨부파일 뷰어: createAttachmentViewer()는 기존 data URL을 Blob으로 변환해 같은 앱 안 full-screen overlay에서 사진 또는 PDF iframe 미리보기. 사진 확대/핀치, PDF #page=N 요청, 파일 내보내기. iPhone PDF iframe 페이지 지원 및 파일 다운로드는 실기기 검증 필요. 캐시 v037, APP_VERSION 0.3.7.
 - 노트 임시저장: DRAFT_PREFIX=auction_note_draft_v1: (new 또는 id), 저장 간격 650ms. captureNoteDraft()로 제목/본문/annotations/분류/topicId 저장, pagehide/visibilitychange/화면이탈 전에도 시도, 복구 시 confirm과 activeNoteEditor.setData(). 정식 저장 성공 후 clearDraft(). 사진/PDF 첨부 바이너리는 임시저장 대상 아님. 캐시 v036, APP_VERSION 0.3.6.
 - 저장 확인 애니메이션: showSavedCheck()는 화면 중앙 큰 원형 파란 체크를 노트 write() 성공과 백업 복원 성공에만 표시. 실패 시 V 없음. 백업은 파일 요청이므로 성공 체크 미표시. 복원 전 기존 데이터/백업 데이터 개수 비교 및 노트 0개 백업 추가 경고. APP_VERSION 0.3.5, cache v035.

@@ -363,3 +363,15 @@ html,body{overflow-x:clip}
 .attachment-zoom span,.attachment-pdf-controls span{min-width:66px;text-align:center;font-size:13px}
 .attachment-export{background:#387af1;color:#fff;border:0;border-radius:11px;min-height:43px;font-weight:750}
 body.attachment-viewing{overflow:hidden}
+
+/* v0.3.8 PDF text-to-note */
+.attachment-pdf-extract-actions{display:flex;gap:8px}
+.attachment-pdf-extract-actions button{flex:1;border:1px solid #6a8ec3;border-radius:10px;min-height:42px;background:#39557b;color:#fff;font-size:13px;font-weight:750}
+.attachment-pdf-extract-actions #attachmentExtractInsert{background:#2878f4;border-color:#2878f4}
+.attachment-pdf-extract-actions button:disabled{opacity:.5}
+.attachment-extract-hint{font-size:12px;line-height:1.5;color:#d6e4f7;padding:2px 5px;text-align:center}
+.attachment-extracted-page{background:#fff;color:#1e2939;width:100%;max-width:720px;min-height:100%;padding:18px 14px 70px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:17px;line-height:1.85;align-self:flex-start}
+.attachment-extract-word{border-radius:3px;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.attachment-extract-word.selected{background:#ffe37c;color:#203347}
+.attachment-extract-empty{align-self:center;padding:24px;color:#fff;line-height:1.8;text-align:center;font-size:15px}
+.attachment-extract-empty p{font-size:13px;color:#cbd5e1}

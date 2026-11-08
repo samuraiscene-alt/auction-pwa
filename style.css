@@ -344,3 +344,6 @@ html,body{overflow-x:clip}
 .save-check-circle svg{width:90px;height:90px;fill:none;stroke:#fff;stroke-width:10;stroke-linecap:round;stroke-linejoin:round}
 .save-check-overlay strong{color:#fff;background:rgba(21,48,99,.82);padding:9px 19px;border-radius:20px;font-size:17px;font-weight:800;letter-spacing:-.4px}
 @media(prefers-reduced-motion:reduce){.save-check-overlay,.save-check-circle{transition:none}}
+
+/* v0.3.6 offline-local note drafts */
+.note-draft-status{font-size:11px;color:#7792b7;line-height:1.5;padding:7px 1px 2px;min-height:24px}

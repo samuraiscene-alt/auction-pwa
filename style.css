@@ -328,3 +328,10 @@ html,body{overflow-x:clip}
 .note-topic-selector label{font-size:12px;font-weight:750;color:#697e99;white-space:nowrap}
 .note-topic-selector .select{min-width:0;flex:1;max-width:69%;padding:9px 8px;font-size:13px;background:#f5f8fd}
 @media(max-width:370px){.note-topic-selector{align-items:flex-start;flex-direction:column;gap:5px}.note-topic-selector .select{width:100%;max-width:100%}}
+
+/* v0.3.0 PWA version and update status */
+#appUpdateState{font-weight:700;color:#3979d7}
+.update-available-message{font-size:12px;color:#ad772f;background:#fff7e6;border-radius:9px;padding:10px;line-height:1.5}
+.update-available-message[hidden]{display:none}
+#checkUpdate{min-height:47px;background:#eaf2ff;color:#2466d0;border:1px solid #d5e3fc;border-radius:12px;font-weight:750}
+#checkUpdate:disabled{opacity:.6}

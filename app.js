@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.3.6';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.3.7';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -553,6 +553,7 @@ function note(){
  <div id="noteMarkupArea" class="note-markup-area" hidden><div class="note-mark-guide">첫 단어를 터치하고 마지막 단어를 터치하세요. 선택한 뒤 색상을 누르면 포스트잇이 열려요.</div><div class="note-select-tools"><div class="note-select-unit" role="group" aria-label="선택 단위"><button type="button" class="unit-active" data-note-granularity="word">단어</button><button type="button" data-note-granularity="char">글자</button></div><button type="button" id="noteClearSelection" class="note-clear-selection">선택 취소</button></div><p id="noteSelectionHint" class="note-selection-hint">시작 부분을 한 번 터치하세요.</p><div id="noteHighlightColors" class="note-color-tools"><button data-note-color="yellow" type="button" style="--marker-color:#ffe279" aria-label="노란 형광펜">노랑</button><button data-note-color="green" type="button" style="--marker-color:#b6f0bd" aria-label="초록 형광펜">초록</button><button data-note-color="pink" type="button" style="--marker-color:#ffc6d7" aria-label="분홍 형광펜">분홍</button><button data-note-color="blue" type="button" style="--marker-color:#b9ddff" aria-label="파란 형광펜">파랑</button></div><div id="noteHighlightText" class="note-highlight-text" aria-label="형광펜을 적용할 노트 내용"></div></div>
  <div class="note-footer"><div class="note-attachment-panel"><label for="noteAttachmentInput" class="note-attach-btn">＋ 사진 · PDF 첨부</label><input type="file" id="noteAttachmentInput" accept="image/*,application/pdf,.pdf" multiple hidden><span class="note-attach-count" id="noteAttachmentCount">첨부파일 불러오는 중</span></div><div class="note-attachment-list" id="noteAttachmentList"></div><button class="primary" id="saveNote" type="button">노트 저장</button>${state.note?'<button class="secondary note-delete-btn" id="deleteNote" type="button">노트 삭제</button>':''}</div>
  <div id="stickyBackdrop" class="sticky-backdrop" hidden><section class="sticky-paper" role="dialog" aria-modal="true" aria-labelledby="stickyHeading"><div class="sticky-head"><strong id="stickyHeading">▣ 포스트잇 메모</strong><button id="stickyClose" type="button" aria-label="닫기">×</button></div><p id="stickyQuote" class="sticky-quote"></p><textarea id="stickyText" class="sticky-input" placeholder="선택한 문장에 대한 메모를 적어보세요."></textarea><div class="sticky-buttons"><button type="button" id="stickyRemove" class="sticky-remove">형광펜 제거</button><button type="button" id="stickySave" class="sticky-save">메모 저장</button></div></section></div>
+ <div id="attachmentViewer" class="attachment-viewer" role="dialog" aria-modal="true" aria-label="첨부파일 보기" hidden><div class="attachment-viewer-bar"><strong id="attachmentViewerName"></strong><button type="button" id="attachmentViewerClose" aria-label="첨부파일 닫기">✕</button></div><div class="attachment-viewer-content" id="attachmentViewerContent"></div><div class="attachment-viewer-controls"><div id="attachmentViewerZoom" class="attachment-zoom" hidden><button type="button" id="attachmentZoomOut" aria-label="축소">−</button><span id="attachmentZoomValue">100%</span><button type="button" id="attachmentZoomIn" aria-label="확대">＋</button><button type="button" id="attachmentZoomReset">원래 크기</button></div><div id="attachmentPdfControls" class="attachment-pdf-controls" hidden><button type="button" id="attachmentPdfPrev">이전</button><span id="attachmentPdfPage">1페이지</span><button type="button" id="attachmentPdfNext">다음</button></div><button type="button" class="attachment-export" id="attachmentViewerExport">파일 내보내기</button></div></div>
  </div>`;
 }
 const NOTE_COLORS={yellow:'#ffe279',green:'#b6f0bd',pink:'#ffc6d7',blue:'#b9ddff'};
@@ -604,8 +605,86 @@ function splitNoteUnits(text,granularity){
  }
  return pieces;
 }
+function createAttachmentViewer(){
+ const overlay=$('#attachmentViewer'),content=$('#attachmentViewerContent'),bar=$('#attachmentViewerName'),zoom=$('#attachmentViewerZoom'),pdfControls=$('#attachmentPdfControls');
+ let url=null,scale=1,page=1,currentFile=null,loadedBlob=null;
+ const close=()=>{
+  overlay.hidden=true;content.replaceChildren();
+  if(url){URL.revokeObjectURL(url);url=null;}
+  currentFile=null;loadedBlob=null;document.body.classList.remove('attachment-viewing');
+ };
+ function setZoom(next){
+  scale=Math.min(4,Math.max(1,Math.round(next*10)/10));
+  const img=content.querySelector('img');if(img){img.style.width=scale*100+'%';img.style.maxWidth='none';}
+  $('#attachmentZoomValue').textContent=Math.round(scale*100)+'%';
+ };
+ const pageChange=delta=>{
+  if(!currentFile||currentFile.type!=='application/pdf')return;
+  page=Math.max(1,page+delta);
+  $('#attachmentPdfPage').textContent=page+'페이지';
+  const frame=content.querySelector('iframe');
+  if(frame&&url)frame.src=url+'#page='+page+'&view=FitH';
+ };
+ $('#attachmentViewerClose').onclick=close;
+ overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
+ $('#attachmentZoomIn').onclick=()=>setZoom(scale+.5);
+ $('#attachmentZoomOut').onclick=()=>setZoom(scale-.5);
+ $('#attachmentZoomReset').onclick=()=>setZoom(1);
+ $('#attachmentPdfPrev').onclick=()=>pageChange(-1);
+ $('#attachmentPdfNext').onclick=()=>pageChange(1);
+ $('#attachmentViewerExport').onclick=()=>{
+  if(!currentFile||!url)return;
+  const a=document.createElement('a');
+  a.href=url;a.download=currentFile.name||'첨부파일';a.rel='noopener';
+  document.body.appendChild(a);a.click();a.remove();
+  toast('파일 저장 화면이 열리지 않으면 공유 메뉴를 이용해 주세요.');
+ };
+ content.addEventListener('touchstart',event=>{
+  if(event.touches.length!==2||!content.querySelector('img'))return;
+  const d=Math.hypot(event.touches[0].clientX-event.touches[1].clientX,event.touches[0].clientY-event.touches[1].clientY);
+  content.dataset.pinchStart=String(d);content.dataset.pinchScale=String(scale);
+ },{passive:true});
+ content.addEventListener('touchmove',event=>{
+  if(event.touches.length!==2||!content.querySelector('img'))return;
+  const d=Math.hypot(event.touches[0].clientX-event.touches[1].clientX,event.touches[0].clientY-event.touches[1].clientY);
+  const base=Number(content.dataset.pinchStart);
+  if(base>0){event.preventDefault();setZoom(Number(content.dataset.pinchScale)*d/base);}
+ },{passive:false});
+ return {
+  async open(file){
+   if(!file||typeof file.data!=='string')return toast('첨부파일을 찾지 못했어요.');
+   close();currentFile=file;bar.textContent=file.name;page=1;scale=1;
+   content.replaceChildren();
+   zoom.hidden=true;pdfControls.hidden=true;
+   overlay.hidden=false;document.body.classList.add('attachment-viewing');
+   try{
+    const response=await fetch(file.data);
+    loadedBlob=await response.blob();
+    if(!currentFile||currentFile.id!==file.id)return;
+    url=URL.createObjectURL(loadedBlob);
+    const isPdf=file.type==='application/pdf'||/\.pdf$/i.test(file.name);
+    if(isPdf){
+     const frame=document.createElement('iframe');
+     frame.className='attachment-pdf-frame';
+     frame.title=file.name;frame.src=url+'#page=1&view=FitH';
+     content.appendChild(frame);
+     pdfControls.hidden=false;
+     $('#attachmentPdfPage').textContent='1페이지';
+    }else{
+     const img=document.createElement('img');
+     img.className='attachment-preview-image';
+     img.alt=file.name;img.src=url;content.appendChild(img);zoom.hidden=false;setZoom(1);
+    }
+   }catch(error){
+    content.textContent='미리보기를 열 수 없어요. 파일 내보내기를 이용해 주세요.';
+    toast('첨부파일 미리보기 실패');
+   }
+  },close
+ };
+}
 function createAttachmentEditor(){
  const input=$('#noteAttachmentInput'),list=$('#noteAttachmentList'),counter=$('#noteAttachmentCount');
+ const viewer=createAttachmentViewer();
  let files=[],ready=false,changed=false;
  const noteId=state.note;
  const init=noteId?attachmentList(noteId):Promise.resolve([]);
@@ -616,8 +695,7 @@ function createAttachmentEditor(){
   list.querySelectorAll('[data-remove-attachment]').forEach(btn=>btn.onclick=()=>{files=files.filter(x=>x.id!==btn.dataset.removeAttachment);changed=true;draw();});
   list.querySelectorAll('[data-open-attachment]').forEach(btn=>btn.onclick=()=>{
    const f=files.find(x=>x.id===btn.dataset.openAttachment);if(!f)return;
-   const a=document.createElement('a');a.href=f.data;a.target='_blank';a.rel='noopener';a.download=f.name;
-   document.body.appendChild(a);a.click();a.remove();
+   viewer.open(f);
   });
  }
  input.onchange=async()=>{
@@ -635,7 +713,7 @@ function createAttachmentEditor(){
   input.value='';
  };
  draw();
- return {async getFiles(){await loaded;return files;},get changed(){return changed;}};
+ return {async getFiles(){await loaded;return files;},get changed(){return changed;},closeViewer:viewer.close};
 }
 function initNoteEditor(){
  const note=saved.notes.find(x=>x.id===state.note)||{body:'',annotations:[]};

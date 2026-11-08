@@ -1,2 +1,2 @@
-0.3.4
-Verified RGB iPhone icon, corrected Apple touch icon and stable PWA identity.
+0.3.5
+Large center V confirmation for note saves and safer backup/restore previews.

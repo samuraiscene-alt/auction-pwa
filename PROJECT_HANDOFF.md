@@ -2,12 +2,13 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.3.5 (노트 저장 중앙 V 체크·백업 안전 확인)
+- 현재 버전: v0.3.6 (노트 자동 임시저장·복구)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.
 - iOS 한글 조합: 라이브 검색 DOM 갱신 금지. 검색 완료 키 또는 화면의 검색 버튼으로 결과 반영.
 - 형광펜 2탭: splitNoteUnits()는 Intl.Segmenter(단어/글자)로 렌더할 선택 범위를 만들고, 형광펜 읽기 화면에서 시작·끝 두 번 터치해 선택. 기본 iOS long-press 선택 미사용. 기존 마크를 누르면 포스트잇. annotations 데이터 포맷 그대로.
+- 노트 임시저장: DRAFT_PREFIX=auction_note_draft_v1: (new 또는 id), 저장 간격 650ms. captureNoteDraft()로 제목/본문/annotations/분류/topicId 저장, pagehide/visibilitychange/화면이탈 전에도 시도, 복구 시 confirm과 activeNoteEditor.setData(). 정식 저장 성공 후 clearDraft(). 사진/PDF 첨부 바이너리는 임시저장 대상 아님. 캐시 v036, APP_VERSION 0.3.6.
 - 저장 확인 애니메이션: showSavedCheck()는 화면 중앙 큰 원형 파란 체크를 노트 write() 성공과 백업 복원 성공에만 표시. 실패 시 V 없음. 백업은 파일 요청이므로 성공 체크 미표시. 복원 전 기존 데이터/백업 데이터 개수 비교 및 노트 0개 백업 추가 경고. APP_VERSION 0.3.5, cache v035.
 - 실제 iPhone 화면 녹화: 공유 시트 상단에는 오토바이 이미지, 홈 화면 추가 미리보기에는 기본 '경' 아이콘이 나온다. 원인 확정 아님. v0.3.4 RGB PNG auction-ios-icon-v034.png로 교체하고 Apple touch icon/manifest/OG/fav 경로 통일, manifest id를 안정적으로 /auction-pwa/로 고정. 앱 데이터 보호를 위해 기존 설치 제거 금지, 현장 재검증 필요.
 - Safari 홈화면 아이콘: 새 파일 auction-icon-v033.png를 HTML apple-touch-icon/precomposed/favicon/og:image와 manifest에 모두 적용. manifest id와 start_url에 경매앱 고유값 명시, SW auction-shell-v033, APP_VERSION 0.3.3. GitHub Pages 같은 호스트에 다른 PWA가 존재할 수 있으므로 iOS 실제 추가 미리보기 필수.

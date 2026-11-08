@@ -2,12 +2,13 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.4.3 (PDF 조작바 2줄 압축)
+- 현재 버전: v0.4.4 (PDF 가로폭·페이지 표시 복구)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.
 - iOS 한글 조합: 라이브 검색 DOM 갱신 금지. 검색 완료 키 또는 화면의 검색 버튼으로 결과 반영.
 - 형광펜 2탭: splitNoteUnits()는 Intl.Segmenter(단어/글자)로 렌더할 선택 범위를 만들고, 형광펜 읽기 화면에서 시작·끝 두 번 터치해 선택. 기본 iOS long-press 선택 미사용. 기존 마크를 누르면 포스트잇. annotations 데이터 포맷 그대로.
+- v0.4.4 PDF 조작바: .attachment-main-controls grid 37/63 비율로 가로폭 가득 배치; 페이지 input 최소 29px, 페이지칸 최소 64px, 버튼 40px 높이, 2줄 유지. APP_VERSION 0.4.4, SW v044.
 - v0.4.3 PDF 하단 바: .attachment-main-controls(줌/페이지 한 줄), .attachment-secondary-controls(문장 선택/내보내기 한 줄). 기존 버튼 id 동일, 축소/맞춤/확대 순서, 페이지 입력 52px, 고정 100dvh/안전영역 유지. CSS 강제 no-wrap. 캐시 v043 APP_VERSION 0.4.3.
 - v0.4.2 PDF 페이지 번호: #attachmentPdfJump input + #attachmentPdfGo 버튼, 숫자키 Enter 이동, 전체 페이지 표시/범위 검증 후 renderPdfPage() 호출. 데이터 형식 변경 없음. cache v042, version 0.4.2.
 - v0.4.1 뷰어 위치: createAttachmentViewer()는 overlay를 열 때 document.body로 이동해 부모 카드 scroll/transform의 fixed clipping을 피하고 닫을 때 overlayHome에 복구. CSS 100dvh/safe-area, 콘텐츠만 스크롤, 하단 바 flex-shrink:0. SW v041, 앱 버전 0.4.1.

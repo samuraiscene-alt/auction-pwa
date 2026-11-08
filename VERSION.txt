@@ -1,2 +1,2 @@
-0.3.2
-iOS home screen icon cache-busting with versioned apple-touch-icon filename.
+0.3.3
+Dedicated auction app icon metadata and isolated Safari installation preview.

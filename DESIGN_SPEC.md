@@ -90,3 +90,6 @@ PDF.js 5.4.149 엔진으로 PDF 전체 페이지 수를 확인하고, pdfDocumen
 
 ## v0.4.1 PDF 뷰어 조작바 고정
 첨부 뷰어는 열릴 때 document.body의 직계 하위로 이동하고 닫을 때 원래 노트 카드에 복귀한다. 이로써 부모 카드·콘텐츠 스크롤/transform에 영향을 받지 않도록 한다. 화면은 100dvh 높이와 safe-area를 사용하고 상단 제목·하단 확대/페이지/파일 버튼에 flex-shrink:0, PDF 본문에 flex:1 min-height:0 overflow:auto를 적용한다. 화면이 짧으면 하단 조작바 내부만 스크롤할 수 있다. 기존 문서 내용·노트 저장 데이터에는 변경 없음.
+
+## v0.4.2 PDF 페이지 직접 이동
+내부 PDF 뷰어 하단 페이지 이동 바에 숫자 input과 / 전체 페이지 표시 및 이동 버튼 추가. 숫자 키보드 Enter/이동 버튼, 1~pdfDocument.numPages 검증, renderPdfPage() 및 showExtractedPage()의 기존 호출 경로 재사용. iOS 홈 화면 웹앱의 100dvh 하단 고정 바를 유지하며 화면이 좁을 때 플렉스 줄바꿈 허용. 기존 저장 형식 무변경.

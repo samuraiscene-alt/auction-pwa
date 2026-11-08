@@ -1,2 +1,2 @@
-0.3.8
-Extract selectable text from attached PDFs and insert it in notes with highlights and sticky memos.
+0.3.9
+Reopen original PDF pages from source links in study notes; preserve backup and draft metadata.

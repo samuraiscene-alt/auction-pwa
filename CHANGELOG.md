@@ -1,4 +1,12 @@
 # 부동산 경매 변경 기록
+## v0.3.3 — 2026-11-08
+- iPhone Safari 홈화면 설치 미리보기에서 타 앱 이미지가 표시되는 문제 대응
+- 경매 전용 PNG 파일명 auction-icon-v033.png, apple-touch-icon/precomposed/icon 세 가지 링크 일치
+- Safari 공유 미리보기용 og:image 및 명시적 경매앱 이름 메타데이터 추가
+- manifest id·start_url을 경매앱 고유 경로+쿼리로 명시하여 설치 항목 식별 강화
+- Service Worker 캐시 갱신, 기존 데이터/백업/노트/첨부파일 변경 없음
+- GitHub Pages 공유 호스트에 따른 Safari 캐시 재사용 가능성이 남아 있으므로 실제 iPhone 설치 미리보기 검증 필요
+
 ## v0.3.2 — 2026-11-08
 - 승인된 기존 법봉·집 그림 변경 없이 iOS용 홈 화면 아이콘 파일명을 apple-touch-icon-v032.png로 새로 등록
 - HTML apple-touch-icon과 manifest 아이콘이 버전별 PNG를 명시하도록 일치

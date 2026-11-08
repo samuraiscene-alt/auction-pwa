@@ -1,2 +1,2 @@
-0.3.6
-Automatic local note draft recovery for interrupted iPhone PWA editing.
+0.3.7
+In-app image and PDF attachment viewer with zoom, PDF page controls and file export.

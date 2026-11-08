@@ -66,3 +66,6 @@
 
 ## v0.3.3 Safari 홈 화면 미리보기 식별 강화
 승인된 법봉·집 그림 자체 변경 없이 경매 전용 파일명 auction-icon-v033.png로 배포. HTML apple-touch-icon, apple-touch-icon-precomposed, PNG favicon과 og:image 메타데이터를 단일 PNG 파일에 연결. manifest id /auction-pwa/?pwa=auction-v033, start_url ./?pwa=auction-v033, scope ./ 유지. 동일 GitHub Pages 호스트의 Safari 사이트 아이콘 캐시가 타 프로젝트와 섞여 보일 가능성이 있어 실제 기기 미리보기 확인 필요. 기존 설치 앱 삭제 전에 데이터 백업.
+
+## v0.3.4 iOS 아이콘 디코딩 호환 패치
+기존 승인한 법봉·집 디자인 유지. 같은 180x180 이미지를 RGB PNG(8-bit truecolor)로 변환하여 auction-ios-icon-v034.png로 제공. HTML apple-touch-icon/precomposed/favicon/og:image와 manifest가 모두 이 파일을 가리킨다. 앱 설치 ID는 /auction-pwa/로 고정해 버전마다 설치 앱을 새 식별자로 만들지 않도록 함. 기존 오토바이 이미지는 GitHub Pages 공유 호스트에 대한 Safari 캐시일 수 있으며 iOS에서 실물 확인 필요. 앱 자료 삭제 금지.

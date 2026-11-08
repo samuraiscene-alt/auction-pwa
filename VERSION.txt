@@ -1,2 +1,2 @@
-0.4.5
-Replace PDF page number keyboard with iPhone-style scrolling wheel selector.
+0.4.6
+Search text in an attached PDF and navigate directly to matching pages.

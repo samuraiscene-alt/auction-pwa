@@ -1,2 +1,2 @@
-0.3.1
-Approved gavel striking house icon for iPhone home screen and PWA manifest.
+0.3.2
+iOS home screen icon cache-busting with versioned apple-touch-icon filename.

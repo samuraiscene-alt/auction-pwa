@@ -335,3 +335,12 @@ html,body{overflow-x:clip}
 .update-available-message[hidden]{display:none}
 #checkUpdate{min-height:47px;background:#eaf2ff;color:#2466d0;border:1px solid #d5e3fc;border-radius:12px;font-weight:750}
 #checkUpdate:disabled{opacity:.6}
+
+/* v0.3.5 iPhone center-screen successful save confirmation */
+.save-check-overlay{position:fixed;z-index:10000;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:13px;background:rgba(10,22,40,.14);pointer-events:none;opacity:0;visibility:hidden;transition:opacity .18s ease,visibility .18s}
+.save-check-overlay.visible{opacity:1;visibility:visible}
+.save-check-circle{width:136px;height:136px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#438dff,#1561e8);border:7px solid #fff;box-shadow:0 15px 45px #123f9159;transform:scale(.7);transition:transform .28s cubic-bezier(.15,1.5,.45,1)}
+.save-check-overlay.visible .save-check-circle{transform:scale(1)}
+.save-check-circle svg{width:90px;height:90px;fill:none;stroke:#fff;stroke-width:10;stroke-linecap:round;stroke-linejoin:round}
+.save-check-overlay strong{color:#fff;background:rgba(21,48,99,.82);padding:9px 19px;border-radius:20px;font-size:17px;font-weight:800;letter-spacing:-.4px}
+@media(prefers-reduced-motion:reduce){.save-check-overlay,.save-check-circle{transition:none}}

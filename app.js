@@ -1,13 +1,74 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.3.5';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.3.6';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
 };
 let activeNoteEditor=null;
+const DRAFT_PREFIX='auction_note_draft_v1:';
+let draftTimer=null;
+let draftSession=null;
+
 let updateState={checking:false,available:false,latest:APP_VERSION,registration:null,network:false};
 const STORAGE_STAMP_KEY='auction_pwa_lastbackup_v1';
 let editorDirty=false;
 function setEditorDirty(value){editorDirty=Boolean(value);updateUpdateStatus();}
+function draftKey(noteId){return DRAFT_PREFIX+(noteId==null?'new':String(noteId));}
+function clearDraft(noteId){
+ clearTimeout(draftTimer);
+ try{localStorage.removeItem(draftKey(noteId));}catch(err){toast('임시저장 정리에 실패했어요.');}
+}
+function captureNoteDraft(){
+ if(!activeNoteEditor||state.page!=='note')return null;
+ const data=activeNoteEditor.getData(),category=normalizedStudyCategory($('#noteCategory').value);
+ return {noteId:state.note==null?null:Number(state.note),title:$('#noteTitle').value,category,topicId:normalizedStudyTopic($('#noteTopic').value,category),body:data.body,annotations:data.annotations,updatedAt:Date.now()};
+}
+function persistNoteDraft(){
+ clearTimeout(draftTimer);draftTimer=null;
+ if(!editorDirty||!activeNoteEditor||state.page!=='note')return;
+ try{
+  const draft=captureNoteDraft();
+  if(draft){
+   localStorage.setItem(draftKey(draft.noteId),JSON.stringify(draft));
+   const indicator=$('#noteDraftStatus');
+   if(indicator)indicator.textContent='임시저장됨 · 노트 저장을 눌러 최종 저장';
+  }
+ }catch(err){const indicator=$('#noteDraftStatus');if(indicator)indicator.textContent='임시저장 실패 · 노트 저장 권장';}
+}
+function scheduleNoteDraft(){
+ if(!activeNoteEditor||state.page!=='note')return;
+ clearTimeout(draftTimer);
+ draftTimer=setTimeout(persistNoteDraft,650);
+ const indicator=$('#noteDraftStatus');
+ if(indicator)indicator.textContent='작성 중…';
+}
+function readNoteDraft(noteId){
+ try{
+  const raw=localStorage.getItem(draftKey(noteId));
+  if(!raw)return null;
+  const data=JSON.parse(raw);
+  if(!data||data.noteId!==(noteId==null?null:Number(noteId))||typeof data.body!=='string'||typeof data.title!=='string')return null;
+  return data;
+ }catch{return null;}
+}
+function recoverNoteDraft(){
+ const original=saved.notes.find(n=>n.id===state.note);
+ const draft=readNoteDraft(state.note);
+ if(!draft||Number(draft.updatedAt)<=Number(original?.updatedAt||0))return;
+ if(!confirm('저장되지 않은 공부 노트의 임시기록이 있어요.\n복구하시겠어요?\n\n취소를 누르면 기존 저장 노트가 열리며 임시기록은 보관됩니다.'))return;
+ const category=normalizedStudyCategory(draft.category);
+ $('#noteTitle').value=draft.title;
+ $('#noteCategory').value=category;
+ const topic=$('#noteTopic');
+ topic.innerHTML='<option value="">연결하지 않음</option>'+studyTopicOptions(category).map(t=>'<option value="'+escapeHtml(t.id)+'">'+escapeHtml(t.name)+'</option>').join('');
+ topic.value=normalizedStudyTopic(draft.topicId,category);
+ activeNoteEditor.setData({body:draft.body,annotations:draft.annotations});
+ setEditorDirty(true);
+ const indicator=$('#noteDraftStatus');
+ if(indicator)indicator.textContent='임시기록 복구됨 · 노트 저장을 눌러주세요';
+}
+window.addEventListener('pagehide',persistNoteDraft);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)persistNoteDraft();});
+
 function statusText(){
  if(updateState.checking)return '업데이트 확인 중…';
  if(updateState.available)return '새 버전 v'+updateState.latest+' 준비됨';
@@ -188,6 +249,7 @@ viewHistory.set(0,snapshot());
 history.replaceState({auctionApp:true,depth:0,view:snapshot()},'',location.pathname+location.search);
 function nav(page,extra={}){
   if(!titles[page])return;
+  if(state.page==='note'&&page!=='note')persistNoteDraft();
   if(page===state.page&&Object.keys(extra).length===0)return;
   state={...state,...extra,page};
   appDepth++;
@@ -197,11 +259,13 @@ function nav(page,extra={}){
   window.scrollTo(0,0);
 }
 function goBack(){
+  if(state.page==='note')persistNoteDraft();
   if(document.activeElement&&document.activeElement.matches('input,textarea,select'))document.activeElement.blur();
   if(appDepth>0){history.back();return;}
   if(state.page!=='home')nav('home');
 }
 window.addEventListener('popstate',event=>{
+  if(state.page==='note')persistNoteDraft();
   if(event.state&&event.state.auctionApp){
     appDepth=event.state.depth||0;
     state={...state,...event.state.view};
@@ -484,7 +548,7 @@ function note(){
  const n=saved.notes.find(x=>x.id===state.note)||{title:'',body:'',annotations:[],category:STUDY_CATEGORY_IDS.has(state.studyCategory)?state.studyCategory:'미분류',topicId:state.noteTopicDraft};
  return `<div class="card note-workspace" id="noteEditorShell">
  <div class="note-title-line"><label class="label" for="noteTitle">제목</label><label for="noteCategory" class="note-category-selector">분류 <select id="noteCategory" class="select">${['미분류',...STUDY_CATEGORIES.map(c=>c.id)].map(v=>`<option value="${v}" ${normalizedStudyCategory(n.category)===v?'selected':''}>${v}</option>`).join('')}</select></label></div><input id="noteTitle" class="search" placeholder="노트 제목" value="${escapeHtml(n.title)}"><div class="note-topic-selector"><label for="noteTopic">연결할 학습 항목</label><select id="noteTopic" class="select"><option value="">연결하지 않음</option>${studyTopicOptions(normalizedStudyCategory(n.category)).map(t=>`<option value="${escapeHtml(t.id)}" ${normalizedStudyTopic(n.topicId,normalizedStudyCategory(n.category))===t.id?'selected':''}>${escapeHtml(t.name)}</option>`).join('')}</select></div>
- <div class="note-content-bar"><label class="label" for="noteBody">내용</label><div class="note-mode-buttons"><button id="noteWriteMode" type="button" class="note-mode active">✎ 작성</button><button id="noteMarkMode" type="button" class="note-mode">🖍 형광펜</button></div></div>
+ <div id="noteDraftStatus" class="note-draft-status">작성 내용은 자동 임시저장 · 노트 저장으로 확정</div><div class="note-content-bar"><label class="label" for="noteBody">내용</label><div class="note-mode-buttons"><button id="noteWriteMode" type="button" class="note-mode active">✎ 작성</button><button id="noteMarkMode" type="button" class="note-mode">🖍 형광펜</button></div></div>
  <textarea class="select noteArea" id="noteBody" placeholder="공부한 내용을 적어보세요.">${escapeHtml(n.body)}</textarea>
  <div id="noteMarkupArea" class="note-markup-area" hidden><div class="note-mark-guide">첫 단어를 터치하고 마지막 단어를 터치하세요. 선택한 뒤 색상을 누르면 포스트잇이 열려요.</div><div class="note-select-tools"><div class="note-select-unit" role="group" aria-label="선택 단위"><button type="button" class="unit-active" data-note-granularity="word">단어</button><button type="button" data-note-granularity="char">글자</button></div><button type="button" id="noteClearSelection" class="note-clear-selection">선택 취소</button></div><p id="noteSelectionHint" class="note-selection-hint">시작 부분을 한 번 터치하세요.</p><div id="noteHighlightColors" class="note-color-tools"><button data-note-color="yellow" type="button" style="--marker-color:#ffe279" aria-label="노란 형광펜">노랑</button><button data-note-color="green" type="button" style="--marker-color:#b6f0bd" aria-label="초록 형광펜">초록</button><button data-note-color="pink" type="button" style="--marker-color:#ffc6d7" aria-label="분홍 형광펜">분홍</button><button data-note-color="blue" type="button" style="--marker-color:#b9ddff" aria-label="파란 형광펜">파랑</button></div><div id="noteHighlightText" class="note-highlight-text" aria-label="형광펜을 적용할 노트 내용"></div></div>
  <div class="note-footer"><div class="note-attachment-panel"><label for="noteAttachmentInput" class="note-attach-btn">＋ 사진 · PDF 첨부</label><input type="file" id="noteAttachmentInput" accept="image/*,application/pdf,.pdf" multiple hidden><span class="note-attach-count" id="noteAttachmentCount">첨부파일 불러오는 중</span></div><div class="note-attachment-list" id="noteAttachmentList"></div><button class="primary" id="saveNote" type="button">노트 저장</button>${state.note?'<button class="secondary note-delete-btn" id="deleteNote" type="button">노트 삭제</button>':''}</div>
@@ -671,18 +735,31 @@ function initNoteEditor(){
  return {getData(){
   if(mode==='write'){const next=input.value;marks=normalizeNoteMarks(next,reconcileNoteMarks(text,next,marks));text=next;}
   return {body:text,annotations:marks};
+ },setData(data){
+  text=String(data.body||'');
+  marks=normalizeNoteMarks(text,data.annotations);
+  input.value=text;first=null;second=null;
+  draw();
  }};
+
 }
-function settings(){const standalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;const backupDate=localStorage.getItem(STORAGE_STAMP_KEY);return `<div class="card"><strong>앱 정보</strong><p class="helper">부동산 경매 v${APP_VERSION} · ${standalone?'홈 화면 웹앱':'브라우저 실행'}</p><p class="helper" id="appUpdateState">${statusText()}</p><button class="secondary" id="checkUpdate" style="width:100%">${updateState.available?'업데이트 적용':'업데이트 확인'}</button><p id="updateAvailableMessage" class="update-available-message" ${updateState.available?'':'hidden'}>새 버전이 준비돼 있어요. 작성 중인 내용은 먼저 저장해 주세요.</p><div class="divider"></div><strong>개발 상태</strong><p class="helper">화면 탐색 및 샘플 데이터만 제공. 법원 자료·실거래가·실제 사진과 자동 갱신 기능은 미연동.</p><div class="divider"></div><strong>데이터 백업</strong><p class="helper">노트·관심물건·첨부파일을 한 번에 백업합니다. Safari와 홈 화면 웹앱은 저장 데이터가 분리될 수 있으니 홈 화면 웹앱에서 백업하세요.</p><p class="helper">마지막 백업 생성 요청: ${backupDate?new Date(backupDate).toLocaleString('ko-KR'):'기록 없음'}</p><button class="secondary" id="export" style="width:100%">내 데이터 백업</button><label class="upload" style="margin-top:10px">백업 파일 복원<input id="import" type="file" accept="application/json,.json" hidden></label></div><div class="card"><strong>프로젝트 이관</strong><p class="helper">README.md, PROJECT_HANDOFF.md, DESIGN_SPEC.md에 작업 재개 및 배포 방법이 기록돼 있어요.</p></div>`}function render(){document.onselectionchange=null;activeNoteEditor=null;editorDirty=false;const back=document.getElementById('navBack');if(back){back.hidden=state.page==='home';back.onclick=goBack;}document.title='부동산 경매 · '+titles[state.page];$('#page-title').textContent=titles[state.page];$('#content').innerHTML=({home,search,schedule,favorites,study,advanced,special,detail,rights,note,settings}[state.page])();if($('#noteEditorShell')){
+function settings(){const standalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;const backupDate=localStorage.getItem(STORAGE_STAMP_KEY);return `<div class="card"><strong>앱 정보</strong><p class="helper">부동산 경매 v${APP_VERSION} · ${standalone?'홈 화면 웹앱':'브라우저 실행'}</p><p class="helper" id="appUpdateState">${statusText()}</p><button class="secondary" id="checkUpdate" style="width:100%">${updateState.available?'업데이트 적용':'업데이트 확인'}</button><p id="updateAvailableMessage" class="update-available-message" ${updateState.available?'':'hidden'}>새 버전이 준비돼 있어요. 작성 중인 내용은 먼저 저장해 주세요.</p><div class="divider"></div><strong>개발 상태</strong><p class="helper">화면 탐색 및 샘플 데이터만 제공. 법원 자료·실거래가·실제 사진과 자동 갱신 기능은 미연동.</p><div class="divider"></div><strong>데이터 백업</strong><p class="helper">노트·관심물건·첨부파일을 한 번에 백업합니다. Safari와 홈 화면 웹앱은 저장 데이터가 분리될 수 있으니 홈 화면 웹앱에서 백업하세요.</p><p class="helper">마지막 백업 생성 요청: ${backupDate?new Date(backupDate).toLocaleString('ko-KR'):'기록 없음'}</p><button class="secondary" id="export" style="width:100%">내 데이터 백업</button><label class="upload" style="margin-top:10px">백업 파일 복원<input id="import" type="file" accept="application/json,.json" hidden></label></div><div class="card"><strong>프로젝트 이관</strong><p class="helper">README.md, PROJECT_HANDOFF.md, DESIGN_SPEC.md에 작업 재개 및 배포 방법이 기록돼 있어요.</p></div>`}function render(){if(editorDirty&&state.page==='note')persistNoteDraft();document.onselectionchange=null;activeNoteEditor=null;editorDirty=false;const back=document.getElementById('navBack');if(back){back.hidden=state.page==='home';back.onclick=goBack;}document.title='부동산 경매 · '+titles[state.page];$('#page-title').textContent=titles[state.page];$('#content').innerHTML=({home,search,schedule,favorites,study,advanced,special,detail,rights,note,settings}[state.page])();if($('#noteEditorShell')){
  activeNoteEditor={...initNoteEditor(),attachments:createAttachmentEditor()};
- $('#noteTitle').addEventListener('input',()=>setEditorDirty(true));
- $('#noteCategory').addEventListener('change',()=>setEditorDirty(true));
- $('#noteTopic').addEventListener('change',()=>setEditorDirty(true));
- $('#noteBody').addEventListener('input',()=>setEditorDirty(true));
- $('#noteAttachmentInput').addEventListener('change',()=>setEditorDirty(true));
- document.querySelectorAll('[data-note-color]').forEach(btn=>btn.addEventListener('click',()=>setEditorDirty(true)));
- $('#stickySave').addEventListener('click',()=>setEditorDirty(true));
- $('#stickyRemove').addEventListener('click',()=>setEditorDirty(true));
+ const changed=()=>{setEditorDirty(true);scheduleNoteDraft();};
+ $('#noteTitle').addEventListener('input',changed);
+ $('#noteCategory').addEventListener('change',changed);
+ $('#noteTopic').addEventListener('change',changed);
+ $('#noteBody').addEventListener('input',changed);
+ $('#noteAttachmentInput').addEventListener('change',()=>{
+  setEditorDirty(true);scheduleNoteDraft();
+  const indicator=$('#noteDraftStatus');
+  if(indicator)indicator.textContent='첨부파일은 노트 저장을 눌러야 보관됩니다';
+ });
+ document.querySelectorAll('[data-note-color]').forEach(btn=>btn.addEventListener('click',changed));
+ $('#stickySave').addEventListener('click',changed);
+ $('#stickyRemove').addEventListener('click',changed);
+ // Wait for editor controls and pending attachment list to initialize before restoring draft.
+ recoverNoteDraft();
  }$('#tabs').innerHTML=tabs();$('#settings').onclick=()=>nav('settings');document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>nav(x.dataset.page));document.querySelectorAll('[data-detail]').forEach(x=>x.onclick=()=>nav('detail',{detail:x.dataset.detail,detailTab:'overview'}));document.querySelectorAll('[data-filter]').forEach(x=>x.onclick=()=>{state.filter=x.dataset.filter;render()});document.querySelectorAll('[data-day]').forEach(x=>x.onclick=()=>{state.selected=x.dataset.day;render();});if($('#prevMonth'))$('#prevMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,-1);state.selected=state.viewMonth+'-01';render();};if($('#nextMonth'))$('#nextMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,1);state.selected=state.viewMonth+'-01';render();};if($('#todayMonth'))$('#todayMonth').onclick=()=>{const now=new Date();state.viewMonth=calendarMonthKey(now);state.selected=state.viewMonth+'-'+String(now.getDate()).padStart(2,'0');render();};if($('#favCalendarOnly'))$('#favCalendarOnly').onchange=e=>{state.calendarFavoritesOnly=e.target.checked;render();};document.querySelectorAll('[data-note]').forEach(x=>x.onclick=()=>nav('note',{note:Number(x.dataset.note)}));if($('#favoriteSort'))$('#favoriteSort').onchange=e=>{state.favoriteSort=e.target.value;render();};
 document.querySelectorAll('[data-favorite-type]').forEach(btn=>btn.onclick=()=>{state.favoriteType=btn.dataset.favoriteType;render();});
 document.querySelectorAll('[data-remove-favorite]').forEach(btn=>btn.onclick=()=>{
@@ -799,7 +876,7 @@ document.querySelectorAll('[data-note-remove]').forEach(btn=>btn.onclick=async()
  if(!confirm('노트 "'+n.title+'"을(를) 삭제할까요?'))return;
  try{await attachmentDeleteNote(id);}catch(err){toast('첨부파일 삭제 실패');return;}
  saved.notes=saved.notes.filter(x=>x.id!==id);
- write();render();toast('노트를 삭제했어요.');
+ clearDraft(id);write();render();toast('노트를 삭제했어요.');
 });
 if($('#addNote'))$('#addNote').onclick=()=>nav('note',{note:null,noteTopicDraft:''});
 if($('#saveNote'))$('#saveNote').onclick=async()=>{
@@ -816,14 +893,14 @@ if($('#saveNote'))$('#saveNote').onclick=async()=>{
   if(files.length||oldNote&&activeNoteEditor.attachments.changed)await attachmentReplaceForNote(uniqueId,files);
   if(oldNote)Object.assign(oldNote,{title,body,annotations,category,topicId,updatedAt:now});
   else saved.notes.unshift({id:uniqueId,title,body,annotations,category,topicId,updatedAt:now});
-  write();setEditorDirty(false);nav('study');showSavedCheck('노트 저장 완료');
+  write();setEditorDirty(false);clearDraft(state.note);nav('study');showSavedCheck('노트 저장 완료');
  }catch(err){toast('노트 저장 실패: '+(err.message||'첨부파일을 확인해 주세요.'));button.disabled=false;}
 };
 if($('#deleteNote'))$('#deleteNote').onclick=async()=>{
  if(!confirm('노트를 삭제할까요?'))return;
  try{await attachmentDeleteNote(state.note);}catch(err){toast('첨부파일 삭제에 실패했어요.');return;}
  saved.notes=saved.notes.filter(x=>x.id!==state.note);
- write();nav('study');toast('노트를 삭제했어요.');
+ write();setEditorDirty(false);clearDraft(state.note);nav('study');toast('노트를 삭제했어요.');
 };
 if($('#export'))$('#export').onclick=async()=>{
  try{

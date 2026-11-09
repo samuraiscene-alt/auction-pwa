@@ -47,7 +47,7 @@ jobs:
                   name:String(x.name??x.usgNm??'').slice(0,80)
                 }))));
               }
-              if(!key||String(result.status)!=='200')process.exitCode=1;
+              if(!key||items.length===0||String(result.status)!=='200'){console.error('AUDIT FAILED: classification response is empty or unexpected');process.exitCode=1;}
             }catch(error){console.error('Probe failed',p.level,error.name,error.cause?.code||error.message);process.exitCode=1}
             finally{clearTimeout(timer)}
           }

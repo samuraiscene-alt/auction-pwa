@@ -23,12 +23,14 @@ const SCHEMA_KEYS=[
 'statNum','bidBgngYmd','bidEndYmd'
 ];
 const REGIONS=[{label:'서울',code:'11'},{label:'경기',code:'41'},{label:'인천',code:'28'}];
-const allowedLabels=new Set(REGIONS.map(r=>r.label));
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const transportCause=error=>[error?.cause?.code,error?.cause?.name,error?.name].filter(Boolean).join('/')||'unknown';
 const price=v=>{if(!/^\d{1,15}$/.test(String(v||'')))return null;const n=Number(v);return Number.isSafeInteger(n)&&n>0?n:null;};
 const itemFrom=(r,region)=>{
  if(!r||typeof r!=='object')return null;
  const code=String(r.boCd||'').trim(),caseNo=String(r.srnSaNo||'').trim();
- const itemNo=String(r.maemulSer||r.mokmulSer||'1').trim();
+ // A missing lot number is not lot 1. Do not manufacture item identifiers.
+ const itemNo=String(r.maemulSer??r.mokmulSer??'').trim();
  const address=[r.hjguSido,r.hjguSigu,r.hjguDong,r.daepyoLotno].filter(v=>typeof v==='string'&&v.trim()).join(' ').trim();
  if(!/^B\d{6}$/.test(code)||!/^20\d{2}타경\d{1,10}$/.test(caseNo)||
     !/^[1-9]\d{0,3}$/.test(itemNo)||!address||address.length>260||
@@ -48,24 +50,39 @@ async function search(region,pageNo){
   pgmId:'PGJ151M01',notifyLoc:'Y',rprsAdongSdCd:region.code});
  const payload={dma_pageInfo:{pageNo:String(pageNo),pageSize:'50',bfPageNo:'',startRowNo:String((pageNo-1)*50+1),
   totalCnt:'0',totalYn:pageNo===1?'Y':'N',groupTotalCount:''},dma_srchGdsDtlSrchInfo:info};
- const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),16000);
- try{
- const resp=await fetch('https://www.courtauction.go.kr/pgj/pgjsearch/searchControllerMain.on',{
-  method:'POST',headers:{'Content-Type':'application/json; charset=UTF-8','Accept':'application/json',
-  Referer:'https://www.courtauction.go.kr/pgj/index.on'},body:JSON.stringify(payload),signal:controller.signal});
- if(!resp.ok)throw Error('HTTP '+resp.status);
- const json=await resp.json();
- if(String(json.status)!=='200'||!Array.isArray(json?.data?.dlt_srchResult))throw Error('invalid search response');
- const rows=json.data.dlt_srchResult;
- const page=json.data.dma_pageInfo||{};
- const total=Number(page.totalCnt||page.groupTotalCount||0);
- const items=rows.map(row=>itemFrom(row,region)).filter(Boolean);
- const dropped=rows.length-items.length;
- if(rows.length&&dropped/rows.length>0.03)throw Error('too many invalid records '+dropped+'/'+rows.length);
- console.log(region.label,'page',pageNo,'raw count:',rows.length,'usable:',items.length,'reported total:',total);
- if(rows.length&&!items.length)throw Error(region.label+' response fields did not pass validation');
- return {items,count:rows.length,total:Number.isSafeInteger(total)?total:null,signature:rows.map(x=>String(x.docid||'')+'|'+String(x.maemulSer||'')).join(',')};
- }finally{clearTimeout(timer)}
+ let lastError=null;
+ for(let attempt=1;attempt<=2;attempt++){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),16000);
+  try{
+   const resp=await fetch('https://www.courtauction.go.kr/pgj/pgjsearch/searchControllerMain.on',{
+    method:'POST',headers:{'Content-Type':'application/json; charset=UTF-8','Accept':'application/json',
+    Referer:'https://www.courtauction.go.kr/pgj/index.on'},
+    body:JSON.stringify(payload),signal:controller.signal});
+   if(!resp.ok)throw Error('HTTP '+resp.status);
+   const json=await resp.json();
+   if(String(json.status)!=='200'||!Array.isArray(json?.data?.dlt_srchResult))throw Error('invalid search response');
+   const rows=json.data.dlt_srchResult;
+   const page=json.data.dma_pageInfo||{};
+   const total=Number(page.totalCnt||page.groupTotalCount||0);
+   const items=rows.map(row=>itemFrom(row,region)).filter(Boolean);
+   const dropped=rows.length-items.length;
+   if(rows.length&&dropped/rows.length>0.03)throw Error('too many invalid records '+dropped+'/'+rows.length);
+   console.log(region.label,'page',pageNo,'raw count:',rows.length,'usable:',items.length,'reported total:',total);
+   if(rows.length&&!items.length)throw Error(region.label+' response fields did not pass validation');
+   return {items,count:rows.length,total:Number.isSafeInteger(total)?total:null,
+    signature:rows.map(x=>String(x.docid||'')+'|'+String(x.maemulSer||'')).join(',')};
+  }catch(error){
+   lastError=error;
+   console.error('Court search failure',region.label,'page',pageNo,'attempt',attempt,
+     'type:',transportCause(error),'message:',String(error.message||'').slice(0,90));
+   // Do not re-request on malformed data, HTTP errors, or explicit refusal.
+   const networkProblem=error.name==='AbortError'||error?.cause?.code&&
+     /^(ETIMEDOUT|ECONNRESET|ECONNREFUSED|EAI_AGAIN|ENETUNREACH|EHOSTUNREACH|UND_ERR_CONNECT_TIMEOUT)$/.test(error.cause.code);
+   if(attempt===2||!networkProblem)throw error;
+   await sleep(1700);
+  }finally{clearTimeout(timer)}
+ }
+ throw lastError;
 }
 (async()=>{
  const regions={};const items=[];const errors=[];const maxPages=3;
@@ -99,6 +116,7 @@ async function search(region,pageNo){
   if(!previous)uniqueMap.set(item.id,item);
  }
  console.log('Conflicting record samples:',JSON.stringify(conflictExamples));
+ console.log('Duplicate-ID conflict rate:',conflicts.size+'/'+uniqueMap.size,'(publish is blocked above 5%)');
  // Quarantine disagreeing records. Never silently choose one conflicting value.
  // If more than 5% of unique IDs disagree, reject the entire daily snapshot.
  const conflictRate=conflicts.size/Math.max(1,uniqueMap.size);

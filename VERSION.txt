@@ -1,2 +1,2 @@
-0.6.6
-Court collection failure reason categories and safe previous-list retention.
+0.6.7
+Composite court auction lots preserve land/building/address components. Price/date disagreement remains blocked.

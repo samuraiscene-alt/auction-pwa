@@ -8,6 +8,8 @@ on:
       - scripts/validate-court-case-bridge.cjs
       - scripts/extract-court-status-evidence.cjs
       - tests/court-status-evidence.cjs
+      - scripts/court-status-meaning-gate.cjs
+      - tests/court-status-meaning-gate.cjs
       - tests/court-case-bridge.cjs
       - .github/workflows/court-case-list-bridge.yml
 permissions:
@@ -29,6 +31,7 @@ jobs:
         run: |
           node tests/court-case-bridge.cjs
           node tests/court-status-evidence.cjs
+          node tests/court-status-meaning-gate.cjs
       - id: query
         name: Single court list lookup
         continue-on-error: true

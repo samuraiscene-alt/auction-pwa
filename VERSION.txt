@@ -1,2 +1,2 @@
-0.7.1
-Show an explicit warning when court collection attempt status cannot be verified; add collection safety regression checks.
+0.7.2
+Reject snapshots without a passed validation marker and matching validated item count.

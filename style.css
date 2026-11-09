@@ -784,3 +784,6 @@ html,body{
 .auction-detail .metric b{display:block;max-width:100%;word-break:keep-all;overflow-wrap:normal;font-size:clamp(15px,3.8vw,23px);letter-spacing:-.055em;line-height:1.35}
 .auction-detail .metric b.detail-price{font-size:clamp(15px,3.6vw,22px);letter-spacing:-.065em}
 .official-form #officialType:invalid{color:#7789a2}
+
+/* v0.5.7: court hierarchy name inputs. Unverified detailed codes never inferred. */
+.official-form #officialUsageLarge,.official-form #officialUsageMedium,.official-form #officialType{width:100%;min-width:0}

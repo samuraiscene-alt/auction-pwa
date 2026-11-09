@@ -4,7 +4,7 @@
   "collectionMode": "limited-pages-pilot",
   "complete": false,
   "source": "courtauction.go.kr",
-  "fetchedAt": "2026-11-09T12:11:32.434Z",
+  "fetchedAt": "2026-11-09T12:13:05.748Z",
   "regions": {
     "서울": {
       "returned": 150,
@@ -7280,7 +7280,7 @@
   ],
   "validation": {
     "passed": true,
-    "checkedAt": "2026-11-09T12:11:32.437Z",
+    "checkedAt": "2026-11-09T12:13:05.752Z",
     "validatedItems": 274,
     "regions": {
       "서울": 127,
@@ -7289,103 +7289,10 @@
     },
     "comparedWithPrevious": true,
     "overlap": 274,
-    "changed": 30,
+    "changed": 0,
     "notSeenInNewSample": 0,
     "note": "형식·표본 비교 검사이며 법원 원문 및 현재 매각 상태를 보증하지 않음",
-    "warnings": [
-      "같은 물건에서 값 변경 감지 30건 (가격·기일 등 법원 원문 재확인 권장)"
-    ],
-    "changeSamples": [
-      {
-        "id": "court-B000210|2024타경116011|1",
-        "fields": [
-          "address"
-        ]
-      },
-      {
-        "id": "court-B000210|2025타경3631|1",
-        "fields": [
-          "address"
-        ]
-      },
-      {
-        "id": "court-B000214|2022타경82420|1",
-        "fields": [
-          "address"
-        ]
-      },
-      {
-        "id": "court-B000214|2023타경3943|1",
-        "fields": [
-          "address"
-        ]
-      },
-      {
-        "id": "court-B000214|2023타경86177|1",
-        "fields": [
-          "address"
-        ]
-      },
-      {
-        "id": "court-B000214|2024타경552|1",
-        "fields": [
-          "address"
-        ]
-      },
-      {
-        "id": "court-B000214|2024타경1197|1",
-        "fields": [
-          "address"
-        ]
-      },
-      {
-        "id": "court-B000214|2024타경2190|2",
-        "fields": [
-          "address"
-        ]
-      },
-      {
-        "id": "court-B000214|2024타경72205|1",
-        "fields": [
-          "address"
-        ]
-      },
-      {
-        "id": "court-B000214|2024타경73451|1",
-        "fields": [
-          "address"
-        ]
-      },
-      {
-        "id": "court-B000214|2024타경90739|1",
-        "fields": [
-          "address"
-        ]
-      },
-      {
-        "id": "court-B000214|2024타경91978|2",
-        "fields": [
-          "address"
-        ]
-      },
-      {
-        "id": "court-B000214|2024타경91978|4",
-        "fields": [
-          "address"
-        ]
-      },
-      {
-        "id": "court-B000214|2025타경4322|1",
-        "fields": [
-          "address"
-        ]
-      },
-      {
-        "id": "court-B000214|2025타경5127|1",
-        "fields": [
-          "address"
-        ]
-      }
-    ]
+    "warnings": [],
+    "changeSamples": []
   }
 }

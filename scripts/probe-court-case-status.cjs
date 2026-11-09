@@ -20,6 +20,7 @@ function describeResponse(json){
   .map(key=>entry.key+'.'+key)).slice(0,80);
  return {httpPayloadStatus:typeof json?.status==='string'||typeof json?.status==='number'?String(json.status):'not-present',
   blocked:data.ipcheck===false||json?.ipcheck===false,
+  plausibleResponse:String(json?.status)==='200'&&entries.some(x=>x.kind==='array'||x.kind==='object'),
   sections:entries,possibleStatusFields,
   note:'응답 구조만 진단. 사건/물건 신원 및 상태코드 의미를 검증하지 않았으며 자동 판정 금지.'};
 }
@@ -43,6 +44,7 @@ async function main(){
   const json=await response.json();
   const summary=describeResponse(json);
   if(summary.blocked)throw Error('court access rejected; no retries');
+  if(!summary.plausibleResponse)throw Error('court response schema not verified; no status inference');
   console.log(JSON.stringify({requestedCase:caseNo,requestedCourt:courtCode,lotIdentityNotVerified:true,...summary},null,2));
  }catch(error){console.error('Probe not verified:',String(error?.message||error).slice(0,180));process.exitCode=1;}
  finally{clearTimeout(timeout);}

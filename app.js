@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.5.7';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.5.8';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -234,12 +234,33 @@ function realCaseId(court,caseNumber,itemNo){return 'real-'+[court,caseNumber,it
 function isSafeAuctionUrl(url){try{const u=new URL(url);return u.protocol==='https:'&&(/(^|\.)courtauction\.go\.kr$/i).test(u.hostname)}catch{return false}}
 // Official court searches use large / medium / small usage classification.
 // Only the four confirmed major codes are embedded. Missing detailed codes stay null.
-const COURT_USAGE_LARGE=[
- {code:'10000',name:'토지'},
- {code:'20000',name:'건물'},
- {code:'30000',name:'차량및운송장비'},
- {code:'40000',name:'기타'}
+const COURT_USAGE_CATALOG=[
+ {level:'large',code:'10000',name:'토지'},
+ {level:'large',code:'20000',name:'건물'},
+ {level:'large',code:'30000',name:'차량및운송장비'},
+ {level:'large',code:'40000',name:'기타'},
+ {level:'medium',parentCode:'20000',code:'21100',name:'단독주택'},
+ {level:'medium',parentCode:'20000',code:'21200',name:'공동주택'},
+ {level:'small',parentCode:'21100',code:'21101',name:'단독주택(소분류)'},
+ {level:'small',parentCode:'21200',code:'21201',name:'아파트'}
 ];
+// Verified partial catalog, not the complete official court classification list.
+// Source: 2026-05-08 PGJ151F00 code capture shared by NomaDamas/k-skill.
+const COURT_USAGE_LARGE=COURT_USAGE_CATALOG.filter(x=>x.level==='large');
+function usageChildren(level,parentCode){
+ return COURT_USAGE_CATALOG.filter(x=>x.level===level&&x.parentCode===parentCode);
+}
+function usageExact(level,name,parentCode){
+ const entries=COURT_USAGE_CATALOG.filter(x=>x.level===level&&x.name===name&&
+  (level==='large'||x.parentCode===parentCode));
+ return entries.length===1?entries[0]:null;
+}
+function usageCodesForNames(large,medium,small){
+ const l=usageExact('large',large),m=usageExact('medium',medium,l?.code),
+  x=usageExact('small',small,m?.code);
+ return {large:l?.code||null,medium:m?.code||null,small:x?.code||null};
+}
+
 function availablePropertyTypes(){
  const set=new Set(['아파트','빌라','단독주택','상가','토지','기타']);
  for(const p of allProperties())if(typeof p.type==='string'&&p.type.trim())set.add(p.type);
@@ -1307,9 +1328,9 @@ function official(){
  <label class="label" for="officialAddress">소재지 / 물건 이름</label><input class="search" id="officialAddress" required maxlength="300" placeholder="법원에 표시된 소재지">
  <label class="label" for="officialUsageLarge">법원 물건 용도 · 대분류</label>
  <select id="officialUsageLarge" class="select" required><option value="" selected disabled>법원 대분류 선택</option>${COURT_USAGE_LARGE.map(x=>'<option value="'+x.name+'">'+x.name+'</option>').join('')}</select>
- <label class="label" for="officialUsageMedium">법원 용도 · 중분류 (원문 확인)</label><input class="search" id="officialUsageMedium" maxlength="80" placeholder="예: 주거용건물 · 정확한 법원 명칭 입력">
- <label class="label" for="officialType">법원 용도 · 소분류 / 실제 물건 종류</label><input class="search" id="officialType" maxlength="80" required placeholder="예: 아파트 · 대지 · 다세대주택">
- <p class="helper">법원 대·중·소분류 코드표 전체는 검증 중이에요. 원문 명칭을 그대로 보존하고, 확인되지 않은 종류를 기타로 바꾸지 않습니다.</p>
+ <label class="label" for="officialUsageMedium">법원 용도 · 중분류 (원문 확인)</label><input class="search" id="officialUsageMedium" list="officialUsageMediumOptions" maxlength="80" placeholder="법원 원문 또는 확인된 목록에서 선택"><datalist id="officialUsageMediumOptions"></datalist>
+ <label class="label" for="officialType">법원 용도 · 소분류 / 실제 물건 종류</label><input class="search" id="officialType" list="officialUsageSmallOptions" maxlength="80" required placeholder="법원 원문 또는 확인된 목록에서 선택"><datalist id="officialUsageSmallOptions"></datalist>
+ <p class="helper">확인된 코드가 있는 분류만 목록으로 추천해요. 목록에 없는 법원 물건명은 원문 그대로 입력할 수 있고, 코드는 미확인으로 저장합니다.</p>
  <label class="label" for="officialAppraisal">감정평가액 (원)</label><input class="search" id="officialAppraisal" type="number" inputmode="numeric" min="0" step="1" placeholder="원 단위">
  <label class="label" for="officialMin">최저매각가격 (원)</label><input class="search" id="officialMin" type="number" inputmode="numeric" min="0" step="1" placeholder="원 단위">
  <label class="label" for="officialSaleDate">매각기일 (선택)</label><input class="search" id="officialSaleDate" type="date">
@@ -1381,6 +1402,29 @@ if($('#verifyOfficialCase'))$('#verifyOfficialCase').onclick=async()=>{
 
 
 
+// Known taxonomy suggestions are parent-scoped; unknown official types remain free text.
+if($('#officialUsageLarge')){
+ const large=$('#officialUsageLarge'),middle=$('#officialUsageMedium'),small=$('#officialType');
+ const midChoices=$('#officialUsageMediumOptions'),smallChoices=$('#officialUsageSmallOptions');
+ const display=(node,entries)=>{node.replaceChildren(...entries.map(item=>{
+   const option=document.createElement('option');option.value=item.name;return option;
+ }));};
+ const refreshSmall=()=>{
+  const largeCode=COURT_USAGE_LARGE.find(x=>x.name===large.value)?.code;
+  const mid=usageExact('medium',middle.value.trim(),largeCode);
+  display(smallChoices,mid?usageChildren('small',mid.code):[]);
+ };
+ const refreshMedium=()=>{
+  const code=COURT_USAGE_LARGE.find(x=>x.name===large.value)?.code;
+  display(midChoices,code?usageChildren('medium',code):[]);
+  refreshSmall();
+ };
+ large.addEventListener('change',()=>{middle.value='';small.value='';refreshMedium();});
+ middle.addEventListener('change',()=>{small.value='';refreshSmall();});
+ middle.addEventListener('input',refreshSmall);
+ refreshMedium();
+}
+
 if($('#fetchOfficialItem'))$('#fetchOfficialItem').onclick=async()=>{
  const button=$('#fetchOfficialItem'),status=$('#fetchOfficialItemStatus');
  const courtInput=$('#officialCourt'),caseInput=$('#officialCase'),itemInput=$('#officialItemNo');
@@ -1443,10 +1487,17 @@ if($('#fetchOfficialItem'))$('#fetchOfficialItem').onclick=async()=>{
    const usage=result.courtUsage;
    const large=$('#officialUsageLarge'),medium=$('#officialUsageMedium');
    const known=COURT_USAGE_LARGE.find(x=>x.code===usage.codes?.large&&x.name===usage.names?.large);
-   if(known&&!large.value)large.value=known.name;
-   if(typeof usage.names?.medium==='string'&&usage.names.medium.length<=80&&!medium.value)medium.value=usage.names.medium;
+   if(known&&!large.value){large.value=known.name;large.dispatchEvent(new Event('input'));}
+   const mid=usageExact('medium',usage.names?.medium,known?.code);
+   if(typeof usage.names?.medium==='string'&&usage.names.medium.length<=80&&!medium.value){
+    medium.value=usage.names.medium;
+    medium.dispatchEvent(new Event('input'));
+   }
+   const sub=usageExact('small',usage.names?.small,mid?.code);
+   const subtype=$('#officialType');
+   if(sub&&subtype&&!subtype.value)subtype.value=sub.name;
   }
-  status.textContent=applied.length?'✓ 입력 완료: '+applied.join(' · ')+'. 법원 대·중·소분류를 확인한 후 사건 등록을 눌러주세요.':'변경된 입력칸이 있어 값을 덮어쓰지 않았어요.';
+  status.textContent=applied.length?'✓ 입력 완료: '+applied.join(' · ')+'. 법원 대·중·소분류를 확인한 후 사건 등록을 눌러주세요.':'확인된 주소·가격·날짜의 빈칸은 없어요. 분류는 법원 원문과 대조해 주세요.';
  }catch(error){
   if(status.isConnected)status.textContent=error.name==='AbortError'?'조회 시간이 초과됐어요. 잠시 뒤 다시 시도해 주세요.':'물건정보 조회 실패: '+(error.message||'연결을 확인해 주세요.');
  }finally{clearTimeout(timeout);if(button.isConnected)button.disabled=false;}
@@ -1498,8 +1549,8 @@ if($('#officialRecordForm'))$('#officialRecordForm').onsubmit=event=>{
  event.preventDefault();
  const court=$('#officialCourt').value.trim(),caseNumber=$('#officialCase').value.trim().replace(/\s+/g,''),itemNo=$('#officialItemNo').value.trim()||'1',name=$('#officialAddress').value.trim(),type=$('#officialType').value.trim();
  const usageLarge=$('#officialUsageLarge').value,usageMedium=$('#officialUsageMedium').value.trim();
- const largeCode=COURT_USAGE_LARGE.find(x=>x.name===usageLarge)?.code||null;
- const courtUsage={codes:{large:largeCode,medium:null,small:null},
+ const codeSet=usageCodesForNames(usageLarge,usageMedium,type),largeCode=codeSet.large;
+ const courtUsage={codes:codeSet,
    names:{large:usageLarge,medium:usageMedium||null,small:type},source:'user-verified'};
  const minWon=$('#officialMin').value.trim()===''?null:Number($('#officialMin').value),valueWon=$('#officialAppraisal').value.trim()===''?null:Number($('#officialAppraisal').value),date=$('#officialSaleDate').value.replaceAll('-','.');
  if(!/^\d{4}타경\d{1,10}$/.test(caseNumber)){toast('사건번호는 2025타경12345 형식으로 입력해 주세요.');return;}

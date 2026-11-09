@@ -57,3 +57,10 @@
 - GitHub Pages는 활성화되어 GitHub Actions로 자동 배포 중. 작업마다 해당 워크플로우 최종 성공 상태 확인 필수.
 - 새 채팅에서는 이 파일 및 DESIGN_SPEC.md / CHANGELOG.md / VERSION.txt 확인, GitHub 최신 소스 읽기, 수정 후 main 업데이트와 Pages 실행 검증. 채팅별 GitHub 권한은 재확인 필요.
 - 사용자가 승인한 애플 스타일 UI는 임의로 바꾸지 말고 화면 비교.
+
+### v0.6.0 브라우저 자동 회귀검증 — 2026-11-09
+- Playwright Chromium 테스트 `tests/manual-record-regression.cjs` 추가, GitHub workflow `.github/workflows/manual-record-regression.yml`(ubuntu-24.04).
+- 성공 실행: https://github.com/samuraiscene-alt/auction-pwa/actions/runs/42604714717
+- 신규 사건 등록, 법원 분류 20104(아파트), 관심물건 지정, 최저가·매각기일 변경 저장, 고유 ID/등록일 유지, 새 매각기일 달력 반영, 이전 날짜 미표시 통과.
+- 예전 타입 '토지' 기록(코드 없음) 수정 시 기존 분류/관심물건 유지 통과, 브라우저 스크립트 오류 없음.
+- 실제 iPhone Safari/홈화면 PWA 저장소 간 연동과 법원 외부 서버 응답은 해당 자동 테스트에서 검증하지 않음.

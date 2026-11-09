@@ -72,6 +72,13 @@ jobs:
             reason,caseIdentityMatched:passed,lotIdentityMatched:passed&&parsed?.lotIdentityMatched===true,
             legalStatusVerified:false,rawResponseSaved:false,
             responseCaseFormat:['display_case','digits_only','number','missing','other'].includes(parsed?.responseCaseFormat)?parsed.responseCaseFormat:'unavailable',
+            identityHints:{
+              baseCourtMatches:parsed?.identityHints?.baseCourtMatches===true,
+              internalCaseYearMatches:parsed?.identityHints?.internalCaseYearMatches===true,
+              internalCaseSerialSuffixMatches:parsed?.identityHints?.internalCaseSerialSuffixMatches===true,
+              relatedDisplayAliasMatched:parsed?.identityHints?.relatedDisplayAliasMatched===true,
+              internalLotRowFound:parsed?.identityHints?.internalLotRowFound===true
+            },
             responseShape:fields,
             note:'진단 필드명·행수만 기록. 원본값과 매각·취하 상태의 의미는 검증하지 않음.'
           };

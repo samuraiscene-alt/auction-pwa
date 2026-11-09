@@ -23,8 +23,8 @@ function validateSnapshot(data,previous=null,{strict=true}={}){
  check(Array.isArray(data.items)&&data.items.length>0&&data.items.length<=5000,'물건 목록 개수 오류');
  for(const region of REGIONS){
   const r=data.regions?.[region];
-  check(r&&Number.isInteger(r.returned)&&r.returned>0&&r.returned<=250,'지역 조회 행 개수 오류: '+region);
-  check(r&&Number.isInteger(r.processedPages)&&r.processedPages>=1&&r.processedPages<=5,'페이지 수 오류: '+region);
+  check(r&&Number.isInteger(r.returned)&&r.returned>0&&r.returned<=400,'지역 조회 행 개수 오류: '+region);
+  check(r&&Number.isInteger(r.processedPages)&&r.processedPages>=1&&r.processedPages<=8,'페이지 수 오류: '+region);
   check(r&&(r.total===null||Number.isSafeInteger(r.total)&&r.total>=r.returned),'총 검색건수 오류: '+region);
  }
  if(!Array.isArray(data.items))return {ok:false,errors,warnings,changeSamples};

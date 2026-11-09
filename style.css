@@ -759,3 +759,12 @@ html,body{
  box-sizing:border-box;
 }
 #tabs button{min-width:0}
+
+/* v0.5.1 official court-source entry and user-entered cases */
+.auction-demo.user-record{background:#e8f4ff;color:#286bad}
+.official-intro .primary{margin-top:8px}
+.official-form .label{margin-top:11px}
+.official-form .search,.official-form .select{width:100%;min-width:0}
+.official-saved-item{margin-bottom:14px}
+.official-saved-item .listItem{margin-bottom:5px}
+.official-saved-item>.secondary{width:100%;background:#fff0f2;color:#ad5163}

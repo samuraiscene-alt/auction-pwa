@@ -1,2 +1,2 @@
-0.4.6
-Search text in an attached PDF and navigate directly to matching pages.
+0.4.7
+Compact PDF search icon and prevent header truncation on iPhone.

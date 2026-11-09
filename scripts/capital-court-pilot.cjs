@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 /*
- * Metropolitan court search pilot: up to 5 pages x 50 results per province.
+ * Metropolitan court search pilot: up to 8 pages x 50 results per province.
  * Snapshot is explicitly partial; no claim of complete metropolitan coverage.
  * Source: courtauction.go.kr PGJ151M01 searchControllerMain.on
  */
@@ -86,7 +86,7 @@ async function search(region,pageNo){
  throw lastError;
 }
 (async()=>{
- const regions={};const items=[];const errors=[];const maxPages=5;
+ const regions={};const items=[];const errors=[];const maxPages=8;
  for(const region of REGIONS){
   let total=null,returned=0,processed=0;const signatures=new Set();
   try{

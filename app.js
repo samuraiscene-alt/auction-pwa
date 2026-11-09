@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.3';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.4';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -1408,25 +1408,32 @@ async function verifyCapitalItem(id,button){
     String(fresh.itemNo)!==String(item.itemNo)||fresh.source!=='courtauction.go.kr')
     throw Error('법원/사건/물건번호 일치 여부를 확인하지 못했습니다.');
   const changes=[],unknown=[],equal=[];
+  const validWon=value=>Number.isSafeInteger(value)&&value>0&&value<=999999999999999;
+  const validAuctionDate=value=>{
+   if(typeof value!=='string'||!/^20\d{2}-\d{2}-\d{2}$/.test(value))return false;
+   const date=new Date(value+'T00:00:00Z');
+   return !Number.isNaN(+date)&&date.toISOString().slice(0,10)===value;
+  };
   const compare=(key,label)=>{
    const old=item[key],latest=fresh[key];
-   if(!Number.isSafeInteger(old)&&key!=='saleDate'||latest===null||latest===undefined||key==='saleDate'&&(!old||!latest)){
-    unknown.push(label);return;
+   const isDate=key==='saleDate';
+   if(isDate?(!validAuctionDate(old)||!validAuctionDate(latest)):(!validWon(old)||!validWon(latest))){
+    unknown.push(label+' (값 없음·형식 오류)');return;
    }
-   if(old!==latest)changes.push(label+' (저장 '+(key==='saleDate'?old:prettyPrice(old))+' / 재조회 '+(key==='saleDate'?latest:prettyPrice(latest))+')');
+   if(old!==latest)changes.push(label+' 차이 (수집 '+(isDate?old:prettyPrice(old))+' / 재조회 '+(isDate?latest:prettyPrice(latest))+')');
    else equal.push(label);
   };
   compare('appraisalWon','감정평가액');
   if(fresh.priceAmbiguous===true)unknown.push('최저매각가 (법원 조회값이 여러 개)');
   else compare('minimumWon','최저매각가');
   compare('saleDate','매각기일');
-  const prefix=changes.length?'⚠ 법원 재조회 값과 차이가 있습니다: '+changes.join(' / '):
-    unknown.length?'⚠ 재조회했지만 일부 가격·기일을 대조하지 못했습니다.':
-    '✓ 법원 재조회 값과 수집된 가격·기일이 일치합니다.';
+  const prefix=changes.length?'⚠ 법원 재조회와 수집 목록에 차이가 있습니다. 기일 변경·가격 변경 여부를 원문에서 확인하세요: '+changes.join(' / '):
+    unknown.length?'⚠ 재조회했지만 일부 가격·기일을 정확히 대조하지 못했습니다.':
+    '✓ 수집 목록과 재조회한 가격·기일이 일치합니다.';
   output.textContent=prefix+
    (equal.length?' · 일치: '+equal.join(', '):'')+
    (unknown.length?' · 미확인: '+unknown.join(', '):'')+
-   ' · 낙찰·취하 등 현재 진행상태는 별도 확인이 필요합니다.';
+   ' · 매각·취하·변경 등 사건 진행상태는 검증되지 않았습니다. 법원 원문에서 확인하세요.';
  }catch(error){
   output.textContent='⚠ 재조회 실패: '+String(error?.name==='AbortError'?'시간 초과':error?.message||'연결 오류')+
    ' · 저장된 정보가 정확하다는 뜻이 아닙니다. 법원 원문에서 확인하세요.';

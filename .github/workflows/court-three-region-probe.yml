@@ -57,8 +57,8 @@ jobs:
               lotStatusCode:verified?safeCode(ev.lotStatusCode):null,
               caseProgressCode:verified?safeCode(ev.caseProgressCode):null,
               caseSuspensionCode:verified?safeCode(ev.caseSuspensionCode):null,
-              lastResultCode:verified&&Array.isArray(ev.scheduleResultObservations)&&ev.scheduleResultObservations.length?
-                safeCode(ev.scheduleResultObservations.at(-1)?.resultCode):null,
+              latestDatedResultCode:verified&&Array.isArray(ev.scheduleResultObservations)&&ev.scheduleResultObservations.length?
+                safeCode(ev.scheduleResultObservations.filter(x=>/^20\\d{6}$/.test(String(x?.day))).sort((a,b)=>String(b.day).localeCompare(String(a.day)))[0]?.resultCode):null,
               legalStatusVerified:false};
           });
           const report={schemaVersion:1,attemptedAt:new Date().toISOString(),sampleCount:3,

@@ -89,3 +89,9 @@
 - 실서버 identityHints 확인: baseCourtMatches=true, internalCaseYearMatches=true, internalCaseSerialSuffixMatches=true, internalLotRowFound=true, relatedDisplayAliasMatched=false. 내부 사건과 물건의 관계를 뒷받침하지만 화면용 사건번호의 직접 일치는 아직 미확인. statusDecisionAllowed=false 유지.
 - 진단 코드에서 모든 물건 행의 법원/내부사건번호 일치(internalCaseRowsConsistent) 및 목표 물건번호의 단일 행 여부(matchingLotRowUnique)를 구분. 중복/혼합 사건 오판 방지 오프라인 테스트 통과.
 - 두 신규 항목의 실서버 진단은 별도 확인이 필요. 매각·취하·기일변경 상태 자동판정은 활성화하지 않음.
+
+## 2026-11-10 연결 진단의 원인 세분화
+- 실제 확인한 보고서(2026-11-09T22:00:51.620Z): `responseCaseFormat=digits_only`, `baseCourtMatches=true`, `internalCaseYearMatches=true`, `internalCaseSerialSuffixMatches=true`, `internalLotRowFound=true`, `internalCaseRowsConsistent=true`, `matchingLotRowUnique=true`; 화면 표시번호 직접 일치는 여전히 실패.
+- 이 조합은 타 사건 조회임을 뜻하는 것이 아니라, 법원 내부 숫자 사건번호를 화면용 타경번호로 공식적으로 대조하지 못한 경우에 해당할 수 있음. 따라서 후속 진단은 `internal_case_id_unmapped`와 일반 `identity_mismatch`를 분리해 기록하도록 수정.
+- 현재 연도/뒤 숫자만 맞는 것으로 사건을 확정하지 않고 `caseIdentityMatched=false`, `legalStatusVerified=false` 유지. 공식 연계 규칙과 실제 상태코드 의미가 검증되기 전까지 앱에는 자동 표시 금지.
+- 안전 진단 코드 오프라인 테스트 전체 통과. 다음 Actions 실행에서 새 분류의 실서버 결과 확인 필요.

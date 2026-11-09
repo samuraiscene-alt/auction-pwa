@@ -1,10 +1,12 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-09T22:07:07.047Z",
+  "attemptedAt": "2026-11-09T22:07:17.130Z",
   "outcome": "list_response_observed",
   "reason": "processed",
   "exactDisplayLotRows": 1,
   "directInternalCaseMapping": false,
+  "csNoFieldPresent": false,
+  "docidFieldPresent": true,
   "internalCaseFormatObserved": "unavailable",
   "detailCaseCrossChecked": false,
   "legalStatusVerified": false,

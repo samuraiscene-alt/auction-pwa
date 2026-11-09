@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.5.3';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.5.4';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -220,6 +220,7 @@ function prettyPrice(won){
 const DEMO_PRICES={demo1:875000000,demo2:336000000,demo3:413000000};
 const properties=[{id:'demo1',type:'아파트',name:'서울 강남구 아파트',court:'서울중앙지방법원',case:'2026타경12345',value:'12억 5,000만원',min:'8억 7,500만원',date:'2026.11.17',flag:'2회 유찰'},{id:'demo2',type:'빌라',name:'경기 성남시 다세대주택',court:'수원지방법원',case:'2026타경23456',value:'4억 8,000만원',min:'3억 3,600만원',date:'2026.11.18',flag:'추가 확인'},{id:'demo3',type:'단독주택',name:'서울 성북구 단독주택',court:'서울북부지방법원',case:'2026타경34567',value:'5억 9,000만원',min:'4억 1,300만원',date:'2026.11.20',flag:'1회 유찰'}];
 const OFFICIAL_AUCTION_URL='https://www.courtauction.go.kr/';
+const COURT_VERIFY_URL='https://joon-auction-court.samuraiscene.workers.dev/case';
 function registeredProperties(){return Array.isArray(saved.realProperties)?saved.realProperties:[]}
 function allProperties(){return [...registeredProperties(),...properties]}
 function propertyPrice(p){return p&&p.userRegistered?(Number.isSafeInteger(p.minWon)&&p.minWon>0?p.minWon:null):DEMO_PRICES[p.id]}
@@ -1272,12 +1273,13 @@ function initNoteEditor(){
 
 function official(){
  const records=registeredProperties().slice().reverse();
- return `<div class="card official-intro"><strong>대한민국 법원경매정보</strong><p class="helper">법원 공식 사이트에서 물건을 검색해 사건번호와 매각기일·가격을 확인하세요. 이 앱은 아직 공식 실시간 데이터 자동 수집을 지원하지 않습니다.</p><button type="button" class="primary" id="openOfficialCourt">⚖ 법원경매정보 열기 ↗</button><p class="helper">공식 사이트에서 확인한 사건만 아래에 직접 등록해 주세요. 직접 입력값은 법원 검증 완료 표시가 아닙니다.</p></div>
+ return `<div class="card official-intro"><strong>대한민국 법원경매정보</strong><p class="helper">법원 공식 사이트에서 물건을 검색해 사건번호와 매각기일·가격을 확인하세요. 현재 서울중앙지방법원 사건번호 일치 확인을 지원해요. 감정가·최저가·매각기일은 아직 자동 수집하지 않습니다.</p><button type="button" class="primary" id="openOfficialCourt">⚖ 법원경매정보 열기 ↗</button><p class="helper">공식 사이트에서 확인한 사건만 아래에 직접 등록해 주세요. 직접 입력값은 법원 검증 완료 표시가 아닙니다.</p></div>
  <form class="card official-form" id="officialRecordForm">
  <strong>실제 경매사건 직접 등록</strong>
  <div class="court-pdf-import"><label class="official-pdf-label" for="officialPdfInput">▤ 법원 PDF로 정보 자동 입력</label><input type="file" id="officialPdfInput" accept="application/pdf,.pdf" hidden><p class="helper" id="officialPdfStatus">법원 사이트에서 저장한 텍스트 PDF를 선택하세요. 확실한 정보만 추출하며 등록 전에 검토해야 해요.</p></div>
  <label class="label" for="officialCourt">담당 법원</label><input class="search" id="officialCourt" required maxlength="100" placeholder="예: 서울중앙지방법원">
  <label class="label" for="officialCase">사건번호</label><input class="search" id="officialCase" required placeholder="예: 2025타경12345" inputmode="text">
+ <button type="button" class="secondary court-verify-button" id="verifyOfficialCase">🔎 법원 사건번호 확인</button><p class="helper court-verify-status" id="verifyOfficialStatus" role="status" aria-live="polite">지원 법원: 서울중앙지방법원 · 조회 결과는 자동 저장되지 않습니다.</p>
  <label class="label" for="officialItemNo">물건번호</label><input class="search" id="officialItemNo" placeholder="예: 1 (선택)" inputmode="numeric" maxlength="4">
  <label class="label" for="officialAddress">소재지 / 물건 이름</label><input class="search" id="officialAddress" required maxlength="300" placeholder="법원에 표시된 소재지">
  <label class="label" for="officialType">물건 종류</label><select id="officialType" class="select">${['아파트','빌라','단독주택','상가','토지','기타'].map(t=>'<option>'+t+'</option>').join('')}</select>
@@ -1288,7 +1290,7 @@ function official(){
  <div class="section"><h2>내가 등록한 사건</h2><span class="muted">${records.length}건</span></div>
  ${records.map(p=>`<div class="official-saved-item">${card(p)}<button type="button" class="secondary" data-delete-real="${escapeHtml(p.id)}">등록 내용 삭제</button></div>`).join('')||'<div class="empty">등록한 사건이 없어요. 법원 원문을 확인하고 등록해 주세요.</div>'}`;
 }
-function settings(){const standalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;const backupDate=localStorage.getItem(STORAGE_STAMP_KEY);return `<div class="card"><strong>앱 정보</strong><p class="helper">부동산 경매 v${APP_VERSION} · ${standalone?'홈 화면 웹앱':'브라우저 실행'}</p><p class="helper" id="appUpdateState">${statusText()}</p><button class="secondary" id="checkUpdate" style="width:100%">${updateState.available?'업데이트 적용':'업데이트 확인'}</button><p id="updateAvailableMessage" class="update-available-message" ${updateState.available?'':'hidden'}>새 버전이 준비돼 있어요. 작성 중인 내용은 먼저 저장해 주세요.</p><div class="divider"></div><strong>개발 상태</strong><p class="helper">법원 공식 검색 연결 및 사용자 직접 사건 등록을 지원합니다. 자동 사건 수집·실시간 기일 갱신·실거래가·사진 연동은 아직 미지원.</p><div class="divider"></div><strong>데이터 백업</strong><p class="helper">노트·관심물건·첨부파일을 한 번에 백업합니다. Safari와 홈 화면 웹앱은 저장 데이터가 분리될 수 있으니 홈 화면 웹앱에서 백업하세요.</p><p class="helper">마지막 백업 생성 요청: ${backupDate?new Date(backupDate).toLocaleString('ko-KR'):'기록 없음'}</p><button class="secondary" id="export" style="width:100%">내 데이터 백업</button><label class="upload" style="margin-top:10px">백업 파일 복원<input id="import" type="file" accept="application/json,.json" hidden></label></div><div class="card"><strong>프로젝트 이관</strong><p class="helper">README.md, PROJECT_HANDOFF.md, DESIGN_SPEC.md에 작업 재개 및 배포 방법이 기록돼 있어요.</p></div>`}function render(){if(editorDirty&&state.page==='note')persistNoteDraft();document.onselectionchange=null;activeNoteEditor=null;editorDirty=false;const back=document.getElementById('navBack');if(back){back.hidden=state.page==='home';back.onclick=goBack;}document.title='부동산 경매 · '+titles[state.page];$('#page-title').textContent=titles[state.page];$('#content').innerHTML=({home,search,schedule,favorites,study,advanced,special,detail,rights,note,settings,official}[state.page])();if($('#noteEditorShell')){
+function settings(){const standalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;const backupDate=localStorage.getItem(STORAGE_STAMP_KEY);return `<div class="card"><strong>앱 정보</strong><p class="helper">부동산 경매 v${APP_VERSION} · ${standalone?'홈 화면 웹앱':'브라우저 실행'}</p><p class="helper" id="appUpdateState">${statusText()}</p><button class="secondary" id="checkUpdate" style="width:100%">${updateState.available?'업데이트 적용':'업데이트 확인'}</button><p id="updateAvailableMessage" class="update-available-message" ${updateState.available?'':'hidden'}>새 버전이 준비돼 있어요. 작성 중인 내용은 먼저 저장해 주세요.</p><div class="divider"></div><strong>개발 상태</strong><p class="helper">서울중앙지방법원 사건번호 확인과 직접 등록을 지원합니다. 가격·기일 자동 수집, 실시간 일정 갱신, 실거래가·사진 연동은 아직 미지원.</p><div class="divider"></div><strong>데이터 백업</strong><p class="helper">노트·관심물건·첨부파일을 한 번에 백업합니다. Safari와 홈 화면 웹앱은 저장 데이터가 분리될 수 있으니 홈 화면 웹앱에서 백업하세요.</p><p class="helper">마지막 백업 생성 요청: ${backupDate?new Date(backupDate).toLocaleString('ko-KR'):'기록 없음'}</p><button class="secondary" id="export" style="width:100%">내 데이터 백업</button><label class="upload" style="margin-top:10px">백업 파일 복원<input id="import" type="file" accept="application/json,.json" hidden></label></div><div class="card"><strong>프로젝트 이관</strong><p class="helper">README.md, PROJECT_HANDOFF.md, DESIGN_SPEC.md에 작업 재개 및 배포 방법이 기록돼 있어요.</p></div>`}function render(){if(editorDirty&&state.page==='note')persistNoteDraft();document.onselectionchange=null;activeNoteEditor=null;editorDirty=false;const back=document.getElementById('navBack');if(back){back.hidden=state.page==='home';back.onclick=goBack;}document.title='부동산 경매 · '+titles[state.page];$('#page-title').textContent=titles[state.page];$('#content').innerHTML=({home,search,schedule,favorites,study,advanced,special,detail,rights,note,settings,official}[state.page])();if($('#noteEditorShell')){
  activeNoteEditor={...initNoteEditor(),attachments:createAttachmentEditor()};
  const changed=()=>{setEditorDirty(true);scheduleNoteDraft();};
  $('#noteTitle').addEventListener('input',changed);
@@ -1329,6 +1331,27 @@ document.querySelectorAll('[data-favorite-date]').forEach(btn=>btn.onclick=()=>{
 });
 
 if($('#openOfficialCourt'))$('#openOfficialCourt').onclick=()=>window.open(OFFICIAL_AUCTION_URL,'_blank','noopener');
+
+if($('#verifyOfficialCase'))$('#verifyOfficialCase').onclick=async()=>{
+ const button=$('#verifyOfficialCase'),status=$('#verifyOfficialStatus');
+ const court=$('#officialCourt').value.trim().normalize('NFC');
+ const caseNumber=$('#officialCase').value.trim().normalize('NFC').replace(/\s+/g,'');
+ if(court!=='서울중앙지방법원'){status.textContent='현재 서울중앙지방법원만 자동 확인을 지원합니다.';return;}
+ if(!/^20\d{2}타경\d{1,12}$/.test(caseNumber)){status.textContent='사건번호를 2023타경4869 형식으로 입력해 주세요.';return;}
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),12000);
+ button.disabled=true;status.textContent='법원 사건번호 확인 중…';
+ try{
+  const endpoint=COURT_VERIFY_URL+'?courtCode=B000210&caseNo='+encodeURIComponent(caseNumber);
+  const response=await fetch(endpoint,{method:'GET',mode:'cors',cache:'no-store',signal:controller.signal});
+  const result=await response.json();
+  if(!response.ok||result?.verified!==true||result?.courtCode!=='B000210'||result?.caseNo!==caseNumber||result?.courtName!==court)
+   throw Error(result?.error||'법원 또는 사건번호를 확인할 수 없습니다.');
+  if(status.isConnected)status.textContent='✓ 법원 사건번호 확인 완료. 가격·매각기일은 법원 원문을 확인해 직접 입력하세요.';
+ }catch(error){
+  if(status.isConnected)status.textContent=error.name==='AbortError'?'법원 조회 시간이 초과됐어요. 다시 시도해 주세요.':'조회 실패: '+(error.message||'네트워크를 확인해 주세요.');
+ }finally{clearTimeout(timeout);if(button.isConnected)button.disabled=false;}
+};
+
 
 if($('#officialPdfInput'))$('#officialPdfInput').onchange=async event=>{
  const input=event.target,file=input.files?.[0],status=$('#officialPdfStatus');if(!file)return;

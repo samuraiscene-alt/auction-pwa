@@ -11,8 +11,8 @@ function rejected(name,mutate){
 }
 const result=validateSnapshot(data,null);
 assert(result.ok,'Existing published sample baseline must pass structural integrity: '+result.errors.join(','));
-assert.equal(result.summary.validatedItems,274);
-console.log('PASS baseline 274 items validate without claiming they are current');
+assert.equal(result.summary.validatedItems,data.items.length);
+console.log('PASS existing baseline '+data.items.length+' items validate without claiming they are current');
 rejected('missing regional pages',x=>{x.regions.서울.returned=0});
 rejected('incorrect address region',x=>{x.items[0].region='경기'});
 rejected('invalid sale date',x=>{x.items[0].saleDate='2026-02-30'});

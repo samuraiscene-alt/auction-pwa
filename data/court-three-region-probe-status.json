@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-09T22:59:14.501Z",
+  "attemptedAt": "2026-11-09T22:59:41.269Z",
   "sampleCount": 3,
   "allIdentitiesLinked": true,
   "cases": [
@@ -25,7 +25,7 @@
       "lotStatusCode": "01",
       "caseProgressCode": "0002100001",
       "caseSuspensionCode": "04",
-      "latestDatedResultCode": null,
+      "latestDatedResultCode": "002",
       "legalStatusVerified": false
     },
     {
@@ -37,7 +37,7 @@
       "lotStatusCode": "01",
       "caseProgressCode": "0002100001",
       "caseSuspensionCode": "00",
-      "latestDatedResultCode": null,
+      "latestDatedResultCode": "002",
       "legalStatusVerified": false
     }
   ],

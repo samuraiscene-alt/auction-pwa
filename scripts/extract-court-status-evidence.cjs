@@ -45,10 +45,23 @@ function extractStatusEvidence(rows,detail,identity,bridge){
  const matched=history.filter(r=>r&&String(r.cortOfcCd??'')===identity.courtCode&&
   String(r.csNo??'')===internal&&String(r.dspslGdsSeq??'')===identity.itemNo);
  const historyBounded=matched.length<=100&&history.length<=500;
- const dates=historyBounded?matched.map(r=>({
+ const observed=historyBounded?matched.map(r=>({
   day:safeDay(r.dxdyYmd),resultCode:safeCode(r.auctnDxdyRsltCd),
   kindCode:safeCode(r.auctnDxdyKndCd)
- })).filter(x=>x.day&&x.resultCode).slice(0,20):[];
+ })).filter(x=>x.day&&x.resultCode):[];
+ // Multiple conflicting codes on the same day/kind are ambiguous evidence.
+ const bySchedule=new Map();
+ let scheduleConflict=false;
+ for(const x of observed){
+  const key=x.day+'|'+(x.kindCode||'');
+  const prior=bySchedule.get(key);
+  if(prior!==undefined&&prior!==x.resultCode)scheduleConflict=true;
+  bySchedule.set(key,x.resultCode);
+ }
+ const dates=scheduleConflict?[]:observed
+  .sort((a,b)=>b.day.localeCompare(a.day)||String(a.kindCode||'').localeCompare(String(b.kindCode||'')))
+  .filter((x,i,arr)=>i===0||x.day!==arr[i-1].day||x.kindCode!==arr[i-1].kindCode||x.resultCode!==arr[i-1].resultCode)
+  .slice(0,20);
  const status={
   caseProgressCode:safeCode(base.csProgStatCd),
   caseSuspensionCode:safeCode(base.auctnSuspStatCd),
@@ -68,6 +81,8 @@ function extractStatusEvidence(rows,detail,identity,bridge){
   listingDisplayCandidateFieldNames:displayCandidateFieldNames(listRow[0]),
   matchingScheduleRows:historyBounded?matched.length:null,
   historyBounded,
+  scheduleConflictDetected:scheduleConflict,
+  scheduleEvidenceTruncated:!scheduleConflict&&observed.length>20,
   legalStatusVerified:false,
   legalStatus:null,
   note:'법원 응답의 원시 상태코드 기록(뜻 미검증). 매각·취하·변경 자동분류 금지.'

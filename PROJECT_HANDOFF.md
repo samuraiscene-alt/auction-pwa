@@ -2,7 +2,8 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.7.0 (지역별 최대 8페이지 수집, 진행상태 미확인 표시)
+- 현재 버전: v0.7.1 (수집 시도 상태 파일 확인 불가 경고 및 지역별 급감 검사 보강)
+- v0.7.1: 법원 수집 시도 상태를 확인할 수 없을 때 수도권 목록에 경고 표시. 상태를 추측해 성공으로 처리하지 않음. 검증 스크립트는 같은/넓은 수집 페이지에서 지역별 물건 50% 초과 급감·페이지별 행수 초과·미래 수집시각을 차단. tests/capital-snapshot-safety.cjs 추가, 수집 Actions 시작 시 테스트 실행. 실제 Pages 성공 여부는 Actions 확인 필요.
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.

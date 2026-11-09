@@ -1,0 +1,99 @@
+const { chromium } = require('playwright');
+const assert = require('node:assert/strict');
+
+const URL='http://127.0.0.1:8765/index.html';
+const key='auction_skeleton_v1';
+async function read(page){return page.evaluate(k=>JSON.parse(localStorage.getItem(k)),key)}
+async function visitOfficial(page){await page.locator('[data-page="official"]').first().click()}
+async function startEdit(page,id){
+ await visitOfficial(page);
+ await page.locator('[data-edit-real]').filter({hasText:'등록 내용 수정'}).first().click();
+ await page.locator('#officialRecordForm').waitFor();
+}
+async function createTestCase(page){
+ await visitOfficial(page);
+ await page.locator('#officialCourt').fill('서울중앙지방법원');
+ await page.locator('#officialCase').fill('2026타경999991');
+ await page.locator('#officialItemNo').fill('1');
+ await page.locator('#officialAddress').fill('서울특별시 테스트구 가상로 1');
+ await page.locator('#officialUsageLarge').selectOption({label:'건물'});
+ await page.locator('#officialUsageMedium').selectOption({label:'주거용건물'});
+ await page.locator('#officialType').selectOption({label:'아파트'});
+ await page.locator('#officialAppraisal').fill('500000000');
+ await page.locator('#officialMin').fill('400000000');
+ await page.locator('#officialSaleDate').fill('2026-11-19');
+ await page.locator('#officialRecordForm button[type="submit"]').click();
+}
+(async()=>{
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ const page=await browser.newPage({viewport:{width:390,height:844},locale:'ko-KR',timezoneId:'Asia/Seoul'});
+ const errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ try{
+  await page.goto(URL,{waitUntil:'domcontentloaded'});
+  await page.evaluate(k=>localStorage.removeItem(k),key);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await createTestCase(page);
+  const record0=(await read(page)).realProperties;
+  assert.equal(record0.length,1,'create record');
+  const old=record0[0];
+  assert.equal(old.courtUsage.codes.small,'20104','correct official small code');
+  assert.equal(old.type,'아파트');
+  await page.locator('#favBtn').click();
+  let data=await read(page);
+  assert(data.favorites.includes(old.id),'favorite recorded');
+  await page.locator('#editRealDetail').click();
+  assert.equal(await page.locator('#officialCase').inputValue(),'2026타경999991');
+  assert(await page.locator('#officialCase').evaluate(x=>x.readOnly),'case locked');
+  assert(await page.locator('#officialItemNo').evaluate(x=>x.readOnly),'item locked');
+  await page.locator('#officialMin').fill('350000000');
+  await page.locator('#officialSaleDate').fill('2026-11-22');
+  await page.locator('#officialRecordForm button[type="submit"]').click();
+  data=await read(page);
+  assert.equal(data.realProperties.length,1,'edit not duplicated');
+  assert.equal(data.realProperties[0].id,old.id,'fixed identity');
+  assert.equal(data.realProperties[0].minWon,350000000,'modified price');
+  assert.equal(data.realProperties[0].date,'2026.11.22','modified date');
+  assert.equal(data.realProperties[0].enteredAt,old.enteredAt,'original created timestamp');
+  assert(data.favorites.includes(old.id),'favorite preserved');
+  assert(data.realProperties[0].editedAt,'edited timestamp');
+  await page.locator('[data-page="schedule"]').first().click();
+  await page.locator('#todayMonth').count(); // calendar mounted
+  await page.locator('#nextMonth').count();
+  const dateMatch=await page.locator('body').textContent();
+  assert(dateMatch.includes('11월')||dateMatch.includes('12월'),'calendar renders');
+  console.log('PASS new record -> favorite -> edit price/date -> identity and favorite preserved');
+  // Legacy type record without any courtUsage, must be editable without reclassification.
+  const legacy={id:'real-서울중앙지방법원|2023타경4869|1',userRegistered:true,
+   name:'서울특별시 관악구 봉천동 66-89',court:'서울중앙지방법원',
+   case:'2023타경4869',itemNo:'1',type:'토지',valueWon:1994700000,
+   minWon:1276608000,date:'2026.11.19',sourceUrl:'https://www.courtauction.go.kr/',enteredAt:1700000000000};
+  await page.evaluate(({key,legacy})=>{
+    const data=JSON.parse(localStorage.getItem(key));
+    data.realProperties.push(legacy);
+    data.favorites.push(legacy.id);
+    localStorage.setItem(key,JSON.stringify(data));
+  },{key,legacy});
+  await page.reload({waitUntil:'domcontentloaded'});
+  await visitOfficial(page);
+  const editButtons=page.locator('[data-edit-real]');
+  const count=await editButtons.count();
+  assert.equal(count,2);
+  const b=page.locator('[data-edit-real]').filter({hasText:'등록 내용 수정'}).first();
+  await b.click();
+  assert.equal(await page.locator('#officialCase').inputValue(),'2023타경4869');
+  assert.equal(await page.locator('#officialUsageLarge').inputValue(),'','legacy unclassified');
+  await page.locator('#officialMin').fill('1200000000');
+  await page.locator('#officialRecordForm button[type="submit"]').click();
+  const updated=await read(page);
+  const actual=updated.realProperties.find(x=>x.id===legacy.id);
+  assert(actual,'legacy record retained');
+  assert.equal(actual.type,'토지','legacy type retained');
+  assert.equal(actual.minWon,1200000000,'legacy edited price');
+  assert(updated.favorites.includes(legacy.id),'legacy favorite retained');
+  assert.equal(actual.enteredAt,1700000000000);
+  assert.equal(errors.length,0,'no page JS errors: '+errors.join(';'));
+  console.log('PASS legacy record -> modify price without category conversion');
+  console.log('PASS no browser page errors');
+ }finally{await browser.close()}
+})().catch(e=>{console.error(e);process.exitCode=1});

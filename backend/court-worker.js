@@ -7,12 +7,14 @@ const normalizeCase=s=>{
  const m=String(s||'').normalize('NFC').replace(/\s+/g,'').match(/^(20\d{2})타경(\d{1,12})$/);
  return m?m[1]+'타경'+String(BigInt(m[2])):null;
 };
-const normalizeReturnedCase=s=>{
- const text=String(s||'').trim(),full=normalizeCase(text);
- if(full)return full;
- const d=text.replace(/\D/g,'');
- if(!/^20\d{2}\d+$/.test(d))return null;
- return d.slice(0,4)+'타경'+String(BigInt(d.slice(4)));
+// Court responses distinguish the readable userCsNo from the 14-digit internal csNo.
+const matchingCase=(base,wanted)=>{
+ const human=normalizeCase(base?.userCsNo);
+ if(human)return human===wanted;
+ const m=wanted.match(/^(20\d{2})타경(\d+)$/);
+ const internal=String(base?.csNo||'').trim();
+ // Verified public court records encode '2023타경4869' as '20230130004869'.
+ return !!m && /^\d{14}$/.test(internal) && internal===m[1]+'0130'+m[2].padStart(6,'0');
 };
 export default {
  async fetch(request) {
@@ -36,7 +38,7 @@ export default {
    const base=Array.isArray(data?.dma_csBasInf)?data.dma_csBasInf[0]:data?.dma_csBasInf;
    if(String(json?.status)!=='200'||(Array.isArray(json?.errors)&&json.errors.length)||!base||data?.ipcheck===false)
     return respond({error:'법원 응답에서 사건정보를 확인할 수 없습니다.'},502);
-   if(String(base.cortOfcCd||'').toUpperCase()!==courtCode.toUpperCase()||normalizeReturnedCase(base.csNo)!==caseNo)
+   if(String(base.cortOfcCd||'').toUpperCase()!==courtCode.toUpperCase()||!matchingCase(base,caseNo))
     return respond({error:'사건번호 또는 법원 검증에 실패했습니다.'},409);
    // No person names or undocumented auction values are exposed.
    return respond({verified:true,source:'courtauction.go.kr',courtCode:courtCode.toUpperCase(),caseNo,

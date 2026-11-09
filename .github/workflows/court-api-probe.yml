@@ -25,7 +25,7 @@ jobs:
           COURT_CODE: ${{ inputs.court_code }}
           CASE_NUMBER: ${{ inputs.case_number }}
         run: |
-          node <<'NODE'
+          node --input-type=module <<'NODE'
           const court = (process.env.COURT_CODE || '').trim();
           const caseNo = (process.env.CASE_NUMBER || '').replace(/\s+/g, '');
           if (!/^[A-Za-z][A-Za-z0-9]{3,12}$/.test(court)) {

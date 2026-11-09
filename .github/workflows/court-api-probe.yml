@@ -40,10 +40,13 @@ jobs:
             console.error('Invalid case number. Use YYYY타경NNNN.'); process.exit(1);
           }
           const url = 'https://www.courtauction.go.kr/pgj/pgj15A/selectAuctnCsSrchRslt.on';
-          const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), 20000);
           try {
-            const response = await fetch(url, {
+            let response;
+            for (let attempt = 1; attempt <= 2; attempt++) {
+              const controller = new AbortController();
+              const timeout = setTimeout(() => controller.abort(), 20000);
+              try {
+                response = await fetch(url, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json; charset=UTF-8',
@@ -52,7 +55,17 @@ jobs:
               },
               body: JSON.stringify({dma_srchCsDtlInf:{cortOfcCd:court,csNo:caseNo}}),
               signal: controller.signal
-            });
+                });
+                break;
+              } catch (error) {
+                const cause = error?.cause;
+                console.error('Connection attempt:', attempt, 'error:', error?.name, 'cause code:', String(cause?.code || 'unknown'), 'cause type:', String(cause?.name || 'unknown'));
+                if (attempt === 2) throw error;
+                await new Promise(resolve => setTimeout(resolve, 1500));
+              } finally {
+                clearTimeout(timeout);
+              }
+            }
             console.log('HTTP status:', response.status);
             const raw = await response.text();
             let data;
@@ -103,5 +116,5 @@ jobs:
           } catch (error) {
             console.error('Request failed:', error.name, error.message);
             process.exitCode=1;
-          } finally { clearTimeout(timeout); }
+          }
           NODE

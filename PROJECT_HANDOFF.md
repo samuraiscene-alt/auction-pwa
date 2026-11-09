@@ -7,6 +7,7 @@
 
 - 상태 진단 후속: probe-court-case-status.cjs는 빈 응답을 거부하고 법원/사건/물건번호를 동일 행에서 대조해 caseIdentityMatched, lotIdentityMatched 구분. 상태코드 판정 허용은 항상 false. tests/court-status-probe.cjs 오프라인 테스트를 실제 저장소 소스 기준으로 실행해 통과(2026-11-10). 공식 서버 조회 성공/Actions 배포는 확인되지 않음.
 - 실서버 진단 상태 가시화: .github/workflows/court-case-live-probe.yml이 push 또는 수동 실행에서 단 1회 공식 사건을 조회하고, data/court-case-probe-status.json에 원문 없는 최소 상태(outcome/reason/신원 일치 여부/확정상태 검증 false)를 별도로 기록하도록 구성. 자동 실행·배포·실서버 응답 성공 여부는 아직 미확인. 기존 목록 data/capital-court-pilot.json 및 앱 코드는 건드리지 않음.
+- 진단 결과 첫 파일 확인: data/court-case-probe-status.json 은 2026-11-10 KST 첫 조회에서 identity_mismatch, 사건/물건번호 불일치, 법적 상태 미검증으로 기록됨. 후속 조사 위해 응답 필드명만 제한 공개하는 responseShape 기록을 워크플로우에 추가; 새 실행 결과 미확인.
 - 현재 버전: v0.7.5 (물건 재조회 확인시각·수집 성공표시 신뢰성 보강)
 - v0.7.5: 물건 재조회 결과에 Asia/Seoul 확인시각 표시. 목록 수집시각보다 과거의 성공 status만 있으면 경고, 새 목록 V 성공 제스처는 status.outcome=success이고 status.attemptedAt>=snapshot.fetchedAt인 경우에만 표시. 매각·취하 상태 자동 확정은 미구현. 실제 Pages 배포 확인 및 iPhone 테스트 필요.
 - v0.7.4: 법원 물건 재조회 가격·날짜가 비정상·누락이면 차이/일치로 오판하지 않고 미확인으로 처리. 날짜가 다르면 기일 차이 감지로만 표시하고 '변경' 상태로 확정하지 않음. 매각·취하·변경 상태는 계속 공식 확인 필요. GitHub Pages 배포 및 아이폰 테스트 별도 확인.

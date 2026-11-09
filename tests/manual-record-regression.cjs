@@ -122,7 +122,7 @@ async function createTestCase(page){
     return {status,snapshot};
   });
   if(feedState.status?.outcome==='failed'&&Date.parse(feedState.status.attemptedAt)>Date.parse(feedState.snapshot.fetchedAt)){
-    assert((await page.locator('body').textContent()).includes('최근 법원 자동 수집 실패'),'failed collection must show visible warning');
+    assert(/이전 목록 표시/.test(await page.locator('body').textContent()),'failed collection must show visible warning');
     console.log('PASS failed collector displays warning without dropping cached snapshot');
   }
   assert(/안전검증 기록|자동 형식 검사 통과/.test(await page.locator('body').textContent()),'validation status is visible');

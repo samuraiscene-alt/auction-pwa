@@ -101,3 +101,10 @@
 - 상세 응답 `dma_csBasInf.expCsNo`는 구조상 존재하지만 화면용 사건번호와 동일한 필드인지 **공식 검증 전**. 원문을 기록하지 않고 `baseExpCaseExact`와 `baseExpCaseFormat`만 진단하도록 추가.
 - 직접 일치하더라도 상태 자동판정 허용은 계속 false. 내부 숫자 사건번호를 연도/꼬리숫자로 추정 변환하지 않음.
 - 저장소 오프라인 테스트 통과. 후속 실서버 결과의 새 진단 힌트는 아직 확인되지 않음.
+
+## 2026-11-10 목록 행 직접 연결 진단 추가
+- 기존 상세조회 응답은 `csNo`가 숫자형이며 `srnSaNo`(화면용 사건번호)와 확정적으로 대조되지 않았음.
+- 새 `scripts/probe-court-case-list-bridge.cjs`는 기존 목록 API를 **한 번만** 조회해 법원코드(`boCd`), 표시사건번호(`srnSaNo`), 물건번호(`maemulSer`)가 모두 같은 **단일 행**에 내부 `csNo`가 존재하는지 검사. 없거나 여러 행이면 검증 실패. 원본 번호값과 개인정보는 결과에 남기지 않음.
+- `scripts/validate-court-case-bridge.cjs` 및 `tests/court-case-bridge.cjs`로 일치/누락/다른 사건/다른 물건/중복 등 회귀 테스트를 실제 소스 기준으로 통과.
+- `.github/workflows/court-case-list-bridge.yml`에서 단발 조회 후 `data/court-case-list-bridge-status.json`에 비식별 요약 기록 예정. 아직 실제 실행/결과 파일 확인 전.
+- **주의:** 목록 한 행에 두 번호가 들어온다 해도 그 내부 `csNo`가 상세조회 `csNo`와 동일한지 교차 비교하지 않았음. `detailCaseCrossChecked=false`, `legalStatusVerified=false`; 매각·취하 상태 확정 금지.

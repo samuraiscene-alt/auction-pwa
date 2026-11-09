@@ -108,3 +108,10 @@
 - `scripts/validate-court-case-bridge.cjs` 및 `tests/court-case-bridge.cjs`로 일치/누락/다른 사건/다른 물건/중복 등 회귀 테스트를 실제 소스 기준으로 통과.
 - `.github/workflows/court-case-list-bridge.yml`에서 단발 조회 후 `data/court-case-list-bridge-status.json`에 비식별 요약 기록 예정. 아직 실제 실행/결과 파일 확인 전.
 - **주의:** 목록 한 행에 두 번호가 들어온다 해도 그 내부 `csNo`가 상세조회 `csNo`와 동일한지 교차 비교하지 않았음. `detailCaseCrossChecked=false`, `legalStatusVerified=false`; 매각·취하 상태 확정 금지.
+
+## 2026-11-10 목록·상세 교차검증 실서버 결과
+- 목록 조회의 정확한 법원/표시사건/물건 행 수: 1. 해당 목록 행에는 `csNo` 필드 없음, `docid` 필드 있음.
+- 새 진단은 목록 1회+상세 1회 조회. 같은 실행 메모리에서 상세의 `dma_csBasInf.csNo`와 목록 `docid`/`csNo`가 완전히 같은 값인지 교차 대조하고 원본값은 전혀 보관하지 않음.
+- 결과 `data/court-case-list-bridge-status.json` (2026-11-09T22:10:09.757Z): `exactDisplayLotRows=1`, `detailInternalCaseConsistent=true`, `detailLotRowUnique=true`, `docidFormat=other`, `docidExactlyMatches=false`, `listCsNoExactlyMatches=false`, `detailCaseCrossChecked=false`, `legalStatusVerified=false`.
+- **목록 `docid`를 내부 사건번호로 바로 쓸 수 없음.** 값에 임의 파싱/접두·접미 처리나 변환을 적용해 신원을 확정하지 말 것.
+- 브리지 테스트 중 두 후보값이 동시에 있던 가상 테스트 케이스를 분리하여 전체 오프라인 회귀 통과. 불충분한 매핑 및 상태코드 확정은 계속 금지.

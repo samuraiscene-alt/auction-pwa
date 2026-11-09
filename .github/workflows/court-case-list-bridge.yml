@@ -51,6 +51,8 @@ jobs:
             reason:valid?'processed':reason,
             exactDisplayLotRows:valid?Math.min(result.exactDisplayLotRows,50):0,
             directInternalCaseMapping:valid&&result.directInternalCaseMapping===true,
+            csNoFieldPresent:valid&&result.csNoFieldPresent===true,
+            docidFieldPresent:valid&&result.docidFieldPresent===true,
             internalCaseFormatObserved:valid&&result.internalCaseFormatObserved==='digits_only'?'digits_only':'unavailable',
             detailCaseCrossChecked:false,legalStatusVerified:false,
             rawResponseSaved:false

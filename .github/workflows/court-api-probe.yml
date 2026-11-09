@@ -91,14 +91,27 @@ jobs:
               const normalizeDigits = v => String(v ?? '').replace(/[^0-9]/g, '');
               const expectedDigits = normalizeDigits(caseNo);
               const returnedDigits = normalizeDigits(record?.csNo);
-              const caseMatch = !!returnedDigits && (returnedDigits === expectedDigits ||
-                (returnedDigits.startsWith(expectedDigits.slice(0, 4)) && returnedDigits.endsWith(expectedDigits.slice(4).replace(/^0+/, '') || '0')));
+              const canonical = caseNo.match(/^(20\\d{2})타경(\\d+)$/);
+              const human = String(record?.userCsNo || '').replace(/\\s+/g, '').replace(/타경0+(?=\\d)/,'타경');
+              const caseMatch = human ? human === caseNo : !!canonical && returnedDigits === canonical[1]+'0130'+canonical[2].padStart(6,'0');
               const courtMatch = String(record?.cortOfcCd ?? '').toUpperCase() === court.toUpperCase();
               console.log('Returned case number matches request:', caseMatch);
               console.log('Returned court code matches request:', courtMatch);
               console.log('Case number format:', returnedDigits.length ? 'digits-' + returnedDigits.length : 'missing');
               const candidateKeys = Object.keys(record || {}).filter(k => /(?:appr|asmt|prc|price|amt|bid|sale|schd|dt|ymd|mnim|lws|eval)/i.test(k));
               console.log('Basic field candidates for price/date:', candidateKeys.join(', ') || '(none)');
+              // Structural inventory: property/schedule nested arrays and safe field names only.
+              const rootKeys=Object.keys(data.data || {}).filter(k=>k!=='ipcheck');
+              for(const key of rootKeys.slice(0,18)){
+                const value=data.data[key];
+                const list=Array.isArray(value)?value:(value && typeof value==='object'?[value]:[]);
+                const first=list.find(v=>v && typeof v==='object');
+                console.log('Section:',key,'kind:',Array.isArray(value)?'array':typeof value,'count:',list.length);
+                if(!first)continue;
+                const keys=Object.keys(first);
+                console.log('Section fields:',key,keys.slice(0,100).join(', '));
+                console.log('Possible auction keys:',key,keys.filter(k=>/(?:gds|dspsl|mok|mul|maem|mae|gam|game|appr|prc|price|amt|bid|sale|schd|dt|ymd|eval|addr|lotno|ser)/i.test(k)).slice(0,60).join(', ')||'(none)');
+              }
               if (!caseMatch || !courtMatch) {
                 console.error('Case or court identity mismatch. Do not use this response for autofill.');
                 process.exitCode = 1;

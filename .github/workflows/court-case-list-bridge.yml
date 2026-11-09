@@ -66,6 +66,8 @@ jobs:
               evidence.scheduleResultObservations.slice(0,20).filter(o=>o&&/^20\d{6}$/.test(String(o.day))&&safeCode(o.resultCode)).map(o=>({
                 day:String(o.day),resultCode:safeCode(o.resultCode),kindCode:safeCode(o.kindCode)
               })):[],
+            listingDisplayCandidateFieldNames:Array.isArray(evidence.listingDisplayCandidateFieldNames)?
+              evidence.listingDisplayCandidateFieldNames.filter(k=>typeof k==='string'&&/^[A-Za-z][A-Za-z0-9_]{0,49}$/.test(k)&&/(?:stat|rslt|result|jin|stprint|lstprint|progress|label|nm$)/i.test(k)).slice(0,30):[],
             listingDisplayEvidence:Array.isArray(evidence.listingDisplayEvidence)?
               evidence.listingDisplayEvidence.filter(v=>v&&['userStPrint','userLstPrint','mulStatNm','maemulStatNm'].includes(v.field)).slice(0,4).map(v=>({
                 field:v.field,fieldPresent:v.fieldPresent===true,

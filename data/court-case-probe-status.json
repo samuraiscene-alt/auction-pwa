@@ -1,12 +1,13 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-09T21:48:14.264Z",
+  "attemptedAt": "2026-11-09T21:48:23.331Z",
   "outcome": "unverified",
   "reason": "identity_mismatch",
   "caseIdentityMatched": false,
   "lotIdentityMatched": false,
   "legalStatusVerified": false,
   "rawResponseSaved": false,
+  "responseCaseFormat": "digits_only",
   "responseShape": [
     {
       "key": "ipcheck",

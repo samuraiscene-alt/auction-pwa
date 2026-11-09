@@ -114,6 +114,17 @@ async function createTestCase(page){
   assert.equal(await page.locator('.capital-record').count(),40,'all categories restored to initial 40 cases');
   assert((await page.locator('.capital-property').count())>40,'all item numbers within case groups preserved');
   assert((await page.locator('#capitalStatus').textContent()).includes('마지막 수집'),'shows last collection timestamp');
+  const feedState=await page.evaluate(async()=>{
+    const [status,snapshot]=await Promise.all([
+      fetch('./data/capital-court-status.json').then(r=>r.ok?r.json():null).catch(()=>null),
+      fetch('./data/capital-court-pilot.json').then(r=>r.json())
+    ]);
+    return {status,snapshot};
+  });
+  if(feedState.status?.outcome==='failed'&&Date.parse(feedState.status.attemptedAt)>Date.parse(feedState.snapshot.fetchedAt)){
+    assert((await page.locator('body').textContent()).includes('최근 법원 자동 수집 실패'),'failed collection must show visible warning');
+    console.log('PASS failed collector displays warning without dropping cached snapshot');
+  }
   assert(/안전검증 기록|자동 형식 검사 통과/.test(await page.locator('body').textContent()),'validation status is visible');
   console.log('PASS court-category dropdown filters individual auction items');
   await page.locator('[data-capital-region="서울"]').click();

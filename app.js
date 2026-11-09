@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.6.4';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.6.5';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -299,7 +299,7 @@ function backupSummary(data,attachments){
  return '관심물건 '+data.favorites.length+'개 · 노트 '+data.notes.length+'개 · 직접 등록 사건 '+(data.realProperties?.length||0)+'개 · 첨부파일 '+attachments.length+'개';
 }
 const MAIN_TABS=['home','search','schedule','favorites','study'];
-let capitalSnapshot=null,capitalLoadStatus='unloaded',capitalLoadError='';
+let capitalSnapshot=null,capitalAttemptStatus=null,capitalLoadStatus='unloaded',capitalLoadError='';
 let appDepth=0;
 const viewHistory=new Map();
 function snapshot(){return {page:state.page,filter:state.filter,selected:state.selected,viewMonth:state.viewMonth,calendarFavoritesOnly:state.calendarFavoritesOnly,detail:state.detail,note:state.note,search:state.search,region:state.region,minPrice:state.minPrice,maxPrice:state.maxPrice,priceUnit:state.priceUnit,detailTab:state.detailTab,favoriteSort:state.favoriteSort,favoriteType:state.favoriteType,capitalRegion:state.capitalRegion,capitalType:state.capitalType,capitalQuery:state.capitalQuery,capitalLimit:state.capitalLimit,editRealId:state.editRealId,noteQuery:state.noteQuery,noteSort:state.noteSort,studyCategory:state.studyCategory,noteTopicDraft:state.noteTopicDraft}}
@@ -1347,7 +1347,9 @@ function capital(){
  const isStale=ageHours>30||ageHours< -1||!Number.isFinite(ageHours);
  const info=capitalLoadStatus==='loading'?'목록을 불러오는 중…':capitalLoadStatus==='failed'?'목록 갱신 확인 실패 · '+capitalLoadError:
    capitalLoadStatus==='ready'?'마지막 수집 '+escapeHtml(new Date(capturedTime).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}))+' · 부분 수집':'목록 확인 전';
+ const latestFailed=capitalAttemptStatus?.outcome==='failed'&&Date.parse(capitalAttemptStatus.attemptedAt)>capturedTime;
  const safetyNotice=capitalLoadStatus==='ready'?
+  (latestFailed?'<div class="status">⚠ 최근 법원 자동 수집 실패 · 이전 목록 표시 중. 법원 원문 확인 필요.</div>':'')+
   (isStale?'<div class="status">⚠ 마지막 수집 후 30시간 이상 경과했습니다. 자료가 오래되었을 수 있습니다.</div>':
    safetyVerified?'<div class="status">✓ 자동 형식 검사 통과 · 법원 원문 확인을 대체하지 않습니다.</div>':
    '<div class="status">⚠ 기존 시범 수집본입니다. 새로운 안전검증 기록이 아직 없습니다.</div>')+
@@ -1380,7 +1382,13 @@ async function loadCapital(force=false){
  if(state.page==='capital')render();
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
  try{
-  const response=await fetch('./data/capital-court-pilot.json',{cache:'no-store',signal:controller.signal});
+  const [response,statusResponse]=await Promise.all([
+   fetch('./data/capital-court-pilot.json',{cache:'no-store',signal:controller.signal}),
+   fetch('./data/capital-court-status.json',{cache:'no-store',signal:controller.signal}).catch(()=>null)
+  ]);
+  let attempt=null;
+  if(statusResponse?.ok){try{const item=await statusResponse.json();if(item?.schemaVersion===1&&['success','failed'].includes(item.outcome)&&Number.isFinite(Date.parse(item.attemptedAt)))attempt=item;}catch{}}
+  capitalAttemptStatus=attempt;
   if(!response.ok)throw Error('목록 파일이 아직 배포되지 않았습니다.');
   const payload=await response.json();
   if(payload?.schemaVersion!==1||payload.complete!==false||!Array.isArray(payload.items)||payload.items.length===0||payload.items.length>5000||
@@ -1388,7 +1396,7 @@ async function loadCapital(force=false){
     throw Error('목록 데이터 형식 확인 실패');
   if(payload.validation&&payload.validation.passed!==true)throw Error('안전 검사 실패 자료가 전달됐습니다.');
   capitalSnapshot=payload;capitalLoadStatus='ready';
-  if(force&&payload.validation?.passed===true)showSavedCheck('검증된 자료 불러오기 완료');
+  if(force&&payload.validation?.passed===true&&!(capitalAttemptStatus?.outcome==='failed'&&Date.parse(capitalAttemptStatus.attemptedAt)>Date.parse(payload.fetchedAt)))showSavedCheck('검증된 자료 불러오기 완료');
  }catch(e){
   capitalLoadError=e?.name==='AbortError'?'시간 초과':String(e.message||'연결 오류');
   // Keep the last successfully loaded snapshot on a network failure.

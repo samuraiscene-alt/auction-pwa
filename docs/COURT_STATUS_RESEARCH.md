@@ -122,3 +122,8 @@
 - 불리언 진단 필드: `saNoFieldPresent`, `printCsNoFieldPresent`, `listSaNoExactlyMatches`, `printCsNoMatchesDisplay`. 원본 번호 값은 출력·저장하지 않음.
 - 저장소 소스로 오프라인 테스트 전체 통과. 마지막 확인한 실서버 보고서(2026-11-09T22:12:20.760Z)에는 신규 필드가 아직 없고 `detailCaseCrossChecked=false`; 실서버 매핑 성공 주장 금지.
 - 앱 v0.7.5와 기존 목록, 개인 저장자료, 매각·취하 미확인 표시 유지.
+
+## 2026-11-10 목록/상세 연결 규칙 수정
+- 실제 목록/상세 조회에서 `listSaNoExactlyMatches=true`, `printCsNoMatchesDisplay=false`, 상세 내부 사건/물건 일치와 유일성=true로 기록됨. 목록의 `srnSaNo`가 이미 화면용 사건번호와 같은 행에서 일치하므로 `printCsNo`까지 요구하는 것은 과도한 조건일 수 있음.
+- `assessCrossBridge`는 유일한 목록 행에 대해 `srnSaNo`(표시 사건번호) + `saNo`(상세 csNo와 정확 일치) + 동일 법원/물건의 상세 행을 요구. `docid` 단독 매핑 금지, `csNo`가 목록 행에 존재할 경우 충돌도 거부.
+- 저장소에서 최신 브리지 회귀 테스트 직접 실행 통과. 다만 진단 결과 파일의 최근 기록은 `offline_test_failed`로, 실제 Actions 환경의 최신 완전 통과는 아직 확인하지 못함. 부정확한 법적 상태 판정 방지 위해 앱 상태 자동판정은 활성화하지 않음.

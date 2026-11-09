@@ -73,7 +73,24 @@ jobs:
             echo "No changed status"; exit 0
           fi
           git commit -m "data: record metropolitan court validation attempt"
-          git push
+          # A source-code commit may land while collection is running.
+          # Rebase only if our validated data files have no conflicts; never force-push.
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort
+              echo "::error::Concurrent change to court data: refusing to overwrite it"
+              exit 1
+            fi
+            if git push origin HEAD:main; then
+              echo "Published validated listing/status after safe rebase"
+              exit 0
+            fi
+            echo "New repository commit arrived; retrying safe rebase ($attempt/3)"
+            sleep 2
+          done
+          echo "::error::Could not safely publish validated court data"
+          exit 1
       - name: Deploy current saved snapshot with status
         if: always() && steps.collection.outcome != ''
         uses: actions/configure-pages@v5

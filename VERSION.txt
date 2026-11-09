@@ -1,2 +1,2 @@
-0.6.2
-Show multiple item numbers under one auction case with expandable groups.
+0.6.3
+Metropolitan court list official usage-category dropdown filter, without changing original records.

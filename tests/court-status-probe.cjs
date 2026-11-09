@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {describeResponse,assessIdentity}=require('../scripts/probe-court-case-status.cjs');
+const {describeResponse,assessIdentity,classifyProbeFailure}=require('../scripts/probe-court-case-status.cjs');
 const a=describeResponse({status:200,data:{csBaseInfo:[{csNo:'2026타경1',csStatCd:'CODE_UNKNOWN',name:'PRIVATE'}],dspslGdsDxdyInfo:[{mulStatcd:'999'}]}});
 assert.equal(a.blocked,false);
 assert.equal(a.plausibleResponse,true);
@@ -82,4 +82,14 @@ const wrongYear=assessIdentity({data:{
 }},{courtCode:'B000210',caseNo:'2008타경25092',itemNo:'1'});
 assert.equal(wrongYear.internalCaseYearMatches,false);
 assert.equal(wrongYear.statusDecisionAllowed,false);
+assert.equal(classifyProbeFailure({cause:{code:'ENOTFOUND'},message:'fetch failed'}),'dns_failure');
+assert.equal(classifyProbeFailure({cause:{code:'ETIMEDOUT'},message:'fetch failed'}),'network_failure');
+assert.equal(classifyProbeFailure({name:'AbortError',message:'This operation was aborted'}),'timeout');
+assert.equal(classifyProbeFailure({message:'HTTP 403'}),'access_rejected');
+assert.equal(classifyProbeFailure({message:'HTTP 429'}),'access_rejected');
+assert.equal(classifyProbeFailure({message:'HTTP 500'}),'http_error');
+assert.equal(classifyProbeFailure({message:'non-JSON response'}),'non_json');
+assert.equal(classifyProbeFailure({message:'court response schema not verified; no status inference'}),'response_schema_invalid');
+assert.equal(classifyProbeFailure({message:'case identity not matched; structural field names only reported'}),'identity_mismatch');
+assert.equal(classifyProbeFailure({message:'private-secret-error'}),'unexpected_failure');
 console.log('PASS: structural-only status probe; block and redaction');

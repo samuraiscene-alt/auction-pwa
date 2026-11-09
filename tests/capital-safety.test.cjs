@@ -31,3 +31,18 @@ vanished.items.splice(0,1);
 const compareMissing=validateSnapshot(vanished,data);
 assert(compareMissing.ok&&compareMissing.summary.notSeenInNewSample===1);
 console.log('PASS missing-from-sample warning is not an auction status claim');
+
+const v2=copy(data);
+v2.schemaVersion=2;
+for(const row of v2.items)row.components=[{address:row.address,largeCode:row.largeCode,mediumCode:row.mediumCode,smallCode:row.smallCode}];
+const complex=v2.items[0];
+complex.components.push({address:complex.address,largeCode:'10000',mediumCode:'10100',smallCode:'10108'});
+complex.largeCode=null;complex.mediumCode=null;complex.smallCode=null;
+const checkV2=validateSnapshot(v2,data);
+assert(checkV2.ok,'Schema v2 with multiple land/building components must validate: '+checkV2.errors.join(', '));
+assert.equal(checkV2.summary.changed,0,'Legacy classification already included in components is not a source change');
+console.log('PASS schema v2 composite land/building validated against old snapshot');
+const wrongPart=copy(v2);
+wrongPart.items[0].components[1].address='경기도 성남시 가상동 2';
+assert(!validateSnapshot(wrongPart,data).ok,'Wrong region in a component must be rejected');
+console.log('PASS reject wrong-region components');

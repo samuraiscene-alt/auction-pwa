@@ -366,3 +366,10 @@
 - GitHub Actions 자동 Pages 워크플로우 등록
 - GitHub Pages 최초 활성화는 별도 1회 사용자 설정 필요. 자동 활성화 시도는 GitHub 앱 권한 부족으로 실패
 - 실제 경매 데이터와 사진·법원 서류 자동 수집은 아직 미구현
+
+### v0.6.0 브라우저 자동 회귀검증 — 2026-11-09
+- Playwright Chromium 테스트 `tests/manual-record-regression.cjs` 추가, GitHub workflow `.github/workflows/manual-record-regression.yml`(ubuntu-24.04).
+- 성공 실행: https://github.com/samuraiscene-alt/auction-pwa/actions/runs/42604714717
+- 신규 사건 등록, 법원 분류 20104(아파트), 관심물건 지정, 최저가·매각기일 변경 저장, 고유 ID/등록일 유지, 새 매각기일 달력 반영, 이전 날짜 미표시 통과.
+- 예전 타입 '토지' 기록(코드 없음) 수정 시 기존 분류/관심물건 유지 통과, 브라우저 스크립트 오류 없음.
+- 실제 iPhone Safari/홈화면 PWA 저장소 간 연동과 법원 외부 서버 응답은 해당 자동 테스트에서 검증하지 않음.

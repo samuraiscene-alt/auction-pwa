@@ -127,3 +127,10 @@
 - 실제 목록/상세 조회에서 `listSaNoExactlyMatches=true`, `printCsNoMatchesDisplay=false`, 상세 내부 사건/물건 일치와 유일성=true로 기록됨. 목록의 `srnSaNo`가 이미 화면용 사건번호와 같은 행에서 일치하므로 `printCsNo`까지 요구하는 것은 과도한 조건일 수 있음.
 - `assessCrossBridge`는 유일한 목록 행에 대해 `srnSaNo`(표시 사건번호) + `saNo`(상세 csNo와 정확 일치) + 동일 법원/물건의 상세 행을 요구. `docid` 단독 매핑 금지, `csNo`가 목록 행에 존재할 경우 충돌도 거부.
 - 저장소에서 최신 브리지 회귀 테스트 직접 실행 통과. 다만 진단 결과 파일의 최근 기록은 `offline_test_failed`로, 실제 Actions 환경의 최신 완전 통과는 아직 확인하지 못함. 부정확한 법적 상태 판정 방지 위해 앱 상태 자동판정은 활성화하지 않음.
+
+## 2026-11-10 공식 목록/상세 연결 검증 실제 통과
+- 실서버 진단 파일 `data/court-case-list-bridge-status.json` (2026-11-09T22:38:57.728Z)에서 `detailCaseCrossChecked=true`, `exactDisplayLotRows=1`, `listSaNoExactlyMatches=true`, `detailInternalCaseConsistent=true`, `detailLotRowUnique=true` 확인. 법원/화면사건/물건의 동일 목록 행과 상세 내부 `csNo`의 **정확한 연결**을 표본 한 건에서 검증.
+- `printCsNoMatchesDisplay=false`, `docidExactlyMatches=false`; 이 두 필드로 판정하면 안 됨. 다른 사건/법원/중복 행은 계속 fail-closed.
+- 두 공식 조회에 하나의 12초 제한을 공유하던 진단 도구를 각 요청 개별 12초 제한으로 수정. 조회 실패시 list/detail 단계를 비식별 `failedStage`로 기록. 재시도 및 우회접속 없음.
+- 사건 **신원 교차검증 성공은 법적 상태 해석과 별개**. `legalStatusVerified=false` 유지. 법원 공식 상태코드 의미 대응표 확보 전까지 매각/취하/변경 상태 자동 판정 금지.
+- 참고 공개 기술자료: https://github.com/NomaDamas/k-skill/blob/main/court-auction-notice-search/instruction.md (서드파티 필드 매핑 기술자료, 공식 법원 코드표 아님). 법원 사건구분 안내 https://www.scourt.go.kr/portal/information/event/guide/index3.html 의 '013=타경'는 사건구분코드이며 매각/취하 상태코드가 아님.

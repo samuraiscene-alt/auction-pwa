@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {assessSearchBridge}=require('../scripts/validate-court-case-bridge.cjs');
+const id={courtCode:'B000210',caseNo:'2008타경25092',itemNo:'1'};
+const row={boCd:'B000210',srnSaNo:'2008타경25092',maemulSer:'1',csNo:'20080130025092'};
+const good=assessSearchBridge([row],id);
+assert.equal(good.directInternalCaseMapping,true);
+assert.equal(good.legalStatusVerified,false);
+assert(!JSON.stringify(good).includes('20080130025092'));
+assert.equal(assessSearchBridge([{...row,boCd:'B000211'}],id).directInternalCaseMapping,false);
+assert.equal(assessSearchBridge([{...row,maemulSer:'2'}],id).directInternalCaseMapping,false);
+assert.equal(assessSearchBridge([{...row,csNo:'missing'}],id).directInternalCaseMapping,false);
+assert.equal(assessSearchBridge([row,{...row}],id).directInternalCaseMapping,false);
+assert.equal(assessSearchBridge([],id).directInternalCaseMapping,false);
+console.log('PASS: direct list-row bridge refuses missing, wrong, duplicate and unsafe values');

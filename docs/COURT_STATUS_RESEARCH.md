@@ -189,3 +189,8 @@
 - 첫 실서버 보고(2026-11-09T23:53:51.498Z): `observed=true`로 공식 화면 XML 조회 성공. 하지만 `officialApiPaths=[]`, `dataMapIds=[]`, `saleResultSearchEndpointPresent=false`; **API 경로는 이 화면 텍스트에서 직접 확인되지 않음.** 부재가 API 존재하지 않음을 뜻하지는 않음. 화면 참조/제출 태그 추가 진단 결과는 후속 보고를 확인해야 함.
 - 민간 웹페이지에서 `002`를 유찰 횟수와 함께 표기하는 사례를 찾았으나, 법원이 해당 코드의 이름을 공식적으로 직접 확정한 값 대응표가 아니므로 `002=유찰`을 제품에 반영하지 않음. 예: https://auction-seven-omega.vercel.app/p/B2508262024013006910033
 - **안전:** 앱 v0.7.5, 805건 목록, 사용자 저장자료, 법적 상태 자동판정 모두 불변.
+
+## 2026-11-10 공식 매각결과검색 화면 PGJ158M02 직접 확인
+- 법원 공식 `/pgj/ui/pgj100/PGJ158M01.xml`에서 하위 화면 `PGJ158M02` 참조 확인. 해당 하위 화면 `/pgj/ui/pgj100/PGJ158M02.xml`도 실제 조회 성공.
+- `data/court-sale-screen-status.json` (2026-11-09T23:55:21.524Z) 실서버 결과: `observed=true`, `saleResultSearchEndpointPresent=true`, `officialApiPaths=['/pgj/pgjsearch/selectDspslSchdRsltSrch.on']`, `dataMapIds=['dma_srchGdsDtlSrchInfo','dma_pageInfo','dlt_srchResult']`. 이 세 필드명과 API 호출 **경로의 존재**는 공식 화면 정의에서 직접 검증됨.
+- API의 **요청 필드 실제 값, 응답 결과, 기일 결과 코드↔표시명 대응표는 아직 미검증**. 운영 앱에 매각/유찰/취하를 적용할 단계가 아님. 읽기 전용 화면 XML 진단 결과만 저장. 앱 v0.7.5/805건 기존 목록/개인자료 모두 불변.

@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.5.9';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.6.0';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -301,14 +301,14 @@ function backupSummary(data,attachments){
 const MAIN_TABS=['home','search','schedule','favorites','study'];
 let appDepth=0;
 const viewHistory=new Map();
-function snapshot(){return {page:state.page,filter:state.filter,selected:state.selected,viewMonth:state.viewMonth,calendarFavoritesOnly:state.calendarFavoritesOnly,detail:state.detail,note:state.note,search:state.search,region:state.region,minPrice:state.minPrice,maxPrice:state.maxPrice,priceUnit:state.priceUnit,detailTab:state.detailTab,favoriteSort:state.favoriteSort,favoriteType:state.favoriteType,noteQuery:state.noteQuery,noteSort:state.noteSort,studyCategory:state.studyCategory,noteTopicDraft:state.noteTopicDraft}}
+function snapshot(){return {page:state.page,filter:state.filter,selected:state.selected,viewMonth:state.viewMonth,calendarFavoritesOnly:state.calendarFavoritesOnly,detail:state.detail,note:state.note,search:state.search,region:state.region,minPrice:state.minPrice,maxPrice:state.maxPrice,priceUnit:state.priceUnit,detailTab:state.detailTab,favoriteSort:state.favoriteSort,favoriteType:state.favoriteType,editRealId:state.editRealId,noteQuery:state.noteQuery,noteSort:state.noteSort,studyCategory:state.studyCategory,noteTopicDraft:state.noteTopicDraft}}
 viewHistory.set(0,snapshot());
 history.replaceState({auctionApp:true,depth:0,view:snapshot()},'',location.pathname+location.search);
 function nav(page,extra={}){
   if(!titles[page])return;
   if(state.page==='note'&&page!=='note')persistNoteDraft();
   if(page===state.page&&Object.keys(extra).length===0)return;
-  state={...state,...extra,page};
+  state={...state,...extra,page,...(page==='official'&&!Object.prototype.hasOwnProperty.call(extra,'editRealId')?{editRealId:null}:{})};
   appDepth++;
   viewHistory.set(appDepth,snapshot());
   history.pushState({auctionApp:true,depth:appDepth,view:snapshot()},'','#'+page);
@@ -545,7 +545,7 @@ function detail(){
  }else{
   panel=`<div class="detail-panel-heading">관련 서류</div><div class="status">ⓘ 법원 원본 서류는 아직 연결되지 않았어요.</div><div class="info-row"><span>매각물건명세서</span><strong>연동 전</strong></div><div class="info-row"><span>현황조사서</span><strong>연동 전</strong></div><div class="info-row"><span>감정평가서</span><strong>연동 전</strong></div><p class="helper">법원 자료를 연결한 뒤 원본 문서와 출처를 제공할 예정이에요.</p>`;
  }
- return `<div class="card auction-detail"><div class="placeholder"><div><div style="font-size:55px">⌂</div>실제 사진 미연동<br>법원 원본 사진 연결 예정</div></div><div class="auction-card-top" style="margin-top:15px"><span class="auction-type">${escapeHtml(p.type)}</span><span class="auction-demo ${p.userRegistered?'user-record':''}">${p.userRegistered?'사용자 등록 · 법원 확인 필요':'가상 물건'}</span></div><h2 class="detailTitle">${escapeHtml(p.name)}</h2><p class="muted">${escapeHtml(p.court)} · ${escapeHtml(p.case)}</p><div class="detail-tabs" role="group" aria-label="물건 상세정보 분류">${navTabs}</div><div class="detail-tab-panel">${panel}</div>${p.userRegistered?'<button class="secondary full-secondary" type="button" id="openCourtDetail">⚖ 법원 원문에서 사건 확인 ↗</button>':''}<button class="primary detail-favorite-btn ${saved.favorites.includes(p.id)?'is-favorite':'is-not-favorite'}" id="favBtn" type="button" aria-pressed="${saved.favorites.includes(p.id)}"><span class="favorite-heart" aria-hidden="true">${saved.favorites.includes(p.id)?'♥':'♡'}</span> ${saved.favorites.includes(p.id)?'관심 해제':'관심물건 저장'}</button></div><p class="helper">${p.userRegistered?'사용자가 입력한 사건 기록입니다. 공식 자동 조회 결과가 아니며 입찰 전에 법원 경매 원본을 직접 확인하세요.':'사건번호·가격·날짜는 모두 화면 테스트용 가상 정보이며 입찰에 이용하면 안 됩니다.'}</p>`;
+ return `<div class="card auction-detail"><div class="placeholder"><div><div style="font-size:55px">⌂</div>실제 사진 미연동<br>법원 원본 사진 연결 예정</div></div><div class="auction-card-top" style="margin-top:15px"><span class="auction-type">${escapeHtml(p.type)}</span><span class="auction-demo ${p.userRegistered?'user-record':''}">${p.userRegistered?'사용자 등록 · 법원 확인 필요':'가상 물건'}</span></div><h2 class="detailTitle">${escapeHtml(p.name)}</h2><p class="muted">${escapeHtml(p.court)} · ${escapeHtml(p.case)}</p><div class="detail-tabs" role="group" aria-label="물건 상세정보 분류">${navTabs}</div><div class="detail-tab-panel">${panel}</div>${p.userRegistered?'<button class="secondary full-secondary" type="button" id="editRealDetail">✎ 등록 정보 수정</button><button class="secondary full-secondary" type="button" id="openCourtDetail">⚖ 법원 원문에서 사건 확인 ↗</button>':''}<button class="primary detail-favorite-btn ${saved.favorites.includes(p.id)?'is-favorite':'is-not-favorite'}" id="favBtn" type="button" aria-pressed="${saved.favorites.includes(p.id)}"><span class="favorite-heart" aria-hidden="true">${saved.favorites.includes(p.id)?'♥':'♡'}</span> ${saved.favorites.includes(p.id)?'관심 해제':'관심물건 저장'}</button></div><p class="helper">${p.userRegistered?'사용자가 입력한 사건 기록입니다. 공식 자동 조회 결과가 아니며 입찰 전에 법원 경매 원본을 직접 확인하세요.':'사건번호·가격·날짜는 모두 화면 테스트용 가상 정보이며 입찰에 이용하면 안 됩니다.'}</p>`;
 }
 function rights(){return `<div class="section"><h2>권리분석 요약</h2><span class="pill risk">자료 미연동</span></div>${[['⚖','말소기준권리','등기 서류 확인 필요'],['♙','임차인','현황조사서 확인 필요'],['♧','인수 가능성','판단 전 원본 자료 필요'],['⚠','위험요약','미확인 항목이 남아 있음']].map(a=>`<div class="card line"><span style="font-size:24px;color:#3477df">${a[0]}</span><div style="flex:1"><strong>${a[1]}</strong><p class="tiny">${a[2]}</p></div><span class="arrow">›</span></div>`).join('')}<p class="helper">임차인 관련 권리와 위험도를 자동으로 판단하지 않습니다. 후속 단계에서 출처와 법률 검증 로직을 연결합니다.</p>`}
 const STUDY_CATEGORIES=[
@@ -1307,9 +1307,10 @@ function initNoteEditor(){
 
 function official(){
  const records=registeredProperties().slice().reverse();
+ const editing=records.find(p=>p.id===state.editRealId)||null;
  return `<div class="card official-intro"><strong>대한민국 법원경매정보</strong><p class="helper">법원 공식 사이트에서 물건을 검색해 사건번호와 매각기일·가격을 확인하세요. 현재 서울중앙지방법원 사건번호 확인과 물건번호별 정보 가져오기를 지원해요. 조회된 정보를 법원 원문과 대조한 뒤 등록하세요.</p><button type="button" class="primary" id="openOfficialCourt">⚖ 법원경매정보 열기 ↗</button><p class="helper">공식 사이트에서 확인한 사건만 아래에 직접 등록해 주세요. 직접 입력값은 법원 검증 완료 표시가 아닙니다.</p></div>
  <form class="card official-form" id="officialRecordForm">
- <strong>실제 경매사건 직접 등록</strong>
+ <strong>${editing?'경매사건 등록 정보 수정':'실제 경매사건 직접 등록'}</strong>${editing?'<p class="helper">법원·사건번호·물건번호는 같은 기록을 유지하기 위해 변경할 수 없습니다. 가격·매각기일·주소·분류는 수정할 수 있어요.</p>':''}
  <div class="court-pdf-import"><label class="official-pdf-label" for="officialPdfInput">▤ 법원 PDF로 정보 자동 입력</label><input type="file" id="officialPdfInput" accept="application/pdf,.pdf" hidden><p class="helper" id="officialPdfStatus">법원 사이트에서 저장한 텍스트 PDF를 선택하세요. 확실한 정보만 추출하며 등록 전에 검토해야 해요.</p></div>
  <label class="label" for="officialCourt">담당 법원</label><input class="search" id="officialCourt" required maxlength="100" placeholder="예: 서울중앙지방법원">
  <label class="label" for="officialCase">사건번호</label><input class="search" id="officialCase" required placeholder="예: 2025타경12345" inputmode="text">
@@ -1318,16 +1319,16 @@ function official(){
  <button type="button" class="secondary court-item-button" id="fetchOfficialItem">▤ 물건정보 자동 입력</button><p class="helper court-item-status" id="fetchOfficialItemStatus" role="status" aria-live="polite">물건번호를 먼저 입력하세요. 법원 자료가 확인되면 빈칸에만 적용합니다.</p>
  <label class="label" for="officialAddress">소재지 / 물건 이름</label><input class="search" id="officialAddress" required maxlength="300" placeholder="법원에 표시된 소재지">
  <label class="label" for="officialUsageLarge">법원 물건 용도 · 대분류</label>
- <select id="officialUsageLarge" class="select" required><option value="" selected disabled>법원 대분류 선택</option>${COURT_USAGE_LARGE.map(x=>'<option value="'+x.name+'">'+x.name+'</option>').join('')}</select>
- <label class="label" for="officialUsageMedium">법원 용도 · 중분류</label><select class="select" id="officialUsageMedium" required><option value="">대분류를 먼저 선택</option></select>
- <label class="label" for="officialType">법원 용도 · 소분류 / 실제 물건 종류</label><select class="select" id="officialType" required><option value="">중분류를 먼저 선택</option></select>
+ <select id="officialUsageLarge" class="select" ${editing?"":"required"}><option value="" selected disabled>법원 대분류 선택</option>${COURT_USAGE_LARGE.map(x=>'<option value="'+x.name+'">'+x.name+'</option>').join('')}</select>
+ <label class="label" for="officialUsageMedium">법원 용도 · 중분류</label><select class="select" id="officialUsageMedium" ${editing?"":"required"}><option value="">대분류를 먼저 선택</option></select>
+ <label class="label" for="officialType">법원 용도 · 소분류 / 실제 물건 종류</label><select class="select" id="officialType" ${editing?"":"required"}><option value="">중분류를 먼저 선택</option></select>
  <p class="helper">법원 서버에서 확인한 대·중·소분류 코드를 사용합니다. 기존 사건의 분류는 변경하지 않아요.</p>
  <label class="label" for="officialAppraisal">감정평가액 (원)</label><input class="search" id="officialAppraisal" type="number" inputmode="numeric" min="0" step="1" placeholder="원 단위">
  <label class="label" for="officialMin">최저매각가격 (원)</label><input class="search" id="officialMin" type="number" inputmode="numeric" min="0" step="1" placeholder="원 단위">
  <label class="label" for="officialSaleDate">매각기일 (선택)</label><input class="search" id="officialSaleDate" type="date">
- <button class="primary" type="submit">사건 등록</button><p class="helper">사용자 입력 기록 · 기일 변경 및 취하 여부는 법원에서 직접 재확인</p></form>
+ <button class="primary" type="submit">${editing?'수정 내용 저장':'사건 등록'}</button>${editing?'<button class="secondary full-secondary" type="button" id="cancelRealEdit">수정 취소</button>':''}<p class="helper">사용자 입력 기록 · 기일 변경 및 취하 여부는 법원에서 직접 재확인</p></form>
  <div class="section"><h2>내가 등록한 사건</h2><span class="muted">${records.length}건</span></div>
- ${records.map(p=>`<div class="official-saved-item">${card(p)}<button type="button" class="secondary" data-delete-real="${escapeHtml(p.id)}">등록 내용 삭제</button></div>`).join('')||'<div class="empty">등록한 사건이 없어요. 법원 원문을 확인하고 등록해 주세요.</div>'}`;
+ ${records.map(p=>`<div class="official-saved-item">${card(p)}<div class="official-record-actions"><button type="button" class="secondary" data-edit-real="${escapeHtml(p.id)}">등록 내용 수정</button><button type="button" class="secondary" data-delete-real="${escapeHtml(p.id)}">등록 내용 삭제</button></div></div>`).join('')||'<div class="empty">등록한 사건이 없어요. 법원 원문을 확인하고 등록해 주세요.</div>'}`;
 }
 function settings(){const standalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;const backupDate=localStorage.getItem(STORAGE_STAMP_KEY);return `<div class="card"><strong>앱 정보</strong><p class="helper">부동산 경매 v${APP_VERSION} · ${standalone?'홈 화면 웹앱':'브라우저 실행'}</p><p class="helper" id="appUpdateState">${statusText()}</p><button class="secondary" id="checkUpdate" style="width:100%">${updateState.available?'업데이트 적용':'업데이트 확인'}</button><p id="updateAvailableMessage" class="update-available-message" ${updateState.available?'':'hidden'}>새 버전이 준비돼 있어요. 작성 중인 내용은 먼저 저장해 주세요.</p><div class="divider"></div><strong>개발 상태</strong><p class="helper">서울중앙지방법원 사건번호 및 물건정보를 조회하고 확인 후 빈 등록칸에 반영합니다. 물건 종류 판별·실시간 일정 갱신·실거래가·사진 연동은 아직 미지원.</p><div class="divider"></div><strong>데이터 백업</strong><p class="helper">노트·관심물건·첨부파일을 한 번에 백업합니다. Safari와 홈 화면 웹앱은 저장 데이터가 분리될 수 있으니 홈 화면 웹앱에서 백업하세요.</p><p class="helper">마지막 백업 생성 요청: ${backupDate?new Date(backupDate).toLocaleString('ko-KR'):'기록 없음'}</p><button class="secondary" id="export" style="width:100%">내 데이터 백업</button><label class="upload" style="margin-top:10px">백업 파일 복원<input id="import" type="file" accept="application/json,.json" hidden></label></div><div class="card"><strong>프로젝트 이관</strong><p class="helper">README.md, PROJECT_HANDOFF.md, DESIGN_SPEC.md에 작업 재개 및 배포 방법이 기록돼 있어요.</p></div>`}function render(){if(editorDirty&&state.page==='note')persistNoteDraft();document.onselectionchange=null;activeNoteEditor=null;editorDirty=false;const back=document.getElementById('navBack');if(back){back.hidden=state.page==='home';back.onclick=goBack;}document.title='부동산 경매 · '+titles[state.page];$('#page-title').textContent=titles[state.page];$('#content').innerHTML=({home,search,schedule,favorites,study,advanced,special,detail,rights,note,settings,official}[state.page])();if($('#noteEditorShell')){
  activeNoteEditor={...initNoteEditor(),attachments:createAttachmentEditor()};
@@ -1394,6 +1395,17 @@ if($('#verifyOfficialCase'))$('#verifyOfficialCase').onclick=async()=>{
 
 
 // Court taxonomy cascades strictly by 5-digit parent codes.
+if($('#editRealDetail'))$('#editRealDetail').onclick=()=>{
+ const p=registeredProperties().find(p=>p.id===state.detail);
+ if(p)nav('official',{editRealId:p.id});
+};
+document.querySelectorAll('[data-edit-real]').forEach(button=>button.onclick=()=>{
+ const p=registeredProperties().find(p=>p.id===button.dataset.editReal);
+ if(p)nav('official',{editRealId:p.id});
+});
+if($('#cancelRealEdit'))$('#cancelRealEdit').onclick=()=>{
+ const id=state.editRealId;state.editRealId=null;nav('detail',{detail:id,detailTab:'overview'});
+};
 if($('#officialUsageLarge')){
  const large=$('#officialUsageLarge'),middle=$('#officialUsageMedium'),small=$('#officialType');
  const populate=(node,entries,placeholder)=>{
@@ -1419,6 +1431,32 @@ if($('#officialUsageLarge')){
  large.addEventListener('change',()=>{middle.value='';small.value='';refreshMedium()});
  middle.addEventListener('change',()=>{small.value='';refreshSmall()});
  refreshMedium();
+ const p=registeredProperties().find(x=>x.id===state.editRealId);
+ if(p){
+  const textFields={officialCourt:p.court,officialCase:p.case,officialItemNo:p.itemNo,
+   officialAddress:p.name,officialAppraisal:p.valueWon,officialMin:p.minWon,
+   officialSaleDate:propertyDate(p)};
+  for(const [id,value] of Object.entries(textFields)){
+   const input=document.getElementById(id);if(input&&value!=null)input.value=String(value);
+  }
+  for(const id of ['officialCourt','officialCase','officialItemNo']){
+   const input=document.getElementById(id);if(input)input.readOnly=true;
+  }
+  const usage=p.courtUsage;
+  const largeEntry=COURT_USAGE_CATALOG.find(x=>x.level==='large'&&x.code===usage?.codes?.large);
+  if(largeEntry){
+   large.value=largeEntry.name;refreshMedium();
+   const middleEntry=COURT_USAGE_CATALOG.find(x=>x.level==='medium'&&x.parentCode===largeEntry.code&&x.code===usage?.codes?.medium);
+   if(middleEntry){
+    middle.value=middleEntry.name;refreshSmall();
+    const smallEntry=COURT_USAGE_CATALOG.find(x=>x.level==='small'&&x.parentCode===middleEntry.code&&x.code===usage?.codes?.small);
+    if(smallEntry)small.value=smallEntry.name;
+   }
+  }else{
+   const note=document.createElement('p');note.className='helper';note.textContent='기존 등록 분류: '+p.type+' · 분류를 변경하지 않으려면 선택하지 않고 저장하세요.';
+   large.before(note);
+  }
+ }
 }
 
 if($('#fetchOfficialItem'))$('#fetchOfficialItem').onclick=async()=>{
@@ -1538,20 +1576,25 @@ if($('#detailPdfInput'))$('#detailPdfInput').onchange=async event=>{
 
 if($('#officialRecordForm'))$('#officialRecordForm').onsubmit=event=>{
  event.preventDefault();
- const court=$('#officialCourt').value.trim(),caseNumber=$('#officialCase').value.trim().replace(/\s+/g,''),itemNo=$('#officialItemNo').value.trim()||'1',name=$('#officialAddress').value.trim(),type=$('#officialType').value.trim();
- const usageLarge=$('#officialUsageLarge').value,usageMedium=$('#officialUsageMedium').value.trim();
- const codeSet=usageCodesForNames(usageLarge,usageMedium,type),largeCode=codeSet.large;
- const courtUsage={codes:codeSet,
-   names:{large:usageLarge,medium:usageMedium||null,small:type},source:'user-verified'};
+ const previous=registeredProperties().find(p=>p.id===state.editRealId)||null;
+ const court=$('#officialCourt').value.trim(),caseNumber=$('#officialCase').value.trim().replace(/\s+/g,''),itemNo=$('#officialItemNo').value.trim()||'1',name=$('#officialAddress').value.trim();
+ const selectedType=$('#officialType').value.trim(),usageLarge=$('#officialUsageLarge').value,usageMedium=$('#officialUsageMedium').value.trim();
+ const codeSet=usageCodesForNames(usageLarge,usageMedium,selectedType);
+ const chosen=Boolean(codeSet.large&&codeSet.medium&&codeSet.small);
+ const emptyClassification=!usageLarge&&!usageMedium&&!selectedType;
+ if(!chosen&&!(previous&&emptyClassification)){toast('법원 대·중·소분류를 모두 선택해 주세요.');return;}
+ const type=chosen?selectedType:previous.type;
+ const courtUsage=chosen?{codes:codeSet,names:{large:usageLarge,medium:usageMedium,small:selectedType},source:'user-verified'}:previous.courtUsage;
  const minWon=$('#officialMin').value.trim()===''?null:Number($('#officialMin').value),valueWon=$('#officialAppraisal').value.trim()===''?null:Number($('#officialAppraisal').value),date=$('#officialSaleDate').value.replaceAll('-','.');
  if(!/^\d{4}타경\d{1,10}$/.test(caseNumber)){toast('사건번호는 2025타경12345 형식으로 입력해 주세요.');return;}
- if(!codeSet.large||!codeSet.medium||!codeSet.small){toast('법원 대·중·소분류를 모두 선택해 주세요.');return;}
  if(!/^\d{1,4}$/.test(itemNo)||!court||!name||(minWon!==null&&(!Number.isSafeInteger(minWon)||minWon<0))||(valueWon!==null&&(!Number.isSafeInteger(valueWon)||valueWon<0))){toast('법원·소재지·가격·물건번호를 확인해 주세요.');return;}
  const id=realCaseId(court,caseNumber,itemNo);
- const record={id,userRegistered:true,name,court,case:caseNumber,itemNo,type,courtUsage,minWon,valueWon,date,sourceUrl:OFFICIAL_AUCTION_URL,enteredAt:Date.now()};
+ if(previous&&id!==previous.id){toast('사건번호와 물건번호는 변경할 수 없습니다.');return;}
+ const record={...(previous||{}),id,userRegistered:true,name,court,case:caseNumber,itemNo,type,courtUsage,minWon,valueWon,date,sourceUrl:previous?.sourceUrl||OFFICIAL_AUCTION_URL,enteredAt:previous?.enteredAt||Date.now(),...(previous?{editedAt:Date.now()}:{})};
  if(!validateRealProperty(record)){toast('등록 내용의 형식을 확인해 주세요.');return;}
- if(registeredProperties().some(x=>x.id===id)){toast('같은 법원·사건·물건번호가 이미 등록돼 있어요.');return;}
- saved.realProperties=[...registeredProperties(),record];write();nav('detail',{detail:id,detailTab:'overview'});showSavedCheck('사건 등록 완료');
+ if(!previous&&registeredProperties().some(x=>x.id===id)){toast('같은 법원·사건·물건번호가 이미 등록돼 있어요.');return;}
+ saved.realProperties=previous?registeredProperties().map(p=>p.id===previous.id?record:p):[...registeredProperties(),record];
+ write();state.editRealId=null;nav('detail',{detail:id,detailTab:'overview'});showSavedCheck(previous?'수정 완료':'사건 등록 완료');
 };
 document.querySelectorAll('[data-delete-real]').forEach(btn=>btn.onclick=()=>{
  const id=btn.dataset.deleteReal,p=registeredProperties().find(x=>x.id===id);if(!p)return;

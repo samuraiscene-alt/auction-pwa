@@ -103,6 +103,32 @@ async function createTestCase(page){
   assert.equal(await grouped.locator('.capital-property').count(),15,'15 individual items preserved');
   await grouped.locator('summary').click();
   assert(await grouped.evaluate(x=>x.open),'same-case details can be expanded');
+  // Read-only official recheck: trust only matching court/case/item identity.
+  const courtData=await page.evaluate(()=>fetch('./data/capital-court-pilot.json').then(r=>r.json()));
+  const first=courtData.items.find(x=>x.caseNo==='2008타경25092');
+  assert(first&&first.minimumWon,'sample must include known first lot');
+  await page.route('**/item?*',async route=>{
+    const url=new URL(route.request().url());
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+      verified:true,source:'courtauction.go.kr',
+      courtCode:url.searchParams.get('courtCode'),caseNo:url.searchParams.get('caseNo'),
+      itemNo:url.searchParams.get('itemNo'),
+      appraisalWon:first.appraisalWon,minimumWon:first.minimumWon+1000000,
+      saleDate:first.saleDate,priceAmbiguous:false
+    })});
+  });
+  const verifyButton=grouped.locator('[data-capital-check]').first();
+  await verifyButton.click();
+  await page.waitForFunction(()=>document.querySelector('[data-capital-result]')?.textContent.includes('차이가 있습니다'));
+  assert((await grouped.locator('[data-capital-result]').first().textContent()).includes('최저매각가'),'recheck shows difference, not a false success');
+  await page.unroute('**/item?*');
+  await page.route('**/item?*',route=>route.fulfill({status:502,contentType:'application/json',body:'{"error":"offline"}'}));
+  await verifyButton.click();
+  await page.waitForFunction(()=>document.querySelector('[data-capital-result]')?.textContent.includes('재조회 실패'));
+  assert((await grouped.locator('[data-capital-result]').first().textContent()).includes('법원 원문'),'network failure warns for official verification');
+  await page.unroute('**/item?*');
+  console.log('PASS per-item court recheck distinguishes mismatches and failures without editing local records');
+
   // Official small-class filter: only matching item numbers remain, even inside mixed cases.
   const types=await page.locator('#capitalTypeFilter option').allTextContents();
   assert(types.includes('아파트'),'apartment available in court category selector');

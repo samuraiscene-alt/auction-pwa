@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.6.1';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.6.2';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -1312,6 +1312,22 @@ function capital(){
  const region=state.capitalRegion,query=state.capitalQuery.trim().normalize('NFC').toLocaleLowerCase('ko');
  const matched=items.filter(x=>(region==='전체'||x.region===region)&&
   (!query||[x.address,x.caseNo,x.courtName,x.itemNo].some(v=>String(v||'').normalize('NFC').toLocaleLowerCase('ko').includes(query))));
+ const groupedMap=new Map();
+ for(const x of matched){const k=x.courtCode+'|'+x.caseNo;if(!groupedMap.has(k))groupedMap.set(k,[]);groupedMap.get(k).push(x);}
+ const grouped=[...groupedMap.values()];
+ const renderCapitalProperty=x=>{
+
+  const entry=COURT_USAGE_CATALOG.find(t=>t.level==='small'&&t.code===x.smallCode);
+  const category=entry?entry.name:'분류 미확인';
+  return `<div class="capital-property"><div class="auction-card-top"><span class="auction-type">${escapeHtml(category)}</span><span class="auction-demo user-record">법원 수집 · 시범</span></div>
+   <strong>${escapeHtml(x.address)}</strong><p class="helper">${escapeHtml(x.courtName||'법원 미확인')} · ${escapeHtml(x.caseNo)} · 물건 ${escapeHtml(x.itemNo)}번</p>
+   <div class="line"><span class="muted">감정평가액</span><strong>${escapeHtml(formatAmount(x.appraisalWon))}</strong></div>
+   <div class="line"><span class="muted">최저매각가</span><strong>${escapeHtml(formatAmount(x.minimumWon))}</strong></div>
+   <div class="line"><span class="muted">매각기일</span><strong>${escapeHtml(x.saleDate||'미확인')}</strong></div>
+   <button type="button" class="secondary full-secondary" data-capital-official="1">법원 원문에서 사건 확인 ↗</button>
+  </div>`;
+
+ };
  const formatAmount=n=>Number.isSafeInteger(n)&&n>0?prettyPrice(n):'미확인';
  const info=capitalLoadStatus==='loading'?'목록을 불러오는 중…':capitalLoadStatus==='failed'?'수집 목록을 불러오지 못했습니다. '+capitalLoadError:
   capitalLoadStatus==='ready'?'수집 '+escapeHtml(snapshot.fetchedAt.slice(0,10))+' · 3개 지역, 일부 페이지만 수집':'목록 확인 전';
@@ -1321,20 +1337,13 @@ function capital(){
  <div class="filters">${['전체','서울','경기','인천'].map(r=>`<button type="button" class="chip ${region===r?'active':''}" data-capital-region="${r}">${r}</button>`).join('')}</div>
  <form id="capitalSearchForm" class="search-form"><input id="capitalSearch" class="search" type="search" placeholder="소재지·법원·사건번호 검색" value="${escapeHtml(state.capitalQuery)}"><button class="search-submit" type="submit">검색</button></form>
  <button type="button" class="secondary full-secondary" id="capitalReload">목록 다시 불러오기</button></div>
- <div class="section"><h2>수집된 물건 <span class="result-count">${matched.length}건</span></h2><span class="muted">중복 제거 · 실제 법원 자료</span></div>
+ <div class="section"><h2>수집된 물건 <span class="result-count">${matched.length}건</span></h2><span class="muted">사건 ${grouped.length}건 · 물건번호별 정보 보존</span></div>
  ${capitalLoadStatus==='loading'?'<div class="empty">수도권 목록을 불러오는 중…</div>':capitalLoadStatus==='failed'?'<div class="empty">자동목록에 연결할 수 없습니다. 나중에 다시 확인해 주세요.</div>':matched.length===0?'<div class="empty">표시할 물건이 없습니다. 검색 조건을 변경해 주세요.</div>':
- matched.slice(0,state.capitalLimit).map(x=>{
-  const entry=COURT_USAGE_CATALOG.find(t=>t.level==='small'&&t.code===x.smallCode);
-  const category=entry?entry.name:'분류 미확인';
-  return `<div class="card capital-record"><div class="auction-card-top"><span class="auction-type">${escapeHtml(category)}</span><span class="auction-demo user-record">법원 수집 · 시범</span></div>
-   <strong>${escapeHtml(x.address)}</strong><p class="helper">${escapeHtml(x.courtName||'법원 미확인')} · ${escapeHtml(x.caseNo)} · 물건 ${escapeHtml(x.itemNo)}번</p>
-   <div class="line"><span class="muted">감정평가액</span><strong>${escapeHtml(formatAmount(x.appraisalWon))}</strong></div>
-   <div class="line"><span class="muted">최저매각가</span><strong>${escapeHtml(formatAmount(x.minimumWon))}</strong></div>
-   <div class="line"><span class="muted">매각기일</span><strong>${escapeHtml(x.saleDate||'미확인')}</strong></div>
-   <button type="button" class="secondary full-secondary" data-capital-official="1">법원 원문에서 사건 확인 ↗</button>
-  </div>`;
+ grouped.slice(0,state.capitalLimit).map(group=>{
+ const x=group[0];
+ return '<details class="card capital-record capital-case-group"><summary><strong>'+escapeHtml(x.address)+'</strong><p class="helper">'+escapeHtml(x.courtName||'법원 미확인')+' · '+escapeHtml(x.caseNo)+'</p><span class="capital-case-count">'+group.length+'개 물건 · 펼쳐보기</span></summary>'+group.map(renderCapitalProperty).join('')+'</details>';
  }).join('')}
- ${matched.length>state.capitalLimit?`<button class="secondary full-secondary" type="button" id="capitalMore">다음 40건 더 보기 (${matched.length-state.capitalLimit}건 남음)</button>`:''}
+ ${grouped.length>state.capitalLimit?`<button class="secondary full-secondary" type="button" id="capitalMore">다음 40개 사건 더 보기 (${grouped.length-state.capitalLimit}건 남음)</button>`:''}
  <p class="helper">이 목록은 기기 내 직접 등록 기록과 별도이며 관심물건·일정에는 자동 추가되지 않습니다.</p>`;
 }
 async function loadCapital(force=false){

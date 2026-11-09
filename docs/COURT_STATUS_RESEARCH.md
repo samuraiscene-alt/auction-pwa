@@ -158,3 +158,9 @@
 - 한편 검색 목록의 `userStPrint`, `userLstPrint`, `mulStatNm`, `maemulStatNm`에 화면 표시 문구가 있을 수 있는지 확인하는 **진단만** 추가. 공식 목록과 상세의 사건·물건 신원이 완전히 일치하는 경우에만 처리.
 - 반환 문구가 `진행/매각/유찰/취하/변경/연기/정지/취소/종국/미종국/신건` 가운데 하나와 정확히 같을 때만 `exactDisplayLabel`로 기록. HTML·주소·기타 문구는 null 처리하고 원문 및 당사자정보를 저장하지 않음. 목록 표시 텍스트는 개별 매각기일 결과와 다를 수 있으므로 원시 `auctnDxdyRsltCd`와 자동 매핑하거나 법적 확정 상태로 사용하지 않음.
 - 오프라인 회귀 테스트 통과. 새 보고서의 `listingDisplayEvidence` 필드 실서버 결과 확인 전까지 표시문구 확보 성공 주장 금지. 앱 v0.7.5/805건 기존 스냅샷 및 개인 저장자료 불변.
+
+## 2026-11-10 목록 상태필드 범위 축소 및 안전검증
+- 최신 공식 목록 실서버 결과에 실제로 존재하는 상태 관련 필드명 `jinstatCd`, `mulStatcd`, `mulJinYn` 확인. 광범위한 `*Nm` 검색은 `buldNm`(건물명), `carNm`(차량명), `jiwonNm`(법원명) 등 무관한 값을 끌어오는 문제가 있어 제외.
+- `scripts/extract-court-status-evidence.cjs`는 세 필드만 이름으로 진단하고, `listProgressCode`(`jinstatCd`) 및 `listProgressFlag`(`mulJinYn`)를 안전한 문자형 원시코드로만 기록. 기존 `listStatusCode`(`mulStatcd`) 유지. 코드 의미는 절대 추정하지 않음.
+- `.github/workflows/court-case-list-bridge.yml`의 결과 저장도 3개 필드 화이트리스트로 제한. 기존 무관한 이름 필드 기록은 중단.
+- 기존 브리지/원시코드 추출 테스트를 실제 GitHub 저장소 소스로 다시 실행하여 모두 통과. 신규 진단 이후 Actions 실서버 결과의 성공 여부는 별도 확인 필요하며, 앱 v0.7.5·805건 목록·개인정보와 자동 매각/취하 판정은 변경하지 않음.

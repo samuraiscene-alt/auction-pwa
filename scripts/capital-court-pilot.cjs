@@ -87,12 +87,18 @@ async function search(region,pageNo){
   await new Promise(resolve=>setTimeout(resolve,700));
  }
  if(errors.length){console.error('Probe incomplete. No output JSON published:',errors.join(' / '));process.exitCode=1;return;}
- const uniqueMap=new Map(),conflicts=new Set();
+ const uniqueMap=new Map(),conflicts=new Set(),conflictExamples=[];
  for(const item of items){
   const previous=uniqueMap.get(item.id);
-  if(previous&&['region','address','appraisalWon','minimumWon','saleDate','smallCode'].some(k=>previous[k]!==item[k]))conflicts.add(item.id);
+  if(previous&&['region','address','appraisalWon','minimumWon','saleDate','smallCode'].some(k=>previous[k]!==item[k])){
+   conflicts.add(item.id);
+   if(conflictExamples.length<4)conflictExamples.push({id:item.id,
+    first:{region:previous.region,address:previous.address,price:previous.minimumWon,date:previous.saleDate},
+    next:{region:item.region,address:item.address,price:item.minimumWon,date:item.saleDate}});
+  }
   if(!previous)uniqueMap.set(item.id,item);
  }
+ console.log('Conflicting record samples:',JSON.stringify(conflictExamples));
  // Quarantine disagreeing records. Never silently choose one conflicting value.
  // If more than 5% of unique IDs disagree, reject the entire daily snapshot.
  const conflictRate=conflicts.size/Math.max(1,uniqueMap.size);

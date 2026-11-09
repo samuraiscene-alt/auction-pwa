@@ -16,10 +16,8 @@ const safeDay=value=>{
 const DISPLAY_LABELS=new Set(['진행','매각','유찰','취하','변경','연기','정지','취소','종국','미종국','신건']);
 const labelOf=value=>typeof value==='string'&&DISPLAY_LABELS.has(value.trim())?value.trim():null;
 // Log only narrowly named candidate field KEYS from the verified list row.
-const displayCandidateFieldNames=row=>Object.keys(row).filter(k=>
- /^[A-Za-z][A-Za-z0-9_]{0,49}$/.test(k)&&
- /(?:stat|rslt|result|jin|stprint|lstprint|progress|label|nm$)/i.test(k)
-).slice(0,30);
+const STATUS_FIELD_NAMES=['jinstatCd','mulStatcd','mulJinYn'];
+const displayCandidateFieldNames=row=>STATUS_FIELD_NAMES.filter(k=>Object.hasOwn(row,k));
 const displayEvidence=row=>{
  const names=['userStPrint','userLstPrint','mulStatNm','maemulStatNm'];
  return names.map(field=>({
@@ -56,7 +54,9 @@ function extractStatusEvidence(rows,detail,identity,bridge){
   caseSuspensionCode:safeCode(base.auctnSuspStatCd),
   lotStatusCode:safeCode(goods[0].auctnGdsStatCd),
   lotProgressFlag:safeCode(goods[0].gdsDspslProgYn),
-  listStatusCode:safeCode(listRow[0].mulStatcd)
+  listStatusCode:safeCode(listRow[0].mulStatcd),
+  listProgressCode:safeCode(listRow[0].jinstatCd),
+  listProgressFlag:safeCode(listRow[0].mulJinYn)
  };
  const any=Object.values(status).some(Boolean)||dates.length>0;
  return {

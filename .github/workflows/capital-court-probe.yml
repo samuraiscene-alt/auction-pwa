@@ -1,6 +1,11 @@
 name: Capital court property probe
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/capital-court-probe.cjs
+      - .github/workflows/capital-court-probe.yml
 
 permissions:
   contents: read

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-09T23:23:41.054Z",
+  "attemptedAt": "2026-11-09T23:23:53.993Z",
   "outcome": "list_response_observed",
   "reason": "processed",
   "failedStage": "none",
@@ -33,6 +33,28 @@
         "day": "20261015",
         "resultCode": "002",
         "kindCode": "01"
+      }
+    ],
+    "listingDisplayEvidence": [
+      {
+        "field": "userStPrint",
+        "fieldPresent": false,
+        "exactDisplayLabel": null
+      },
+      {
+        "field": "userLstPrint",
+        "fieldPresent": false,
+        "exactDisplayLabel": null
+      },
+      {
+        "field": "mulStatNm",
+        "fieldPresent": false,
+        "exactDisplayLabel": null
+      },
+      {
+        "field": "maemulStatNm",
+        "fieldPresent": false,
+        "exactDisplayLabel": null
       }
     ],
     "legalStatusVerified": false

@@ -1,0 +1,11 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {describeResponse}=require('../scripts/probe-court-case-status.cjs');
+const a=describeResponse({status:200,data:{csBaseInfo:[{csNo:'2026타경1',csStatCd:'CODE_UNKNOWN',name:'PRIVATE'}],dspslGdsDxdyInfo:[{mulStatcd:'999'}]}});
+assert.equal(a.blocked,false);
+assert(a.possibleStatusFields.includes('csBaseInfo.csStatCd'));
+assert(a.possibleStatusFields.includes('dspslGdsDxdyInfo.mulStatcd'));
+assert(!JSON.stringify(a).includes('CODE_UNKNOWN'),'status values must not be reported without meaning');
+assert(!JSON.stringify(a).includes('PRIVATE'),'raw values must not be logged');
+assert.equal(describeResponse({data:{ipcheck:false}}).blocked,true);
+console.log('PASS: structural-only status probe; block and redaction');

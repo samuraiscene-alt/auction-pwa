@@ -1,12 +1,23 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-09T23:54:24.501Z",
+  "attemptedAt": "2026-11-09T23:54:31.870Z",
   "observed": true,
   "screen": "PGJ158M01",
   "reason": null,
   "saleResultSearchEndpointPresent": false,
   "officialApiPaths": [],
   "dataMapIds": [],
+  "screenReferences": [
+    "PGJ158M01",
+    "PGJ158M02"
+  ],
+  "markers": {
+    "saleResultEndpointNameSeen": false,
+    "searchControllerSeen": false,
+    "submissionTagSeen": false,
+    "scriptTagSeen": true,
+    "nestedFrameSeen": false
+  },
   "rawDocumentSaved": false,
   "legalStatusVerified": false
 }

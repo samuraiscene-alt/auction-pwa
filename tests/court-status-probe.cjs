@@ -32,4 +32,14 @@ const unrelated=assessIdentity({data:{lots:[{boCd:'B000211',srnSaNo:'2026타경1
 assert.equal(unrelated.caseIdentityMatched,false);
 assert.equal(unrelated.lotIdentityMatched,false);
 assert.equal(assessIdentity({data:{lots:[{boCd:'B000210',srnSaNo:'2026타경12345'}]}},expected).lotIdentityMatched,false);
+const realShape=assessIdentity({data:{
+ dma_csBasInf:{cortOfcCd:'B000210',csNo:'2008타경25092'},
+ dlt_dspslGdsDspslObjctLst:[{cortOfcCd:'B000210',csNo:'2008타경25092',dspslGdsSeq:'1',auctnGdsStatCd:'UNVERIFIED'}]
+}},{courtCode:'B000210',caseNo:'2008타경25092',itemNo:'1'});
+assert.equal(realShape.caseIdentityMatched,true);
+assert.equal(realShape.lotIdentityMatched,true);
+assert.equal(realShape.responseCaseFormat,'display_case');
+assert.equal(realShape.statusDecisionAllowed,false);
+assert.equal(assessIdentity({data:{dma_csBasInf:{cortOfcCd:'B000210',csNo:'20080130025092'}}},{courtCode:'B000210',caseNo:'2008타경25092',itemNo:'1'}).responseCaseFormat,'digits_only');
+assert.equal(assessIdentity({data:{dma_csBasInf:{cortOfcCd:'B000210',csNo:'20080130025092'}}},{courtCode:'B000210',caseNo:'2008타경25092',itemNo:'1'}).caseIdentityMatched,false);
 console.log('PASS: structural-only status probe; block and redaction');

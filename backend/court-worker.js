@@ -64,7 +64,7 @@ const courtUsageFromItem=(detail,item)=>{
  };
  const codes=Object.fromEntries(Object.entries(fieldNames).map(([level,fields])=>[level,first(fields)]));
  const names=Object.fromEntries(Object.entries(nameKeys).map(([level,fields])=>[level,first(fields)]));
- const safeCode=v=>typeof v==='string'&&/^\\d{4,15}$/.test(v)?v:null;
+ const safeCode=v=>typeof v==='string'&&/^\d{4,15}$/.test(v)?v:null;
  const safeName=v=>typeof v==='string'&&v.length<=80?v:null;
  return {codes:Object.fromEntries(Object.entries(codes).map(([k,v])=>[k,safeCode(v)])),
    names:Object.fromEntries(Object.entries(names).map(([k,v])=>[k,safeName(v)])),

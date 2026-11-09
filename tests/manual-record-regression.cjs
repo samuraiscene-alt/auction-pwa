@@ -108,7 +108,9 @@ async function createTestCase(page){
   assert(types.includes('아파트'),'apartment available in court category selector');
   await page.locator('#capitalTypeFilter').selectOption('20104');
   const selected=await page.locator('.capital-property .auction-type').allTextContents();
-  assert(selected.length>0&&selected.every(x=>x.trim()==='아파트'),'apartment filter uses legal small-class code');
+  assert(selected.length>0&&selected.every(x=>['아파트','복합물건'].includes(x.trim())),'apartment filter uses legal small-class code including composite lots');
+  const compound=page.locator('.capital-property').filter({has:page.locator('.capital-components')});
+  if(await compound.count())assert((await compound.first().textContent()).includes('아파트'),'composite matched apartment component');
   assert.equal(await page.locator('#capitalTypeFilter').inputValue(),'20104','type persists');
   await page.locator('#capitalTypeFilter').selectOption('전체');
   assert.equal(await page.locator('.capital-record').count(),40,'all categories restored to initial 40 cases');
@@ -126,6 +128,16 @@ async function createTestCase(page){
     console.log('PASS failed collector displays warning without dropping cached snapshot');
   }
   assert(/안전검증 기록|자동 형식 검사 통과/.test(await page.locator('body').textContent()),'validation status is visible');
+  if(feedState.snapshot.schemaVersion===2){
+    assert.equal(feedState.snapshot.validation.passed,true,'published composite snapshot validated');
+    assert(feedState.snapshot.items.some(x=>x.components?.length>1),'composite lots present');
+    await page.locator('#capitalSearch').fill(feedState.snapshot.items.find(x=>x.components?.length>1).caseNo);
+    await page.locator('#capitalSearchForm button[type="submit"]').click();
+    assert((await page.locator('.capital-components').count())>0,'composite components expandable');
+    console.log('PASS schema2 composite components preserved and shown');
+    await page.locator('#capitalSearch').fill('');
+    await page.locator('#capitalSearchForm button[type="submit"]').click();
+  }
   console.log('PASS court-category dropdown filters individual auction items');
   await page.locator('[data-capital-region="서울"]').click();
   assert((await page.locator('body').textContent()).includes('수집된 물건'),'Seoul filter renders');

@@ -17,20 +17,23 @@ assert.equal(assessSearchBridge([row,{...row}],id).directInternalCaseMapping,fal
 assert.equal(assessSearchBridge([],id).directInternalCaseMapping,false);
 const detail={status:200,data:{dma_csBasInf:{cortOfcCd:'B000210',csNo:'20080130025092'},
  dlt_dspslGdsDspslObjctLst:[{cortOfcCd:'B000210',csNo:'20080130025092',dspslGdsSeq:'1'}]}};
-const linked=assessCrossBridge([{...row,docid:'20080130025092'}],detail,id);
+const linked=assessCrossBridge([{...row,docid:'20080130025092',saNo:'20080130025092'}],detail,id);
 assert.equal(linked.docidExactlyMatches,true);
 assert.equal(linked.detailCaseCrossChecked,true);
 assert.equal(linked.legalStatusVerified,false);
 assert(!JSON.stringify(linked).includes('20080130025092'));
 assert.equal(assessCrossBridge([{...row,csNo:undefined,docid:'unrelated'}],detail,id).detailCaseCrossChecked,false);
 assert.equal(assessCrossBridge([{...row,docid:'20080130025092'},{...row,docid:'20080130025092'}],detail,id).detailCaseCrossChecked,false);
-assert.equal(assessCrossBridge([{...row,docid:'20080130025092'}],{data:{dma_csBasInf:{cortOfcCd:'B000211',csNo:'20080130025092'},dlt_dspslGdsDspslObjctLst:detail.data.dlt_dspslGdsDspslObjctLst}},id).detailCaseCrossChecked,false);
+assert.equal(assessCrossBridge([{...row,docid:'20080130025092',saNo:'20080130025092'}],{data:{dma_csBasInf:{cortOfcCd:'B000211',csNo:'20080130025092'},dlt_dspslGdsDspslObjctLst:detail.data.dlt_dspslGdsDspslObjctLst}},id).detailCaseCrossChecked,false);
 const saNoPair=assessCrossBridge([{...row,csNo:undefined,docid:'other',saNo:'20080130025092',printCsNo:'2008타경25092'}],detail,id);
 assert.equal(saNoPair.listSaNoExactlyMatches,true);
 assert.equal(saNoPair.printCsNoMatchesDisplay,true);
 assert.equal(saNoPair.detailCaseCrossChecked,true);
 assert.equal(saNoPair.legalStatusVerified,false);
-assert.equal(assessCrossBridge([{...row,csNo:undefined,saNo:'20080130025092',printCsNo:'2008타경9999'}],detail,id).detailCaseCrossChecked,false);
+assert.equal(assessCrossBridge([{...row,docid:'20080130025092'}],detail,id).detailCaseCrossChecked,false,'docid alone cannot bridge case identity');
+assert.equal(assessCrossBridge([{...row,csNo:undefined,saNo:'20080130025092',printCsNo:'different'}],detail,id).detailCaseCrossChecked,true,'printCsNo is not an identity prerequisite');
+assert.equal(assessCrossBridge([{...row,saNo:'20080130025092',csNo:'20080130099999'}],detail,id).detailCaseCrossChecked,false,'conflicting list csNo must fail');
+assert.equal(assessCrossBridge([{...row,csNo:undefined,saNo:'20080130025092',printCsNo:'2008타경9999'}],detail,id).detailCaseCrossChecked,true);
 assert.equal(assessCrossBridge([{...row,csNo:undefined,saNo:'20080130099999',printCsNo:'2008타경25092'}],detail,id).detailCaseCrossChecked,false);
 assert.equal(assessCrossBridge([{...row,csNo:undefined,saNo:'20080130025092',printCsNo:'2008타경25092'},{...row,csNo:undefined,saNo:'20080130025092',printCsNo:'2008타경25092'}],detail,id).detailCaseCrossChecked,false);
 console.log('PASS: direct list-row bridge refuses missing, wrong, duplicate and unsafe values');

@@ -3,7 +3,7 @@
 // One read-only court LIST query to seek a direct display-to-internal case mapping.
 // A missing/mismatched row is NOT evidence of withdrawal or sale.
 // Nothing is persisted; output is strictly Boolean/field-name diagnostics.
-const {assessSearchBridge}=require('./validate-court-case-bridge.cjs');
+const {assessSearchBridge,assessCrossBridge}=require('./validate-court-case-bridge.cjs');
 const CASE=/^court-(B\d{6})\|(20\d{2}타경\d{1,10})\|([1-9]\d{0,3})$/;
 const KEYS=[
 'rletDspslSpcCondCd','bidDvsCd','mvprpRletDvsCd','cortAuctnSrchCondCd',
@@ -40,12 +40,28 @@ async function main(){
   if(data?.data?.ipcheck===false||data?.ipcheck===false)throw Error('access_rejected');
   if(String(data?.status)!=='200'||!Array.isArray(data?.data?.dlt_srchResult))
     throw Error('invalid_response');
-  const report=assessSearchBridge(data.data.dlt_srchResult,{courtCode,caseNo,itemNo});
-  console.log(JSON.stringify(report));
-  // Normal result even when no mapping: no guessed identity or status mapping.
+  const rows=data.data.dlt_srchResult;
+  const list=assessSearchBridge(rows,{courtCode,caseNo,itemNo});
+  if(list.exactDisplayLotRows!==1){
+    console.log(JSON.stringify({...list,detailCaseCrossChecked:false,legalStatusVerified:false}));
+    return;
+  }
+  // Second and final official request; no retries, no saved source response.
+  const detailResponse=await fetch('https://www.courtauction.go.kr/pgj/pgj15A/selectAuctnCsSrchRslt.on',{
+   method:'POST',headers:{'Content-Type':'application/json; charset=UTF-8',
+    Accept:'application/json',Referer:'https://www.courtauction.go.kr/pgj/index.on'},
+   body:JSON.stringify({dma_srchCsDtlInf:{cortOfcCd:courtCode,csNo:caseNo}}),
+   signal:controller.signal});
+  if(!detailResponse.ok)throw Error('detail_http_error');
+  if(!(detailResponse.headers.get('content-type')||'').includes('json'))throw Error('detail_non_json');
+  const detail=await detailResponse.json();
+  if(detail?.data?.ipcheck===false||detail?.ipcheck===false)throw Error('access_rejected');
+  if(String(detail?.status)!=='200'||!detail?.data?.dma_csBasInf)throw Error('detail_invalid_response');
+  const comparison=assessCrossBridge(rows,detail,{courtCode,caseNo,itemNo});
+  console.log(JSON.stringify({...list,...comparison}));
  }catch(error){
   const reason=error?.name==='AbortError'?'timeout':
-    ['http_error','non_json','access_rejected','invalid_response'].includes(error?.message)?error.message:
+    ['http_error','non_json','access_rejected','invalid_response','detail_http_error','detail_non_json','detail_invalid_response'].includes(error?.message)?error.message:
     ['ENOTFOUND','EAI_AGAIN'].includes(error?.cause?.code)?'dns_failure':'network_error';
   console.error('BRIDGE_REASON='+reason);process.exitCode=1;
  }finally{clearTimeout(timer);}

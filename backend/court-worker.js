@@ -52,6 +52,25 @@ const identifyPropertyType=(objects)=>{
  return classifications.every(v=>v&&v===classifications[0])?classifications[0]:null;
 };
 
+// Preserve court usage codes exactly as supplied. No guessed hierarchy/codes.
+const courtUsageFromItem=(detail,item)=>{
+ const fieldNames={large:['lclsUtilCd','lclDspslGdsLstUsgCd'],medium:['mclsUtilCd','mclDspslGdsLstUsgCd'],small:['sclsUtilCd','sclDspslGdsLstUsgCd']};
+ const nameKeys={large:['lclsUtilNm','lclDspslGdsLstUsgNm'],medium:['mclsUtilNm','mclDspslGdsLstUsgNm'],small:['sclsUtilNm','sclDspslGdsLstUsgNm']};
+ const candidates=[item,detail?.csBaseInfo,detail?.dspslGdsDxdyInfo].filter(v=>v&&typeof v==='object');
+ const first=(keys)=>{const vals=[];
+  for(const o of candidates)for(const k of keys)if(typeof o[k]==='string'&&o[k].trim())vals.push(o[k].trim());
+  const distinct=[...new Set(vals)];
+  return distinct.length===1?distinct[0]:null;
+ };
+ const codes=Object.fromEntries(Object.entries(fieldNames).map(([level,fields])=>[level,first(fields)]));
+ const names=Object.fromEntries(Object.entries(nameKeys).map(([level,fields])=>[level,first(fields)]));
+ const safeCode=v=>typeof v==='string'&&/^\\d{4,15}$/.test(v)?v:null;
+ const safeName=v=>typeof v==='string'&&v.length<=80?v:null;
+ return {codes:Object.fromEntries(Object.entries(codes).map(([k,v])=>[k,safeCode(v)])),
+   names:Object.fromEntries(Object.entries(names).map(([k,v])=>[k,safeName(v)])),
+   verifiedBy:'returned-fields-only'};
+};
+
 const readItem=(json,courtCode,caseNo,itemNo)=>{
  const data=json?.data,d=data?.dma_result,base=d?.csBaseInfo,item=d?.dspslGdsDxdyInfo;
  if(String(json?.status)!=='200'||json?.errors||!d||!base||!item||data?.ipcheck===false)
@@ -65,7 +84,7 @@ const readItem=(json,courtCode,caseNo,itemNo)=>{
  const address=addressCandidates.length===1&&addressCandidates[0].length<=250?addressCandidates[0]:null;
  return {verified:true,source:'courtauction.go.kr',courtCode:courtCode.toUpperCase(),caseNo,itemNo,
   checkedAt:new Date().toISOString(),courtName:String(base.cortOfcNm||'').slice(0,100),
-  address,propertyType:identifyPropertyType(d.gdsDspslObjctLst),appraisalWon:amount(item.aeeEvlAmt),
+  address,propertyType:identifyPropertyType(d.gdsDspslObjctLst),courtUsage:courtUsageFromItem(d,item),appraisalWon:amount(item.aeeEvlAmt),
   minimumWon:prices.length===1?prices[0]:null,
   saleDate:dateOnly(item.dspslDxdyYmd),
   priceAmbiguous:prices.length>1,

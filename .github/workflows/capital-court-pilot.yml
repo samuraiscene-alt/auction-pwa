@@ -7,6 +7,8 @@ on:
     branches: [main]
     paths:
       - scripts/capital-court-pilot.cjs
+      - scripts/validate-capital-snapshot.cjs
+      - scripts/merge-capital-components.cjs
       - .github/workflows/capital-court-pilot.yml
 permissions:
   contents: write

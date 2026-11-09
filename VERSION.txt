@@ -1,2 +1,2 @@
-0.6.1
-Separate Seoul/Gyeonggi/Incheon official court limited-page auto-list viewer with freshness and partial-coverage label.
+0.6.2
+Show multiple item numbers under one auction case with expandable groups.

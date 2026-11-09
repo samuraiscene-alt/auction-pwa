@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-09T11:59:49.355Z",
+  "attemptedAt": "2026-11-09T12:04:00.516Z",
   "outcome": "failed",
   "scope": "서울·경기·인천",
-  "detail": "수집 오류 또는 안전검사 미통과. 이전 목록 유지"
+  "reason": "conflicting_records",
+  "detail": "물건번호 데이터 충돌 · 이전 목록 유지"
 }

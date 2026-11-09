@@ -63,7 +63,10 @@ async function main(){
   const summary=describeResponse(json);
   if(summary.blocked)throw Error('court access rejected; no retries');
   if(!summary.plausibleResponse)throw Error('court response schema not verified; no status inference');
-  console.log(JSON.stringify({requestedCase:caseNo,requestedCourt:courtCode,...assessIdentity(json,{courtCode,caseNo,itemNo}),...summary},null,2));
+  const identity=assessIdentity(json,{courtCode,caseNo,itemNo});
+  console.log(JSON.stringify({requestedCase:caseNo,requestedCourt:courtCode,...identity,...summary},null,2));
+  if(!identity.caseIdentityMatched)throw Error('case identity not matched; status unverified');
+  if(!identity.lotIdentityMatched)console.error('Lot identity not matched: case-level schema only, no lot status verified.');
  }catch(error){console.error('Probe not verified:',String(error?.message||error).slice(0,180));process.exitCode=1;}
  finally{clearTimeout(timeout);}
 }

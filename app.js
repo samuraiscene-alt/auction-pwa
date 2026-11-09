@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.5.8';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.5.9';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -234,18 +234,9 @@ function realCaseId(court,caseNumber,itemNo){return 'real-'+[court,caseNumber,it
 function isSafeAuctionUrl(url){try{const u=new URL(url);return u.protocol==='https:'&&(/(^|\.)courtauction\.go\.kr$/i).test(u.hostname)}catch{return false}}
 // Official court searches use large / medium / small usage classification.
 // Only the four confirmed major codes are embedded. Missing detailed codes stay null.
-const COURT_USAGE_CATALOG=[
- {level:'large',code:'10000',name:'토지'},
- {level:'large',code:'20000',name:'건물'},
- {level:'large',code:'30000',name:'차량및운송장비'},
- {level:'large',code:'40000',name:'기타'},
- {level:'medium',parentCode:'20000',code:'21100',name:'단독주택'},
- {level:'medium',parentCode:'20000',code:'21200',name:'공동주택'},
- {level:'small',parentCode:'21100',code:'21101',name:'단독주택(소분류)'},
- {level:'small',parentCode:'21200',code:'21201',name:'아파트'}
-];
-// Verified partial catalog, not the complete official court classification list.
-// Source: 2026-05-08 PGJ151F00 code capture shared by NomaDamas/k-skill.
+const COURT_USAGE_CATALOG=[{"level":"large","code":"10000","name":"토지"},{"level":"medium","parentCode":"10000","code":"10100","name":"지목"},{"level":"small","parentCode":"10100","code":"10101","name":"전"},{"level":"small","parentCode":"10100","code":"10102","name":"답"},{"level":"small","parentCode":"10100","code":"10103","name":"과수원"},{"level":"small","parentCode":"10100","code":"10104","name":"목장용지"},{"level":"small","parentCode":"10100","code":"10105","name":"임야"},{"level":"small","parentCode":"10100","code":"10106","name":"광천지"},{"level":"small","parentCode":"10100","code":"10107","name":"염전"},{"level":"small","parentCode":"10100","code":"10108","name":"대지"},{"level":"small","parentCode":"10100","code":"10109","name":"공장용지"},{"level":"small","parentCode":"10100","code":"10110","name":"학교용지"},{"level":"small","parentCode":"10100","code":"10111","name":"주차장"},{"level":"small","parentCode":"10100","code":"10112","name":"주유소용지"},{"level":"small","parentCode":"10100","code":"10113","name":"창고용지"},{"level":"small","parentCode":"10100","code":"10114","name":"도로"},{"level":"small","parentCode":"10100","code":"10115","name":"철도용지"},{"level":"small","parentCode":"10100","code":"10116","name":"제방"},{"level":"small","parentCode":"10100","code":"10117","name":"하천"},{"level":"small","parentCode":"10100","code":"10118","name":"구거"},{"level":"small","parentCode":"10100","code":"10119","name":"유지"},{"level":"small","parentCode":"10100","code":"10120","name":"양어장"},{"level":"small","parentCode":"10100","code":"10121","name":"수도용지"},{"level":"small","parentCode":"10100","code":"10122","name":"공원"},{"level":"small","parentCode":"10100","code":"10123","name":"체육용지"},{"level":"small","parentCode":"10100","code":"10124","name":"유원지"},{"level":"small","parentCode":"10100","code":"10125","name":"종교용지"},{"level":"small","parentCode":"10100","code":"10126","name":"사적지"},{"level":"small","parentCode":"10100","code":"10127","name":"묘지"},{"level":"small","parentCode":"10100","code":"10128","name":"잡종지"},{"level":"large","code":"20000","name":"건물"},{"level":"medium","parentCode":"20000","code":"20100","name":"주거용건물"},{"level":"small","parentCode":"20100","code":"20101","name":"단독주택"},{"level":"small","parentCode":"20100","code":"20102","name":"다가구주택"},{"level":"small","parentCode":"20100","code":"20103","name":"다중주택"},{"level":"small","parentCode":"20100","code":"20104","name":"아파트"},{"level":"small","parentCode":"20100","code":"20105","name":"연립주택"},{"level":"small","parentCode":"20100","code":"20106","name":"다세대주택"},{"level":"small","parentCode":"20100","code":"20107","name":"기숙사"},{"level":"small","parentCode":"20100","code":"20108","name":"빌라"},{"level":"small","parentCode":"20100","code":"20109","name":"상가주택"},{"level":"small","parentCode":"20100","code":"20110","name":"오피스텔"},{"level":"small","parentCode":"20100","code":"20111","name":"주상복합"},{"level":"medium","parentCode":"20000","code":"21100","name":"상업용및업무용"},{"level":"small","parentCode":"21100","code":"21101","name":"근린생활시설"},{"level":"small","parentCode":"21100","code":"21102","name":"문화및집회시설"},{"level":"small","parentCode":"21100","code":"21103","name":"종교시설"},{"level":"small","parentCode":"21100","code":"21104","name":"판매시설"},{"level":"small","parentCode":"21100","code":"21105","name":"운수시설"},{"level":"small","parentCode":"21100","code":"21106","name":"의료시설"},{"level":"small","parentCode":"21100","code":"21107","name":"교육연구시설"},{"level":"small","parentCode":"21100","code":"21108","name":"노유자시설"},{"level":"small","parentCode":"21100","code":"21109","name":"수련시설"},{"level":"small","parentCode":"21100","code":"21110","name":"운동시설"},{"level":"small","parentCode":"21100","code":"21111","name":"업무시설"},{"level":"small","parentCode":"21100","code":"21112","name":"숙박시설"},{"level":"small","parentCode":"21100","code":"21113","name":"위락시설"},{"level":"small","parentCode":"21100","code":"21114","name":"교정및군사시설"},{"level":"small","parentCode":"21100","code":"21115","name":"방송통신시설"},{"level":"small","parentCode":"21100","code":"21116","name":"발전시설"},{"level":"small","parentCode":"21100","code":"21117","name":"묘지관련시설"},{"level":"small","parentCode":"21100","code":"21118","name":"관광휴게시설"},{"level":"medium","parentCode":"20000","code":"22100","name":"산업용및기타특수용"},{"level":"small","parentCode":"22100","code":"22101","name":"공장"},{"level":"small","parentCode":"22100","code":"22102","name":"창고시설"},{"level":"small","parentCode":"22100","code":"22103","name":"위험물저장및처리시설"},{"level":"small","parentCode":"22100","code":"22104","name":"자동차관련시설"},{"level":"small","parentCode":"22100","code":"22105","name":"동물및식물관련시설"},{"level":"small","parentCode":"22100","code":"22106","name":"분뇨및쓰레기처리시설"},{"level":"medium","parentCode":"20000","code":"23100","name":"용도복합용"},{"level":"small","parentCode":"23100","code":"23101","name":"주/상용건물"},{"level":"small","parentCode":"23100","code":"23102","name":"주/산용건물"},{"level":"small","parentCode":"23100","code":"23103","name":"기타복합용건물"},{"level":"large","code":"30000","name":"차량및운송장비"},{"level":"medium","parentCode":"30000","code":"30100","name":"차량"},{"level":"small","parentCode":"30100","code":"30101","name":"승용차"},{"level":"small","parentCode":"30100","code":"30102","name":"승합차"},{"level":"small","parentCode":"30100","code":"30103","name":"버스"},{"level":"small","parentCode":"30100","code":"30104","name":"화물차"},{"level":"small","parentCode":"30100","code":"30105","name":"기타차량"},{"level":"medium","parentCode":"30000","code":"31100","name":"중기"},{"level":"small","parentCode":"31100","code":"31101","name":"덤프트럭"},{"level":"small","parentCode":"31100","code":"31102","name":"굴삭기"},{"level":"small","parentCode":"31100","code":"31103","name":"지게차"},{"level":"small","parentCode":"31100","code":"31104","name":"기타중기"},{"level":"medium","parentCode":"30000","code":"32100","name":"선박"},{"level":"small","parentCode":"32100","code":"32101","name":"선박"},{"level":"medium","parentCode":"30000","code":"33100","name":"항공기"},{"level":"small","parentCode":"33100","code":"33101","name":"항공기"},{"level":"medium","parentCode":"30000","code":"34100","name":"이륜차"},{"level":"small","parentCode":"34100","code":"34101","name":"이륜차"},{"level":"large","code":"40000","name":"기타"},{"level":"medium","parentCode":"40000","code":"40100","name":"권리"},{"level":"small","parentCode":"40100","code":"40101","name":"어업권"},{"level":"small","parentCode":"40100","code":"40102","name":"광업권"},{"level":"small","parentCode":"40100","code":"40103","name":"농업권"},{"level":"medium","parentCode":"40000","code":"40200","name":"기타"},{"level":"small","parentCode":"40200","code":"40201","name":"기타"}];
+// 98 live-confirmed classifications, 2026-11-09. Snapshot of court taxonomy, not future-proof.
+// Source: courtauction.go.kr /pgj/pgj002/selectLclLst.on /selectMclLst.on /selectSclLst.on.
 const COURT_USAGE_LARGE=COURT_USAGE_CATALOG.filter(x=>x.level==='large');
 function usageChildren(level,parentCode){
  return COURT_USAGE_CATALOG.filter(x=>x.level===level&&x.parentCode===parentCode);
@@ -1328,9 +1319,9 @@ function official(){
  <label class="label" for="officialAddress">소재지 / 물건 이름</label><input class="search" id="officialAddress" required maxlength="300" placeholder="법원에 표시된 소재지">
  <label class="label" for="officialUsageLarge">법원 물건 용도 · 대분류</label>
  <select id="officialUsageLarge" class="select" required><option value="" selected disabled>법원 대분류 선택</option>${COURT_USAGE_LARGE.map(x=>'<option value="'+x.name+'">'+x.name+'</option>').join('')}</select>
- <label class="label" for="officialUsageMedium">법원 용도 · 중분류 (원문 확인)</label><input class="search" id="officialUsageMedium" list="officialUsageMediumOptions" maxlength="80" placeholder="법원 원문 또는 확인된 목록에서 선택"><datalist id="officialUsageMediumOptions"></datalist>
- <label class="label" for="officialType">법원 용도 · 소분류 / 실제 물건 종류</label><input class="search" id="officialType" list="officialUsageSmallOptions" maxlength="80" required placeholder="법원 원문 또는 확인된 목록에서 선택"><datalist id="officialUsageSmallOptions"></datalist>
- <p class="helper">확인된 코드가 있는 분류만 목록으로 추천해요. 목록에 없는 법원 물건명은 원문 그대로 입력할 수 있고, 코드는 미확인으로 저장합니다.</p>
+ <label class="label" for="officialUsageMedium">법원 용도 · 중분류</label><select class="select" id="officialUsageMedium" required><option value="">대분류를 먼저 선택</option></select>
+ <label class="label" for="officialType">법원 용도 · 소분류 / 실제 물건 종류</label><select class="select" id="officialType" required><option value="">중분류를 먼저 선택</option></select>
+ <p class="helper">법원 서버에서 확인한 대·중·소분류 코드를 사용합니다. 기존 사건의 분류는 변경하지 않아요.</p>
  <label class="label" for="officialAppraisal">감정평가액 (원)</label><input class="search" id="officialAppraisal" type="number" inputmode="numeric" min="0" step="1" placeholder="원 단위">
  <label class="label" for="officialMin">최저매각가격 (원)</label><input class="search" id="officialMin" type="number" inputmode="numeric" min="0" step="1" placeholder="원 단위">
  <label class="label" for="officialSaleDate">매각기일 (선택)</label><input class="search" id="officialSaleDate" type="date">
@@ -1402,27 +1393,31 @@ if($('#verifyOfficialCase'))$('#verifyOfficialCase').onclick=async()=>{
 
 
 
-// Known taxonomy suggestions are parent-scoped; unknown official types remain free text.
+// Court taxonomy cascades strictly by 5-digit parent codes.
 if($('#officialUsageLarge')){
  const large=$('#officialUsageLarge'),middle=$('#officialUsageMedium'),small=$('#officialType');
- const midChoices=$('#officialUsageMediumOptions'),smallChoices=$('#officialUsageSmallOptions');
- const display=(node,entries)=>{node.replaceChildren(...entries.map(item=>{
-   const option=document.createElement('option');option.value=item.name;return option;
- }));};
+ const populate=(node,entries,placeholder)=>{
+  const previous=node.value;
+  node.replaceChildren();
+  const blank=document.createElement('option');blank.value='';blank.textContent=placeholder;node.appendChild(blank);
+  for(const entry of entries){
+   const option=document.createElement('option');option.value=entry.name;option.textContent=entry.name;
+   node.appendChild(option);
+  }
+  node.value=entries.some(x=>x.name===previous)?previous:'';
+ };
  const refreshSmall=()=>{
-  const largeCode=COURT_USAGE_LARGE.find(x=>x.name===large.value)?.code;
-  const mid=usageExact('medium',middle.value.trim(),largeCode);
-  display(smallChoices,mid?usageChildren('small',mid.code):[]);
+  const parent=COURT_USAGE_LARGE.find(x=>x.name===large.value)?.code;
+  const medium=usageExact('medium',middle.value,parent);
+  populate(small,medium?usageChildren('small',medium.code):[],'소분류 선택');
  };
  const refreshMedium=()=>{
-  const code=COURT_USAGE_LARGE.find(x=>x.name===large.value)?.code;
-  display(midChoices,code?usageChildren('medium',code):[]);
+  const parent=COURT_USAGE_LARGE.find(x=>x.name===large.value)?.code;
+  populate(middle,parent?usageChildren('medium',parent):[],'중분류 선택');
   refreshSmall();
  };
- large.addEventListener('input',refreshMedium);
- large.addEventListener('change',()=>{middle.value='';small.value='';refreshMedium();});
- middle.addEventListener('change',()=>{small.value='';refreshSmall();});
- middle.addEventListener('input',refreshSmall);
+ large.addEventListener('change',()=>{middle.value='';small.value='';refreshMedium()});
+ middle.addEventListener('change',()=>{small.value='';refreshSmall()});
  refreshMedium();
 }
 
@@ -1452,8 +1447,6 @@ if($('#fetchOfficialItem'))$('#fetchOfficialItem').onclick=async()=>{
     status.textContent='조회 중 사건번호 또는 물건번호가 변경됐어요. 다시 조회해 주세요.';return;
   }
   const fields=[
-   {key:'propertyType',id:'officialType',label:'물건 종류',validate:v=>typeof v==='string'&&v.length>0&&v.length<=80,
-     format:v=>v},
    {key:'address',id:'officialAddress',label:'소재지',validate:v=>typeof v==='string'&&v.trim().length>=5&&v.length<=250,
      format:v=>v.trim()},
    {key:'appraisalWon',id:'officialAppraisal',label:'감정평가액',validate:v=>Number.isSafeInteger(v)&&v>0,
@@ -1488,13 +1481,10 @@ if($('#fetchOfficialItem'))$('#fetchOfficialItem').onclick=async()=>{
    const usage=result.courtUsage;
    const large=$('#officialUsageLarge'),medium=$('#officialUsageMedium');
    const known=COURT_USAGE_LARGE.find(x=>x.code===usage.codes?.large&&x.name===usage.names?.large);
-   if(known&&!large.value){large.value=known.name;large.dispatchEvent(new Event('input'));}
-   const mid=usageExact('medium',usage.names?.medium,known?.code);
-   if(typeof usage.names?.medium==='string'&&usage.names.medium.length<=80&&!medium.value){
-    medium.value=usage.names.medium;
-    medium.dispatchEvent(new Event('input'));
-   }
-   const sub=usageExact('small',usage.names?.small,mid?.code);
+   if(known&&!large.value){large.value=known.name;large.dispatchEvent(new Event('change'));}
+   const mid=COURT_USAGE_CATALOG.find(x=>x.level==='medium'&&x.parentCode===known?.code&&x.code===usage.codes?.medium&&x.name===usage.names?.medium);
+   if(mid&&!medium.value){medium.value=mid.name;medium.dispatchEvent(new Event('change'));}
+   const sub=COURT_USAGE_CATALOG.find(x=>x.level==='small'&&x.parentCode===mid?.code&&x.code===usage.codes?.small&&x.name===usage.names?.small);
    const subtype=$('#officialType');
    if(sub&&subtype&&!subtype.value)subtype.value=sub.name;
   }
@@ -1555,7 +1545,7 @@ if($('#officialRecordForm'))$('#officialRecordForm').onsubmit=event=>{
    names:{large:usageLarge,medium:usageMedium||null,small:type},source:'user-verified'};
  const minWon=$('#officialMin').value.trim()===''?null:Number($('#officialMin').value),valueWon=$('#officialAppraisal').value.trim()===''?null:Number($('#officialAppraisal').value),date=$('#officialSaleDate').value.replaceAll('-','.');
  if(!/^\d{4}타경\d{1,10}$/.test(caseNumber)){toast('사건번호는 2025타경12345 형식으로 입력해 주세요.');return;}
- if(!largeCode||!type){toast('법원 대분류와 실제 물건 종류를 확인해 주세요.');return;}
+ if(!codeSet.large||!codeSet.medium||!codeSet.small){toast('법원 대·중·소분류를 모두 선택해 주세요.');return;}
  if(!/^\d{1,4}$/.test(itemNo)||!court||!name||(minWon!==null&&(!Number.isSafeInteger(minWon)||minWon<0))||(valueWon!==null&&(!Number.isSafeInteger(valueWon)||valueWon<0))){toast('법원·소재지·가격·물건번호를 확인해 주세요.');return;}
  const id=realCaseId(court,caseNumber,itemNo);
  const record={id,userRegistered:true,name,court,case:caseNumber,itemNo,type,courtUsage,minWon,valueWon,date,sourceUrl:OFFICIAL_AUCTION_URL,enteredAt:Date.now()};

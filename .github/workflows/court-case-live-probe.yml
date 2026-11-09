@@ -81,6 +81,8 @@ jobs:
             responseCaseFormat:['display_case','digits_only','number','missing','other'].includes(parsed?.responseCaseFormat)?parsed.responseCaseFormat:'unavailable',
             identityHints:{
               baseCourtMatches:parsed?.identityHints?.baseCourtMatches===true,
+              baseExpCaseExact:parsed?.identityHints?.baseExpCaseExact===true,
+              baseExpCaseFormat:['display_case','digits_only','other','unavailable'].includes(parsed?.identityHints?.baseExpCaseFormat)?parsed.identityHints.baseExpCaseFormat:'unavailable',
               internalCaseYearMatches:parsed?.identityHints?.internalCaseYearMatches===true,
               internalCaseSerialSuffixMatches:parsed?.identityHints?.internalCaseSerialSuffixMatches===true,
               relatedDisplayAliasMatched:parsed?.identityHints?.relatedDisplayAliasMatched===true,

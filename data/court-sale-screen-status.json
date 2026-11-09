@@ -1,20 +1,26 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-09T23:54:31.870Z",
+  "attemptedAt": "2026-11-09T23:55:16.441Z",
   "observed": true,
   "screen": "PGJ158M01",
   "reason": null,
-  "saleResultSearchEndpointPresent": false,
-  "officialApiPaths": [],
-  "dataMapIds": [],
+  "saleResultSearchEndpointPresent": true,
+  "officialApiPaths": [
+    "/pgj/pgjsearch/selectDspslSchdRsltSrch.on"
+  ],
+  "dataMapIds": [
+    "dma_srchGdsDtlSrchInfo",
+    "dma_pageInfo",
+    "dlt_srchResult"
+  ],
   "screenReferences": [
-    "PGJ158M01",
-    "PGJ158M02"
+    "PGJ158M02",
+    "PGJ158M01"
   ],
   "markers": {
-    "saleResultEndpointNameSeen": false,
+    "saleResultEndpointNameSeen": true,
     "searchControllerSeen": false,
-    "submissionTagSeen": false,
+    "submissionTagSeen": true,
     "scriptTagSeen": true,
     "nestedFrameSeen": false
   },

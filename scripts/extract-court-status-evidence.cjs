@@ -8,8 +8,13 @@ const safeCode=value=>{
  return /^[A-Za-z0-9_-]{1,24}$/.test(text)?text:null;
 };
 const safeDay=value=>{
+ // Court dates are YYYYMMDD. Reject impossible dates, including leap-day errors.
  const s=String(value??'').trim();
- return /^20\d{6}$/.test(s)?s:null;
+ if(!/^20\d{6}$/.test(s))return null;
+ const year=Number(s.slice(0,4)),month=Number(s.slice(4,6)),day=Number(s.slice(6,8));
+ if(month<1||month>12)return null;
+ const daysInMonth=new Date(Date.UTC(year,month,0)).getUTCDate();
+ return day>=1&&day<=daysInMonth?s:null;
 };
 // Exact, allowlisted court LIST display text only; never strip arbitrary HTML or
 // infer a label from an unknown code. No addresses or free-form text can escape.

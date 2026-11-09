@@ -51,13 +51,13 @@ jobs:
           const passed=process.env.LIVE_OUTCOME==='success'&&parsed?.caseIdentityMatched===true;
           const errorText=fs.existsSync('/tmp/court-probe-error.txt')?
             fs.readFileSync('/tmp/court-probe-error.txt','utf8'):'';
+          const tagged=/COURT_PROBE_REASON=([a-z_]+)/.exec(errorText)?.[1];
+          const allowedReasons=new Set(['timeout','dns_failure','network_failure','access_rejected','http_error','non_json','response_schema_invalid','identity_mismatch','unexpected_failure']);
           const reason=process.env.OFFLINE_OUTCOME!=='success'?'offline_test_failed':
             passed?'case_identity_matched':
-            /ENOTFOUND|EAI_AGAIN|getaddrinfo/i.test(errorText)?'dns_failure':
-            /AbortError|timeout/i.test(errorText)?'timeout':
-            /access rejected|HTTP 403|HTTP 429/i.test(errorText)?'access_rejected':
-            /case identity not matched/i.test(errorText)?'identity_mismatch':
-            'not_verified';
+            allowedReasons.has(tagged)?tagged:
+            process.env.LIVE_OUTCOME==='skipped'?'probe_skipped':
+            'unclassified_failure';
           const structure=parsed?.structuralSummary||parsed;
           const safeField=x=>typeof x==='string'&&/^[A-Za-z][A-Za-z0-9_]{0,59}$/.test(x);
           const fields=Array.isArray(structure?.sections)?

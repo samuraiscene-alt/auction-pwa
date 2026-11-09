@@ -22,7 +22,7 @@ assert.equal(linked.docidExactlyMatches,true);
 assert.equal(linked.detailCaseCrossChecked,true);
 assert.equal(linked.legalStatusVerified,false);
 assert(!JSON.stringify(linked).includes('20080130025092'));
-assert.equal(assessCrossBridge([{...row,docid:'unrelated'}],detail,id).detailCaseCrossChecked,false);
+assert.equal(assessCrossBridge([{...row,csNo:undefined,docid:'unrelated'}],detail,id).detailCaseCrossChecked,false);
 assert.equal(assessCrossBridge([{...row,docid:'20080130025092'},{...row,docid:'20080130025092'}],detail,id).detailCaseCrossChecked,false);
 assert.equal(assessCrossBridge([{...row,docid:'20080130025092'}],{data:{dma_csBasInf:{cortOfcCd:'B000211',csNo:'20080130025092'},dlt_dspslGdsDspslObjctLst:detail.data.dlt_dspslGdsDspslObjctLst}},id).detailCaseCrossChecked,false);
 console.log('PASS: direct list-row bridge refuses missing, wrong, duplicate and unsafe values');

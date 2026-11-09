@@ -70,6 +70,20 @@ function assessIdentity(json,{courtCode,caseNo,itemNo}){
   internalCaseRowsConsistent,matchingLotRowUnique,
   statusDecisionAllowed:false,note:'내부 사건번호 형식/별도 연관사건 별칭은 확정 신원증거가 아님. 상태코드 판정 금지.'};
 }
+function classifyProbeFailure(error){
+ const code=String(error?.cause?.code||'');
+ const name=String(error?.name||'');
+ const message=String(error?.message||'');
+ if(name==='AbortError'||name==='TimeoutError')return 'timeout';
+ if(['ENOTFOUND','EAI_AGAIN'].includes(code))return 'dns_failure';
+ if(['ETIMEDOUT','ECONNREFUSED','ECONNRESET','ENETUNREACH','EHOSTUNREACH','UND_ERR_CONNECT_TIMEOUT'].includes(code))return 'network_failure';
+ if(/^HTTP (403|429)$/.test(message)||message==='court access rejected; no retries')return 'access_rejected';
+ if(/^HTTP \d{3}$/.test(message))return 'http_error';
+ if(message==='non-JSON response')return 'non_json';
+ if(message.startsWith('court response schema not verified'))return 'response_schema_invalid';
+ if(message.startsWith('case identity not matched'))return 'identity_mismatch';
+ return 'unexpected_failure';
+}
 async function main(){
  const id=process.argv[2];
  const match=IDENTIFIER.exec(id||'');
@@ -98,8 +112,8 @@ async function main(){
   }
   console.log(JSON.stringify({requestedCase:caseNo,requestedCourt:courtCode,...identity,...summary},null,2));
   if(!identity.lotIdentityMatched)console.error('Lot identity not matched: case-level schema only, no lot status verified.');
- }catch(error){console.error('Probe not verified:',String(error?.message||error).slice(0,180));process.exitCode=1;}
+ }catch(error){console.error('COURT_PROBE_REASON='+classifyProbeFailure(error));process.exitCode=1;}
  finally{clearTimeout(timeout);}
 }
-module.exports={describeResponse,assessIdentity};
+module.exports={describeResponse,assessIdentity,classifyProbeFailure};
 if(require.main===module)main();

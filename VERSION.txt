@@ -1,2 +1,2 @@
-0.5.3
-Read user-selected court PDF text to prefill auction case details; user review required.
+0.5.4
+Court case identity check via Cloudflare Worker, Seoul Central only; price/date autofill not yet supported.

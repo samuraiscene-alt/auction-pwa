@@ -67,6 +67,17 @@ jobs:
               console.log('API errors present:', Array.isArray(data.errors) ? data.errors.length > 0 : !!data.errors);
               console.log('Data shape:', Array.isArray(data.data) ? 'array' : data.data === null ? 'null' : typeof data.data);
               console.log('Data field names:', data.data && typeof data.data === 'object' ? Object.keys(data.data).slice(0,25).join(', ') : '(none)');
+
+              const base = data.data?.dma_csBasInf;
+              const record = Array.isArray(base) ? base[0] : base;
+              const hasBase = !!record && typeof record === 'object' && !Array.isArray(record) && Object.keys(record).length > 0;
+              console.log('Case basic info populated:', hasBase);
+              console.log('Basic info shape:', Array.isArray(base) ? 'array (' + base.length + ')' : base === null ? 'null' : typeof base);
+              console.log('Basic info field names:', hasBase ? Object.keys(record).slice(0,80).join(', ') : '(none)');
+              if (!hasBase) {
+                console.error('No populated basic case information. API response alone does not prove case lookup.');
+                process.exitCode = 1;
+              }
               console.log('Likely business error:', !!data.errors && (Array.isArray(data.errors) ? data.errors.length > 0 : true) || /오류|실패|error|fail|인증|권한|차단/i.test(String(data.message || '')));
               console.log('Explicit IP block:', blocked);
               console.log('Non-empty response:', raw.length > 100);

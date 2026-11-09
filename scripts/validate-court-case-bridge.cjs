@@ -40,15 +40,22 @@ function assessCrossBridge(rows,detail,identity){
  const docid=typeof row?.docid==='string'?row.docid.trim():'';
  const docidFormat=!docid?'missing':/^\d+$/.test(docid)?'digits_only':'other';
  const docidExactlyMatches=!!internal&&!!row&&docid===internal;
+ const listSaNo=typeof row?.saNo==='string'?row.saNo.trim():'';
+ const listPrintCsNo=typeof row?.printCsNo==='string'?row.printCsNo.trim():'';
+ const listSaNoExactlyMatches=!!internal&&!!row&&listSaNo===internal;
+ const printCsNoMatchesDisplay=!!row&&listPrintCsNo===identity.caseNo;
  const listCsNo=typeof row?.csNo==='string'?row.csNo.trim():'';
  const listCsNoExactlyMatches=!!internal&&!!row&&listCsNo===internal;
  const crossChecked=exact.length===1&&detailConsistent&&matchedLotRows.length===1&&
-   (docidExactlyMatches||listCsNoExactlyMatches);
+   (docidExactlyMatches||listCsNoExactlyMatches||(listSaNoExactlyMatches&&printCsNoMatchesDisplay));
  return {
   schemaVersion:1,exactDisplayLotRows:list.exactDisplayLotRows,
   detailInternalCaseConsistent:detailConsistent,
   detailLotRowUnique:matchedLotRows.length===1,
   docidFormat,docidExactlyMatches,listCsNoExactlyMatches,
+  saNoFieldPresent:!!row&&Object.hasOwn(row,'saNo'),
+  printCsNoFieldPresent:!!row&&Object.hasOwn(row,'printCsNo'),
+  listSaNoExactlyMatches,printCsNoMatchesDisplay,
   detailCaseCrossChecked:crossChecked,
   legalStatusVerified:false,internalCaseValueSaved:false
  };

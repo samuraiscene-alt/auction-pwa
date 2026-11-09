@@ -65,3 +65,12 @@
 - 신규 사건 등록, 법원 분류 20104(아파트), 관심물건 지정, 최저가·매각기일 변경 저장, 고유 ID/등록일 유지, 새 매각기일 달력 반영, 이전 날짜 미표시 통과.
 - 예전 타입 '토지' 기록(코드 없음) 수정 시 기존 분류/관심물건 유지 통과, 브라우저 스크립트 오류 없음.
 - 실제 iPhone Safari/홈화면 PWA 저장소 간 연동과 법원 외부 서버 응답은 해당 자동 테스트에서 검증하지 않음.
+
+### 수도권 자동목록 v0.6.1 검증 (2026-11-09)
+- 법원 실서버 검색에서 서울 3,123 / 경기 7,962 / 인천 2,710건의 검색 총건수를 보고받음(2026-11-09 당시, 법원 사이트 응답이며 중복/진행상태 확인 전).
+- 각 지역 3페이지 × 페이지당 50행 = 450행 조회. 중복 제거·검증 후 274개 고유 물건을 `data/capital-court-pilot.json`에 저장. `complete:false` 명시.
+- 일일 실행 GitHub workflow: `.github/workflows/capital-court-pilot.yml`, 매일 오전 03:15 KST, 갱신 성공 시 JSON 갱신+Pages 배포, 실패 시 기존 목록 유지.
+- Playwright Chromium 자동 회귀검증 성공: https://github.com/samuraiscene-alt/auction-pwa/actions/runs/42608242171
+- GitHub Pages v0.6.1 배포 성공: https://github.com/samuraiscene-alt/auction-pwa/actions/runs/42608242236
+- 완료 확인: 자동목록 40개 최초 표시·80개 더 보기·서울 지역 선택·사건번호 검색·직접 등록/관심물건 데이터 격리.
+- 미완료: 법원에서 보고한 수도권 전체 사건 자동 수집과 실시간 매각상태 갱신, 아이폰 홈 화면 PWA 실기기 검증. 274건을 전체 경매물건으로 광고하지 않음.

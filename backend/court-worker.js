@@ -22,13 +22,13 @@ const matchingCase=(base,wanted)=>{
 const amount=value=>{
  if(value===null||value===undefined||String(value).trim()==='')return null;
  const raw=String(value).trim().replace(/,/g,'');
- if(!/^\\d{1,15}$/.test(raw))return null;
+ if(!/^\d{1,15}$/.test(raw))return null;
  const num=Number(raw);
  return Number.isSafeInteger(num)&&num>0?num:null;
 };
 const dateOnly=value=>{
  const s=String(value??'').replace(/[-.]/g,'').trim();
- if(!/^20\\d{6}$/.test(s))return null;
+ if(!/^20\d{6}$/.test(s))return null;
  const y=Number(s.slice(0,4)),m=Number(s.slice(4,6)),d=Number(s.slice(6,8));
  const dt=new Date(Date.UTC(y,m-1,d));
  return dt.getUTCFullYear()===y&&dt.getUTCMonth()===m-1&&dt.getUTCDate()===d?
@@ -67,7 +67,7 @@ export default {
     return respond({error:'법원 코드 또는 사건번호를 확인해 주세요.'},400);
   if(url.pathname==='/item'){
    const rawItem=String(url.searchParams.get('itemNo')||'');
-   if(!/^[1-9]\\d{0,3}$/.test(rawItem))return respond({error:'물건번호를 입력해 주세요.'},400);
+   if(!/^[1-9]\d{0,3}$/.test(rawItem))return respond({error:'물건번호를 입력해 주세요.'},400);
    const itemNo=String(Number(rawItem));
    const abortDetail=new AbortController(),timeDetail=setTimeout(()=>abortDetail.abort(),12000);
    try{

@@ -1,2 +1,2 @@
-0.6.4
-Metropolitan court validation gate and freshness warnings; preserve prior valid snapshots on failure.
+0.6.5
+Show last court collection failure separately from verified listing data.

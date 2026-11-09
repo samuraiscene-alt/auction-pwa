@@ -6,25 +6,87 @@ on:
     paths:
       - .github/workflows/court-case-live-probe.yml
 permissions:
-  contents: read
+  contents: write
 jobs:
   probe:
     runs-on: ubuntu-24.04
     timeout-minutes: 3
+    concurrency:
+      group: court-case-probe-report
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - name: Run structural tests before any live call
+        id: offline
         run: node tests/court-status-probe.cjs
       - name: Single diagnostic attempt against published sample
+        id: live
+        if: steps.offline.outcome == 'success'
+        continue-on-error: true
         shell: bash
         run: |
-          set -o pipefail
-          node scripts/probe-court-case-status.cjs 'court-B000210|2008타경25092|1'
+          set +e
+          node scripts/probe-court-case-status.cjs 'court-B000210|2008타경25092|1' > /tmp/court-probe-output.json 2>/tmp/court-probe-error.txt
+          code=$?
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          echo "Court single-request probe completed; raw response and values are not logged or stored."
+          exit "$code"
+      - name: Create redacted diagnostic summary
+        if: always()
+        env:
+          OFFLINE_OUTCOME: ${{ steps.offline.outcome }}
+          LIVE_OUTCOME: ${{ steps.live.outcome }}
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const dataFile='/tmp/court-probe-output.json';
+          let parsed=null;
+          if(fs.existsSync(dataFile)){
+            try{parsed=JSON.parse(fs.readFileSync(dataFile,'utf8'));}catch{}
+          }
+          const passed=process.env.LIVE_OUTCOME==='success'&&parsed?.caseIdentityMatched===true;
+          const errorText=fs.existsSync('/tmp/court-probe-error.txt')?
+            fs.readFileSync('/tmp/court-probe-error.txt','utf8'):'';
+          const reason=process.env.OFFLINE_OUTCOME!=='success'?'offline_test_failed':
+            passed?'case_identity_matched':
+            /ENOTFOUND|EAI_AGAIN|getaddrinfo/i.test(errorText)?'dns_failure':
+            /AbortError|timeout/i.test(errorText)?'timeout':
+            /access rejected|HTTP 403|HTTP 429/i.test(errorText)?'access_rejected':
+            /case identity not matched/i.test(errorText)?'identity_mismatch':
+            'not_verified';
+          const report={
+            schemaVersion:1,attemptedAt:new Date().toISOString(),outcome:passed?'case_schema_observed':'unverified',
+            reason,caseIdentityMatched:passed,lotIdentityMatched:passed&&parsed?.lotIdentityMatched===true,
+            legalStatusVerified:false,rawResponseSaved:false,
+            note:'진단 상태만 기록. 매각·취하·기일변경의 법원 확정정보 아님.'
+          };
+          fs.writeFileSync('/tmp/court-probe-summary.json',JSON.stringify(report,null,2)+'\n');
+          console.log('Redacted diagnostic:',JSON.stringify(report));
+          NODE
+      - name: Publish redacted diagnostic summary only
+        if: always()
+        shell: bash
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for retry in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            mkdir -p data
+            cp /tmp/court-probe-summary.json data/court-case-probe-status.json
+            git add data/court-case-probe-status.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "diagnostic: record redacted case probe result"
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 2
+          done
+          echo "::error::Could not publish redacted diagnostic summary"
+          exit 1
       - name: Diagnostics boundary
         if: always()
         run: |
-          echo "This workflow never publishes court status or modifies stored auction items."
-          echo "An HTTP success alone never certifies sale, withdrawal, or postponement."
+          echo "Legal auction status remains unverified. No auction list or personal records changed."

@@ -134,3 +134,9 @@
 - 두 공식 조회에 하나의 12초 제한을 공유하던 진단 도구를 각 요청 개별 12초 제한으로 수정. 조회 실패시 list/detail 단계를 비식별 `failedStage`로 기록. 재시도 및 우회접속 없음.
 - 사건 **신원 교차검증 성공은 법적 상태 해석과 별개**. `legalStatusVerified=false` 유지. 법원 공식 상태코드 의미 대응표 확보 전까지 매각/취하/변경 상태 자동 판정 금지.
 - 참고 공개 기술자료: https://github.com/NomaDamas/k-skill/blob/main/court-auction-notice-search/instruction.md (서드파티 필드 매핑 기술자료, 공식 법원 코드표 아님). 법원 사건구분 안내 https://www.scourt.go.kr/portal/information/event/guide/index3.html 의 '013=타경'는 사건구분코드이며 매각/취하 상태코드가 아님.
+
+## 2026-11-10 실서버 상태 원시코드 채증 성공 (자동 해석 금지)
+- 단건 목록·상세의 사건/물건 신원 교차검증 `detailCaseCrossChecked=true`를 전제로 `scripts/extract-court-status-evidence.cjs`와 `tests/court-status-evidence.cjs` 추가. 타 물건 코드, 상태 의미 추정, 당사자정보/원본 응답 저장을 차단하고, 짧은 영숫자 코드와 날짜만 남김. 저장소 기준 오프라인 회귀 통과.
+- `data/court-case-list-bridge-status.json` 2026-11-09T22:42:52.023Z 실서버 결과: `statusEvidence.identityVerified=true`, `caseProgressCode=0002100001`, `caseSuspensionCode=03`, `lotStatusCode=01`, `lotProgressFlag=Y`, `listStatusCode=01`, 기일 20261015 `resultCode=002`/`kindCode=01`. **각 코드의 법적 뜻은 확인되지 않았으므로 `legalStatusVerified=false`로 유지.**
+- 공개 웹 탐색에서 법원 내부 `auctnDxdyRsltCd`, `auctnGdsStatCd`에 대해 신뢰할 수 있는 공식 의미 대응표 확보 실패. 여러 민간 제공처가 진행상태 API를 제공하지만 당사 API 정의와 법원 코드표가 일치하는지 미확인(예: https://hyphen.im/product/view?seq=207, https://apick.app/dev_guide/court_auction). 민간 코드표를 공식 기준으로 대체하지 않음.
+- 해당 증거는 표본 단 한 물건에 대한 원시 데이터 채증이며, 매각/유찰/취하/정지/변경 상태를 나타낸다는 뜻이 아님. 현재 앱 `v0.7.5`, 자동 상태 확정 비활성화, 개인자료 및 목록 불변.

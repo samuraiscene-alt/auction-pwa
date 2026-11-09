@@ -1,0 +1,35 @@
+name: Auction manual record browser regression
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - app.js
+      - style.css
+      - sw.js
+      - tests/manual-record-regression.cjs
+      - .github/workflows/manual-record-regression.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  manual-record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test runner
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Launch static site
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/auction-http.log 2>&1 &
+          sleep 2
+      - name: Browser regression
+        run: node tests/manual-record-regression.cjs

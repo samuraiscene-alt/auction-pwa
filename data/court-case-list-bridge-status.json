@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-09T22:09:32.013Z",
+  "attemptedAt": "2026-11-09T22:09:40.336Z",
   "outcome": "unverified",
   "reason": "not_recorded",
   "exactDisplayLotRows": 0,
@@ -9,6 +9,11 @@
   "docidFieldPresent": false,
   "internalCaseFormatObserved": "unavailable",
   "detailCaseCrossChecked": false,
+  "detailInternalCaseConsistent": false,
+  "detailLotRowUnique": false,
+  "docidFormat": "unavailable",
+  "docidExactlyMatches": false,
+  "listCsNoExactlyMatches": false,
   "legalStatusVerified": false,
   "rawResponseSaved": false
 }

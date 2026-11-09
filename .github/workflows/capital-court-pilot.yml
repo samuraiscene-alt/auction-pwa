@@ -18,7 +18,7 @@ jobs:
   collect:
     runs-on: ubuntu-24.04
     concurrency:
-      group: auction-metropolitan-collection
+      group: pages
       cancel-in-progress: false
     environment:
       name: github-pages

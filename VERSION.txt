@@ -1,2 +1,2 @@
-0.6.5
-Show last court collection failure separately from verified listing data.
+0.6.6
+Court collection failure reason categories and safe previous-list retention.

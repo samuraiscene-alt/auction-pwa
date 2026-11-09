@@ -1,5 +1,6 @@
 // Cloudflare Worker, HTTPS court lookup gateway. No persistence.
 const API='https://www.courtauction.go.kr/pgj/pgj15A/selectAuctnCsSrchRslt.on';
+const DETAIL_API='https://www.courtauction.go.kr/pgj/pgj15B/selectAuctnCsSrchRslt.on';
 const ALLOWED_ORIGIN='https://samuraiscene-alt.github.io';
 const headers={'content-type':'application/json; charset=utf-8','cache-control':'no-store','access-control-allow-origin':ALLOWED_ORIGIN,'access-control-allow-methods':'GET, OPTIONS','vary':'Origin'};
 const respond=(body,status=200)=>new Response(JSON.stringify(body),{status,headers});
@@ -16,6 +17,42 @@ const matchingCase=(base,wanted)=>{
  // Verified public court records encode '2023타경4869' as '20230130004869'.
  return !!m && /^\d{14}$/.test(internal) && internal===m[1]+'0130'+m[2].padStart(6,'0');
 };
+
+// Restrict auto-entry to documented single-valued fields; ambiguous rounds stay null.
+const amount=value=>{
+ if(value===null||value===undefined||String(value).trim()==='')return null;
+ const raw=String(value).trim().replace(/,/g,'');
+ if(!/^\\d{1,15}$/.test(raw))return null;
+ const num=Number(raw);
+ return Number.isSafeInteger(num)&&num>0?num:null;
+};
+const dateOnly=value=>{
+ const s=String(value??'').replace(/[-.]/g,'').trim();
+ if(!/^20\\d{6}$/.test(s))return null;
+ const y=Number(s.slice(0,4)),m=Number(s.slice(4,6)),d=Number(s.slice(6,8));
+ const dt=new Date(Date.UTC(y,m-1,d));
+ return dt.getUTCFullYear()===y&&dt.getUTCMonth()===m-1&&dt.getUTCDate()===d?
+  s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6):null;
+};
+const readItem=(json,courtCode,caseNo,itemNo)=>{
+ const data=json?.data,d=data?.dma_result,base=d?.csBaseInfo,item=d?.dspslGdsDxdyInfo;
+ if(String(json?.status)!=='200'||json?.errors||!d||!base||!item||data?.ipcheck===false)
+   return {error:'물건 상세정보를 확인할 수 없습니다.',status:502};
+ if(String(base.cortOfcCd||'').toUpperCase()!==courtCode.toUpperCase()||!matchingCase(base,caseNo))
+   return {error:'사건번호 또는 법원이 일치하지 않습니다.',status:409};
+ if(String(Number(item.dspslGdsSeq))!==String(itemNo))
+   return {error:'물건번호가 일치하지 않습니다.',status:409};
+ const prices=['fstPbancLwsDspslPrc','scndPbancLwsDspslPrc','thrdPbancLwsDspslPrc','fothPbancLwsDspslPrc'].map(k=>amount(item[k])).filter(v=>v!==null);
+ const addressCandidates=Array.isArray(d.gdsDspslObjctLst)?d.gdsDspslObjctLst.map(x=>String(x?.userPrintSt||'').trim()).filter(Boolean):[];
+ const address=addressCandidates.length===1&&addressCandidates[0].length<=250?addressCandidates[0]:null;
+ return {verified:true,source:'courtauction.go.kr',courtCode:courtCode.toUpperCase(),caseNo,itemNo,
+  checkedAt:new Date().toISOString(),courtName:String(base.cortOfcNm||'').slice(0,100),
+  address,appraisalWon:amount(item.aeeEvlAmt),
+  minimumWon:prices.length===1?prices[0]:null,
+  saleDate:dateOnly(item.dspslDxdyYmd),
+  priceAmbiguous:prices.length>1,
+  notice:'법원 원문과 비교한 후 빈칸에만 반영하세요. 기일은 변경될 수 있습니다.'};
+};
 export default {
  async fetch(request) {
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers});
@@ -23,11 +60,28 @@ export default {
   if(origin&&origin!==ALLOWED_ORIGIN)return respond({error:'Origin not allowed'},403);
   if(request.method!=='GET')return respond({error:'GET only'},405);
   const url=new URL(request.url);
-  if(url.pathname!=='/case')return respond({service:'court-case-gateway',ready:true});
+  if(url.pathname!=='/case'&&url.pathname!=='/item')return respond({service:'court-case-gateway',ready:true});
   const courtCode=String(url.searchParams.get('courtCode')||'').trim();
   const caseNo=normalizeCase(url.searchParams.get('caseNo'));
   if(!/^[A-Za-z][A-Za-z0-9]{3,12}$/.test(courtCode)||!caseNo)
     return respond({error:'법원 코드 또는 사건번호를 확인해 주세요.'},400);
+  if(url.pathname==='/item'){
+   const rawItem=String(url.searchParams.get('itemNo')||'');
+   if(!/^[1-9]\\d{0,3}$/.test(rawItem))return respond({error:'물건번호를 입력해 주세요.'},400);
+   const itemNo=String(Number(rawItem));
+   const abortDetail=new AbortController(),timeDetail=setTimeout(()=>abortDetail.abort(),12000);
+   try{
+    const r=await fetch(DETAIL_API,{method:'POST',
+      headers:{'Content-Type':'application/json; charset=UTF-8','Accept':'application/json','Referer':'https://www.courtauction.go.kr/pgj/index.on'},
+      body:JSON.stringify({dma_srchGdsDtlSrch:{csNo:caseNo,cortOfcCd:courtCode,dspslGdsSeq:itemNo,pgmId:'PGJ15BM01',srchInfo:''}}),
+      signal:abortDetail.signal});
+    if(!r.ok)return respond({error:'법원 물건 상세조회에 실패했습니다.'},502);
+    const parsed=readItem(await r.json(),courtCode,caseNo,itemNo);
+    if(parsed.error)return respond({error:parsed.error},parsed.status);
+    return respond(parsed);
+   }catch{return respond({error:'법원 물건 상세조회 연결에 실패했습니다.'},502);}
+   finally{clearTimeout(timeDetail);}
+  }
   const abort=new AbortController(),deadline=setTimeout(()=>abort.abort(),12000);
   try {
    const response=await fetch(API,{method:'POST',

@@ -45,7 +45,7 @@ jobs:
           node --input-type=module <<'NODE'
           const probes=[
             {level:'medium',name:'selectMclLst',key:'code',parent:'20000',arrays:['mclLst','usgMclLst']},
-            {level:'small',name:'selectSclLst',key:'code',parent:'21200',arrays:['sclLst','usgSclLst']}
+            {level:'small',name:'selectSclLst',key:'code',parent:'20100',arrays:['sclLst','usgSclLst']}
           ];
           for(const p of probes){
             const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);

@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.4.7';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.4.8';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -615,6 +615,20 @@ async function loadPdfTextEngine(){
  }).catch(err=>{pdfJsPromise=null;throw err;});
  return pdfJsPromise;
 }
+
+function pdfSearchIndex(value){
+ // Ignore PDF extractor-inserted spaces, line breaks and zero-width characters,
+ // but preserve original UTF-16 offsets to show the matching excerpt.
+ const text=String(value||'');
+ let folded='',positions=[],ends=[],cursor=0;
+ for(const symbol of text){
+  const start=cursor;cursor+=symbol.length;
+  if(/[\s\u200B-\u200D\u2060\uFEFF]/u.test(symbol))continue;
+  const chars=symbol.normalize('NFKC').toLocaleLowerCase('ko');
+  for(let i=0;i<chars.length;i++){folded+=chars[i];positions.push(start);ends.push(cursor);}
+ }
+ return {folded,positions,ends};
+}
 function createAttachmentViewer(){
  const overlay=$('#attachmentViewer'),content=$('#attachmentViewerContent'),bar=$('#attachmentViewerName'),zoom=$('#attachmentViewerZoom'),pdfControls=$('#attachmentPdfControls');
  // Mount outside the scrolling/transformed app so iOS fixed positioning uses the actual viewport.
@@ -804,13 +818,19 @@ function createAttachmentViewer(){
  function closeSearch(){
   searchSeq++;
   searchPanel.hidden=true;
+  searchQuery.value='';
+  searchResults.replaceChildren();
+  searchStatus.textContent='검색어를 입력해 주세요.';
   searchQuery.blur();
  }
  $('#attachmentSearchOpen').onclick=()=>{
   if(!currentFile||!(currentFile.type==='application/pdf'||/\.pdf$/i.test(currentFile.name)))return;
-  searchPanel.hidden=false;
-  searchStatus.textContent='검색어를 입력해 주세요.';
+  // Each opening starts a new search session with a blank input and empty results.
+  searchSeq++;
+  searchQuery.value='';
   searchResults.replaceChildren();
+  searchStatus.textContent='검색어를 입력해 주세요.';
+  searchPanel.hidden=false;
   searchQuery.focus();
  };
  $('#attachmentSearchClose').onclick=closeSearch;
@@ -824,7 +844,8 @@ function createAttachmentViewer(){
   try{
    const doc=await openPdfDocument();
    if(sequence!==searchSeq||!currentFile||currentFile.id!==fileId)return;
-   const lowerQuery=query.toLocaleLowerCase('ko');
+   const lowerQuery=pdfSearchIndex(query).folded;
+   if(!lowerQuery){searchStatus.textContent='검색할 글자를 입력해 주세요.';return;}
    let hits=0,scanned=0,stop=false;
    const fragment=document.createDocumentFragment();
    for(let i=1;i<=doc.numPages;i++){
@@ -833,10 +854,12 @@ function createAttachmentViewer(){
     const textData=await pdfPage.getTextContent();
     if(sequence!==searchSeq||!currentFile||currentFile.id!==fileId)return;
     const whole=textData.items.map(item=>String(item.str||'')+(item.hasEOL?'\n':' ')).join('').replace(/[ \t]+/g,' ');
-    const folded=whole.toLocaleLowerCase('ko');
+    const indexed=pdfSearchIndex(whole);
     let index=0,from=0;
-    while((index=folded.indexOf(lowerQuery,from))!==-1){
-     const fromSnippet=Math.max(0,index-28),toSnippet=Math.min(whole.length,index+query.length+50);
+    while((index=indexed.folded.indexOf(lowerQuery,from))!==-1){
+     const matchStart=indexed.positions[index];
+     const matchEnd=indexed.ends[index+lowerQuery.length-1];
+     const fromSnippet=Math.max(0,matchStart-28),toSnippet=Math.min(whole.length,matchEnd+50);
      const snippet=whole.slice(fromSnippet,toSnippet).replace(/\s+/g,' ');
      const button=document.createElement('button');
      button.type='button';button.className='attachment-search-hit';
@@ -858,7 +881,7 @@ function createAttachmentViewer(){
    if(sequence!==searchSeq||!currentFile||currentFile.id!==fileId)return;
    searchResults.replaceChildren(fragment);
    searchStatus.textContent=hits===0
-    ?'일치하는 문장을 찾지 못했어요. 스캔 문서는 별도 글자 인식이 필요해요.'
+    ?'일치하는 문장을 찾지 못했어요. 띄어쓰기는 무시해서 검색했으며, 스캔 문서는 문자 인식이 필요해요.'
     :hits+'개 검색 결과 · '+scanned+'/'+doc.numPages+'페이지 확인'+(stop?' · 처음 80개만 표시':'');
   }catch(err){
    if(sequence!==searchSeq)return;

@@ -2,12 +2,13 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.6.5 (법원 데이터 안전검사·갱신 실패 즉시 경고)
+- 현재 버전: v0.6.6 (법원 데이터 안전검사·갱신 실패 즉시 경고)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.
 - iOS 한글 조합: 라이브 검색 DOM 갱신 금지. 검색 완료 키 또는 화면의 검색 버튼으로 결과 반영.
 - 형광펜 2탭: splitNoteUnits()는 Intl.Segmenter(단어/글자)로 렌더할 선택 범위를 만들고, 형광펜 읽기 화면에서 시작·끝 두 번 터치해 선택. 기본 iOS long-press 선택 미사용. 기존 마크를 누르면 포스트잇. annotations 데이터 포맷 그대로.
+- v0.6.6: 최근 실패 reason을 스냅샷과 분리된 data/capital-court-status.json에 기록; connection_timeout/conflicting_records/validation_rejected. GitHub Actions UDP/TCP 환경에서 법원 엔드포인트 ConnectTimeout 확인됨. 수집기 누락 물건번호를 강제 1번으로 치환하지 않도록 변경. SW v066. 실제 법원 접속 정상화는 미확인.
 - v0.6.5: data/capital-court-status.json에 마지막 수집 시도 성공/실패. 앱 화면에서 마지막 시도 실패가 snapshot 수집일보다 최신이면 경고. 검증 실패 시 데이터 파일은 불변. SW v065.
 - v0.6.4: scripts/validate-capital-snapshot.cjs가 수집 결과를 배포 전에 검사. 이전 수집본과 변경/소실 비교, 잘못된 자료면 워크플로우 실패로 기존 스냅샷 유지. app.js는 30시간 이상 지난 데이터 경고·검증 여부·수집 시각을 표시. 직접 등록/관심 기록 불변. SW v064.
 - v0.6.3: 수도권 자동목록에 <select id=capitalTypeFilter> 추가. 현재 지역에 실제 존재하는 법원 82개 소분류 코드만 옵션으로 표시. `state.capitalType` 코드로 개별 물건을 필터한 뒤 사건별 묶음 유지. 지역 변경 시 전체 분류 초기화. SW v063. Playwright 회귀검증.

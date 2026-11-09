@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-09T22:03:24.142Z",
+  "attemptedAt": "2026-11-09T22:03:40.725Z",
   "outcome": "unverified",
   "reason": "internal_case_id_unmapped",
   "caseIdentityMatched": false,
@@ -10,6 +10,8 @@
   "responseCaseFormat": "digits_only",
   "identityHints": {
     "baseCourtMatches": true,
+    "baseExpCaseExact": false,
+    "baseExpCaseFormat": "unavailable",
     "internalCaseYearMatches": true,
     "internalCaseSerialSuffixMatches": true,
     "relatedDisplayAliasMatched": false,

@@ -1,76 +1,28 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-09T23:25:13.220Z",
-  "outcome": "list_response_observed",
-  "reason": "processed",
-  "failedStage": "none",
-  "exactDisplayLotRows": 1,
+  "attemptedAt": "2026-11-09T23:29:47.394Z",
+  "outcome": "unverified",
+  "reason": "offline_test_failed",
+  "failedStage": "unknown",
+  "exactDisplayLotRows": 0,
   "directInternalCaseMapping": false,
   "csNoFieldPresent": false,
-  "docidFieldPresent": true,
+  "docidFieldPresent": false,
   "internalCaseFormatObserved": "unavailable",
-  "detailCaseCrossChecked": true,
-  "detailInternalCaseConsistent": true,
-  "detailLotRowUnique": true,
-  "docidFormat": "other",
+  "detailCaseCrossChecked": false,
+  "detailInternalCaseConsistent": false,
+  "detailLotRowUnique": false,
+  "docidFormat": "unavailable",
   "docidExactlyMatches": false,
   "listCsNoExactlyMatches": false,
-  "saNoFieldPresent": true,
-  "printCsNoFieldPresent": true,
-  "listSaNoExactlyMatches": true,
+  "saNoFieldPresent": false,
+  "printCsNoFieldPresent": false,
+  "listSaNoExactlyMatches": false,
   "printCsNoMatchesDisplay": false,
   "legalStatusVerified": false,
   "statusEvidence": {
-    "identityVerified": true,
-    "statusEvidenceAvailable": true,
-    "caseProgressCode": "0002100001",
-    "caseSuspensionCode": "03",
-    "lotStatusCode": "01",
-    "lotProgressFlag": "Y",
-    "listStatusCode": "01",
-    "scheduleResultObservations": [
-      {
-        "day": "20261015",
-        "resultCode": "002",
-        "kindCode": "01"
-      }
-    ],
-    "listingDisplayCandidateFieldNames": [
-      "jinstatCd",
-      "mulStatcd",
-      "mulJinYn",
-      "buldNm",
-      "jejosaNm",
-      "carNm",
-      "jiwonNm",
-      "jpDeptNm",
-      "rd1Nm",
-      "rd2Nm",
-      "rdNm",
-      "dspslUsgNm"
-    ],
-    "listingDisplayEvidence": [
-      {
-        "field": "userStPrint",
-        "fieldPresent": false,
-        "exactDisplayLabel": null
-      },
-      {
-        "field": "userLstPrint",
-        "fieldPresent": false,
-        "exactDisplayLabel": null
-      },
-      {
-        "field": "mulStatNm",
-        "fieldPresent": false,
-        "exactDisplayLabel": null
-      },
-      {
-        "field": "maemulStatNm",
-        "fieldPresent": false,
-        "exactDisplayLabel": null
-      }
-    ],
+    "identityVerified": false,
+    "statusEvidenceAvailable": false,
     "legalStatusVerified": false
   },
   "rawResponseSaved": false

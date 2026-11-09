@@ -54,6 +54,26 @@ assert.equal(internalCase.responseCaseFormat,'digits_only');
 assert.equal(internalCase.internalCaseYearMatches,true);
 assert.equal(internalCase.internalCaseSerialSuffixMatches,true);
 assert.equal(internalCase.internalLotRowFound,true);
+assert.equal(internalCase.internalCaseRowsConsistent,true);
+assert.equal(internalCase.matchingLotRowUnique,true);
+const mixed=assessIdentity({data:{
+ dma_csBasInf:{cortOfcCd:'B000210',csNo:'20080130025092'},
+ dlt_dspslGdsDspslObjctLst:[
+  {cortOfcCd:'B000210',csNo:'20080130025092',dspslGdsSeq:'1'},
+  {cortOfcCd:'B000210',csNo:'20080130099999',dspslGdsSeq:'2'}
+ ]
+}},{courtCode:'B000210',caseNo:'2008타경25092',itemNo:'1'});
+assert.equal(mixed.internalCaseRowsConsistent,false);
+assert.equal(mixed.statusDecisionAllowed,false);
+const duplicated=assessIdentity({data:{
+ dma_csBasInf:{cortOfcCd:'B000210',csNo:'20080130025092'},
+ dlt_dspslGdsDspslObjctLst:[
+  {cortOfcCd:'B000210',csNo:'20080130025092',dspslGdsSeq:'1'},
+  {cortOfcCd:'B000210',csNo:'20080130025092',dspslGdsSeq:'1'}
+ ]
+}},{courtCode:'B000210',caseNo:'2008타경25092',itemNo:'1'});
+assert.equal(duplicated.matchingLotRowUnique,false);
+assert.equal(duplicated.statusDecisionAllowed,false);
 assert.equal(internalCase.relatedDisplayAliasMatched,true);
 assert.equal(internalCase.statusDecisionAllowed,false);
 const wrongYear=assessIdentity({data:{

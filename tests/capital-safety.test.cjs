@@ -1,0 +1,33 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const {validateSnapshot}=require('../scripts/validate-capital-snapshot.cjs');
+const data=JSON.parse(fs.readFileSync('data/capital-court-pilot.json','utf8'));
+const copy=x=>JSON.parse(JSON.stringify(x));
+function rejected(name,mutate){
+ const changed=copy(data);mutate(changed);
+ const result=validateSnapshot(changed,data);
+ assert.equal(result.ok,false,name+' must be rejected');
+ console.log('PASS reject:',name,':',result.errors[0]);
+}
+const result=validateSnapshot(data,null);
+assert(result.ok,'Existing published sample baseline must pass structural integrity: '+result.errors.join(','));
+assert.equal(result.summary.validatedItems,274);
+console.log('PASS baseline 274 items validate without claiming they are current');
+rejected('missing regional pages',x=>{x.regions.서울.returned=0});
+rejected('incorrect address region',x=>{x.items[0].region='경기'});
+rejected('invalid sale date',x=>{x.items[0].saleDate='2026-02-30'});
+rejected('negative or invalid price',x=>{x.items[0].minimumWon=-1});
+rejected('duplicated id',x=>{x.items.push(copy(x.items[0]))});
+rejected('empty collection',x=>{x.items=[]});
+const changed=copy(data);
+changed.items[0].minimumWon=Math.floor(changed.items[0].minimumWon*0.8);
+const compare=validateSnapshot(changed,data);
+assert(compare.ok,'A single plausible changed price should not suppress all records');
+assert.equal(compare.summary.changed,1);
+assert(compare.warnings.some(x=>x.includes('값 변경')));
+console.log('PASS detect price changes and warn without calling missing lots sold');
+const vanished=copy(data);
+vanished.items.splice(0,1);
+const compareMissing=validateSnapshot(vanished,data);
+assert(compareMissing.ok&&compareMissing.summary.notSeenInNewSample===1);
+console.log('PASS missing-from-sample warning is not an auction status claim');

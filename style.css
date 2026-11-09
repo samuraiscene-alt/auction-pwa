@@ -787,3 +787,6 @@ html,body{
 
 /* v0.5.7: court hierarchy name inputs. Unverified detailed codes never inferred. */
 .official-form #officialUsageLarge,.official-form #officialUsageMedium,.official-form #officialType{width:100%;min-width:0}
+
+/* v0.5.9: all verified court taxonomy levels are controlled selectors */
+.official-form #officialUsageLarge,.official-form #officialUsageMedium,.official-form #officialType{width:100%;min-width:0}

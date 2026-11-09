@@ -1,2 +1,2 @@
-0.5.6
-Safer court item type selection and compact detail price display; Worker classification requires deployment and validation.
+0.5.7
+Court 3-level classification record structure; exact source names preserved, complete code master not yet verified.

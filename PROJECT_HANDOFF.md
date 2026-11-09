@@ -2,12 +2,13 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.4.7 (PDF 헤더 검색 아이콘 잘림 수정)
+- 현재 버전: v0.4.8 (PDF 띄어쓰기 무시 검색·검색창 초기화)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.
 - iOS 한글 조합: 라이브 검색 DOM 갱신 금지. 검색 완료 키 또는 화면의 검색 버튼으로 결과 반영.
 - 형광펜 2탭: splitNoteUnits()는 Intl.Segmenter(단어/글자)로 렌더할 선택 범위를 만들고, 형광펜 읽기 화면에서 시작·끝 두 번 터치해 선택. 기본 iOS long-press 선택 미사용. 기존 마크를 누르면 포스트잇. annotations 데이터 포맷 그대로.
+- v0.4.8 PDF 검색: pdfSearchIndex()는 공백/줄바꿈/제로폭 문자 제거 및 NFKC 소문자 비교, 원문 위치 배열로 snippet 유지. 검색 패널을 닫거나 다시 열면 검색어/결과/상태 초기화·searchSeq 증가. SW v048 APP_VERSION 0.4.8.
 - v0.4.7 상단 PDF UI: #attachmentSearchOpen은 돋보기 SVG 아이콘으로 42px 고정, 검색 기능은 그대로 유지. #attachmentViewerName은 flex min-width:0 ellipsis, 닫기 버튼도 42px 고정. SW v047 / app 0.4.7.
 - v0.4.6 PDF 검색: #attachmentSearchOpen 버튼은 상단에, search panel overlay (하단 버튼 수직 크기 변경 없음). getTextContent로 각 페이지 문자열 검색, 최대 80 결과, 검색 결과 누르면 page 직접 이동. searchSeq로 이전 검색 무효화. 스캔 PDF OCR 미지원. v046/app 0.4.6.
 - v0.4.5 PDF 페이지: input → button #attachmentPdfJump (키보드 없는 picker). #attachmentPagePicker bottom sheet, 44px scroll snap wheel, 1..numPages, 취소/이동, 기존 렌더 처리 재사용. cache v045, app v0.4.5.

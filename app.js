@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.6.8';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.6.9';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -1342,6 +1342,8 @@ function capital(){
    <div class="line"><span class="muted">감정평가액</span><strong>${escapeHtml(formatAmount(x.appraisalWon))}</strong></div>
    <div class="line"><span class="muted">최저매각가</span><strong>${escapeHtml(formatAmount(x.minimumWon))}</strong></div>
    <div class="line"><span class="muted">매각기일</span><strong>${escapeHtml(x.saleDate||'미확인')}</strong></div>
+   <button type="button" class="secondary full-secondary" data-capital-check="${escapeHtml(x.id)}">법원 서버에서 이 물건 재조회</button>
+   <p class="helper" data-capital-result="${escapeHtml(x.id)}" aria-live="polite">재조회 전 · 법원 원문 확인 필요</p>
    <button type="button" class="secondary full-secondary" data-capital-official="1">법원 원문에서 사건 확인 ↗</button>
   </div>`;
 
@@ -1385,6 +1387,49 @@ function capital(){
  }).join('')}
  ${grouped.length>state.capitalLimit?`<button class="secondary full-secondary" type="button" id="capitalMore">다음 40개 사건 더 보기 (${grouped.length-state.capitalLimit}건 남음)</button>`:''}
  <p class="helper">이 목록은 기기 내 직접 등록 기록과 별도이며 관심물건·일정에는 자동 추가되지 않습니다.</p>`;
+}
+async function verifyCapitalItem(id,button){
+ const snapshot=capitalSnapshot,item=snapshot?.items?.find(x=>x.id===id);
+ if(!item)return;
+ const output=button.parentElement.querySelector('[data-capital-result]');
+ if(!output)return;
+ button.disabled=true;
+ output.textContent='법원 서버에서 조회하는 중…';
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
+ try{
+  const query=new URLSearchParams({courtCode:item.courtCode,caseNo:item.caseNo,itemNo:item.itemNo});
+  const response=await fetch(COURT_ITEM_URL+'?'+query.toString(),{signal:controller.signal,cache:'no-store'});
+  if(!response.ok)throw Error('법원 원문 재조회에 실패했습니다 (HTTP '+response.status+').');
+  const fresh=await response.json();
+  if(fresh?.verified!==true||fresh.courtCode!==item.courtCode||fresh.caseNo!==item.caseNo||
+    String(fresh.itemNo)!==String(item.itemNo)||fresh.source!=='courtauction.go.kr')
+    throw Error('법원/사건/물건번호 일치 여부를 확인하지 못했습니다.');
+  const changes=[],unknown=[],equal=[];
+  const compare=(key,label)=>{
+   const old=item[key],latest=fresh[key];
+   if(!Number.isSafeInteger(old)&&key!=='saleDate'||latest===null||latest===undefined||key==='saleDate'&&(!old||!latest)){
+    unknown.push(label);return;
+   }
+   if(old!==latest)changes.push(label+' (저장 '+(key==='saleDate'?old:prettyPrice(old))+' / 재조회 '+(key==='saleDate'?latest:prettyPrice(latest))+')');
+   else equal.push(label);
+  };
+  compare('appraisalWon','감정평가액');
+  if(fresh.priceAmbiguous===true)unknown.push('최저매각가 (법원 조회값이 여러 개)');
+  else compare('minimumWon','최저매각가');
+  compare('saleDate','매각기일');
+  const prefix=changes.length?'⚠ 법원 재조회 값과 차이가 있습니다: '+changes.join(' / '):
+    unknown.length?'⚠ 재조회했지만 일부 가격·기일을 대조하지 못했습니다.':
+    '✓ 법원 재조회 값과 수집된 가격·기일이 일치합니다.';
+  output.textContent=prefix+
+   (equal.length?' · 일치: '+equal.join(', '):'')+
+   (unknown.length?' · 미확인: '+unknown.join(', '):'')+
+   ' · 낙찰·취하 등 현재 진행상태는 별도 확인이 필요합니다.';
+ }catch(error){
+  output.textContent='⚠ 재조회 실패: '+String(error?.name==='AbortError'?'시간 초과':error?.message||'연결 오류')+
+   ' · 저장된 정보가 정확하다는 뜻이 아닙니다. 법원 원문에서 확인하세요.';
+ }finally{
+  clearTimeout(timer);button.disabled=false;
+ }
 }
 async function loadCapital(force=false){
  if(capitalLoadStatus==='loading'||(capitalLoadStatus==='ready'&&!force))return;
@@ -1528,6 +1573,7 @@ if($('#capitalSearchForm'))$('#capitalSearchForm').onsubmit=event=>{
  event.preventDefault();state.capitalQuery=$('#capitalSearch').value.trim();state.capitalLimit=40;render();
 };
 if($('#capitalMore'))$('#capitalMore').onclick=()=>{state.capitalLimit+=40;render();};
+document.querySelectorAll('[data-capital-check]').forEach(button=>button.onclick=()=>void verifyCapitalItem(button.dataset.capitalCheck,button));
 document.querySelectorAll('[data-capital-official]').forEach(button=>button.onclick=()=>window.open(OFFICIAL_AUCTION_URL,'_blank','noopener,noreferrer'));
 if(state.page==='capital'&&capitalLoadStatus==='unloaded')void loadCapital();
 if($('#officialUsageLarge')){

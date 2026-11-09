@@ -1,2 +1,2 @@
-0.6.3
-Metropolitan court list official usage-category dropdown filter, without changing original records.
+0.6.4
+Metropolitan court validation gate and freshness warnings; preserve prior valid snapshots on failure.

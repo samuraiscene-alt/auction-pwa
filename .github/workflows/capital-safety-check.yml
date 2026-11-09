@@ -6,6 +6,8 @@ on:
       - scripts/validate-capital-snapshot.cjs
       - scripts/capital-court-pilot.cjs
       - tests/capital-safety.test.cjs
+      - tests/capital-components.test.cjs
+      - scripts/merge-capital-components.cjs
       - .github/workflows/capital-safety-check.yml
   workflow_dispatch:
 permissions:
@@ -22,5 +24,8 @@ jobs:
         run: |
           node --check scripts/capital-court-pilot.cjs
           node --check scripts/validate-capital-snapshot.cjs
+          node --check scripts/merge-capital-components.cjs
       - name: Verify accepted baseline and rejected corrupt data
-        run: node tests/capital-safety.test.cjs
+        run: |
+          node tests/capital-safety.test.cjs
+          node tests/capital-components.test.cjs

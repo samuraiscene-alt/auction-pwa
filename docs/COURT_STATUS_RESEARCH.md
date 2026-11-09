@@ -152,3 +152,9 @@
 - 공개된 법원 UI 원본 자료(https://gist.github.com/wiggleji/e091fc7827d7032ce638a162777c0602)의 매각기일 결과 렌더링 코드에 `pgjUtil.getSTGcodeSystemNm('LJH', 'AUCTN_DXDY_RSLT_CD', gdsDspslDxdyLst[i].auctnDxdyRsltCd)`가 확인됨. 종류는 `PGJ/AUCTN_DXDY_KND_CD`를 별도로 사용함. 이것은 **코드 그룹 식별**의 근거이며, 예를 들어 `002`가 매각/유찰/취하 중 무엇인지를 보여주는 코드표는 아님.
 - `scripts/court-status-meaning-gate.cjs`, `tests/court-status-meaning-gate.cjs` 추가. 공식 화면의 같은 법원·사건·물건·기일 결과임을 사람이 실제로 확인한 비교증거만 수용 대상으로 제한하고, 민간 사이트/다른 코드 그룹/다른 물건·기일/중복 행을 거부. 현재는 비교 일치하더라도 항상 `verified:false` 및 `label:null`로 자동 상태 표시를 차단.
 - 회귀검증 통과. 공식 코드표/공식 UI의 동일 사례 결과를 아직 직접 읽어 확정하지 못했으므로 원시코드 `01`/`002` 등의 뜻은 **미확인**. 매각·유찰·취하·변경 자동판정 미구현.
+
+## 2026-11-10 목록 표시문구 직접 대조 진단
+- 공식 법원 화면 소스에서 매각기일 결과를 `pgjUtil.getSTGcodeSystemNm('LJH','AUCTN_DXDY_RSLT_CD',code)`로 표시한다는 사실 재확인. 이는 코드 **이름 조회 방식**이며 원시 `002` 등의 법적 의미를 확정하는 값 대응표는 아님. 참고: https://gist.github.com/wiggleji/e091fc7827d7032ce638a162777c0602
+- 한편 검색 목록의 `userStPrint`, `userLstPrint`, `mulStatNm`, `maemulStatNm`에 화면 표시 문구가 있을 수 있는지 확인하는 **진단만** 추가. 공식 목록과 상세의 사건·물건 신원이 완전히 일치하는 경우에만 처리.
+- 반환 문구가 `진행/매각/유찰/취하/변경/연기/정지/취소/종국/미종국/신건` 가운데 하나와 정확히 같을 때만 `exactDisplayLabel`로 기록. HTML·주소·기타 문구는 null 처리하고 원문 및 당사자정보를 저장하지 않음. 목록 표시 텍스트는 개별 매각기일 결과와 다를 수 있으므로 원시 `auctnDxdyRsltCd`와 자동 매핑하거나 법적 확정 상태로 사용하지 않음.
+- 오프라인 회귀 테스트 통과. 새 보고서의 `listingDisplayEvidence` 필드 실서버 결과 확인 전까지 표시문구 확보 성공 주장 금지. 앱 v0.7.5/805건 기존 스냅샷 및 개인 저장자료 불변.

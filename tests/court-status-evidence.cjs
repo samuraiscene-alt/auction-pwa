@@ -45,7 +45,7 @@ assert.equal(display.listingDisplayEvidence.find(x=>x.field==='mulStatNm').exact
 assert.equal(display.listingDisplayEvidence.find(x=>x.field==='userLstPrint').exactDisplayLabel,null);
 assert(!JSON.stringify(display).includes('서울 주소'));
 assert.equal(display.legalStatusVerified,false);
-assert.deepEqual(display.listingDisplayCandidateFieldNames,[]);
+assert.deepEqual(display.listingDisplayCandidateFieldNames,['mulStatcd']);
 const observed=extractStatusEvidence([{...rows[0],jinstatCd:'J7',mulJinYn:'N',buldNm:'PRIVATE',jiwonNm:'PRIVATE'}],detail,identity,verified);
 assert.equal(observed.listProgressCode,'J7');
 assert.equal(observed.listProgressFlag,'N');

@@ -1,2 +1,2 @@
-0.6.7
-Composite court auction lots preserve land/building/address components. Price/date disagreement remains blocked.
+0.6.8
+Expand safe metropolitan limited-pages listing collection to five pages per region; preserve fail-closed publishing.

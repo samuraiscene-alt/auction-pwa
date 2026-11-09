@@ -42,7 +42,7 @@ jobs:
           let result=null;
           try { result=JSON.parse(fs.readFileSync('/tmp/case-list-bridge.json','utf8')); } catch {}
           const error=fs.existsSync('/tmp/case-list-error.txt')?fs.readFileSync('/tmp/case-list-error.txt','utf8'):'';
-          const reason=/BRIDGE_REASON=([a-z_]+)/.exec(error)?.[1]||'not_recorded';
+          const reason=process.env.OFFLINE!=='success'?'offline_test_failed':process.env.QUERY==='skipped'?'query_skipped':/BRIDGE_REASON=([a-z_]+)/.exec(error)?.[1]||'unclassified_query_failure';
           const valid=process.env.OFFLINE==='success'&&process.env.QUERY==='success'&&
             result?.schemaVersion===1&&Number.isInteger(result.exactDisplayLotRows);
           const report={

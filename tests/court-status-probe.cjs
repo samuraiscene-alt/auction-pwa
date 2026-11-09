@@ -18,6 +18,13 @@ const exact=assessIdentity({data:{lots:[{boCd:'B000210',srnSaNo:'2026타경12345
 assert.equal(exact.caseIdentityMatched,true);
 assert.equal(exact.lotIdentityMatched,true);
 assert.equal(exact.statusDecisionAllowed,false);
+assert.equal(exact.caseIdentityMatched&&exact.lotIdentityMatched,true);
+assert.equal(otherLotCaseStub(),false);
+function otherLotCaseStub(){
+ const result=assessIdentity({data:{lots:[{boCd:'B000210',srnSaNo:'2026타경54321',maemulSer:'2'}]}},expected);
+ return result.caseIdentityMatched||result.lotIdentityMatched;
+}
+
 const otherLot=assessIdentity({data:{lots:[{boCd:'B000210',srnSaNo:'2026타경12345',maemulSer:'1'}]}},expected);
 assert.equal(otherLot.caseIdentityMatched,true);
 assert.equal(otherLot.lotIdentityMatched,false);

@@ -70,3 +70,10 @@
 - 진단 작업이 실제 기록 파일을 생성했다는 점은 확인되었지만, 법원 서버와의 HTTP 통신 자체/정확한 요청 스키마 성공 여부는 결과만으로 확정할 수 없음.
 - 신원 불일치 원인 조사용으로 `scripts/probe-court-case-status.cjs`가 실패 시에도 원본 값 없이 구조/필드명만 stdout JSON으로 내보내며, 워크플로우는 필드명·행수만 제한하여 `responseShape`에 기록하도록 수정.
 - 이 구조 진단용 후속 워크플로우의 실행 결과는 아직 미확인. 매각·취하 자동 판정·실사용 데이터 변경 없음.
+
+## 2026-11-10 공식 응답 구조 확인 이후 수정
+- 실제 `data/court-case-probe-status.json`에 `responseShape`가 기록됨. 법원 응답 구조에는 `dma_csBasInf` (cortOfcCd, csNo, csProgStatCd), `dlt_dspslGdsDspslObjctLst` (cortOfcCd, csNo, dspslGdsSeq, auctnGdsStatCd), `dlt_rletCsGdsDtsDxdyInf` (dspslGdsSeq, auctnDxdyRsltCd) 등이 확인됨. **코드값 자체 및 의미는 확인되지 않았음**.
+- 기존 `assessIdentity()`가 `dspslGdsSeq`를 인식하지 못해 물건번호 불일치의 원인이 될 수 있었음. 해당 필드를 추가하고, 법원/사건번호가 같은 행일 때에만 물건번호가 일치한 것으로 인정하도록 수정.
+- 사건번호 `csNo`가 화면용 사건번호인지 내부 숫자코드인지 알 수 없어, 값 자체를 출력하지 않고 `responseCaseFormat` 형식 분류만 결과에 저장하도록 수정. 임의 변환/매칭은 하지 않음.
+- 결과 파일의 마지막 확인 항목은 여전히 `identity_mismatch`; 실서버 상태 신원 검증 실패 및 자동 상태 표시 비활성화 유지.
+- 수정된 저장소 스크립트와 오프라인 테스트 실행 통과. GitHub Actions 최신 실행 결과와 법원 상태 코드 의미 검증은 별도 미확인.

@@ -113,6 +113,8 @@ async function createTestCase(page){
   await page.locator('#capitalTypeFilter').selectOption('전체');
   assert.equal(await page.locator('.capital-record').count(),40,'all categories restored to initial 40 cases');
   assert((await page.locator('.capital-property').count())>40,'all item numbers within case groups preserved');
+  assert((await page.locator('#capitalStatus').textContent()).includes('마지막 수집'),'shows last collection timestamp');
+  assert((await page.locator('body').textContent()).includes('안전검증 기록'),'legacy catalog marked unverified by new safety gate');
   console.log('PASS court-category dropdown filters individual auction items');
   await page.locator('[data-capital-region="서울"]').click();
   assert((await page.locator('body').textContent()).includes('수집된 물건'),'Seoul filter renders');

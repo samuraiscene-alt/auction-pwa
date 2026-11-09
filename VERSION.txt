@@ -1,2 +1,2 @@
-0.6.9
-Five-page metro listing published; per-item read-only court recheck with explicit differences and uncertainties.
+0.7.0
+Expand metropolitan limited listing to eight pages per region and explicitly show unknown sale/withdrawal status.

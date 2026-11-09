@@ -1419,6 +1419,7 @@ if($('#officialUsageLarge')){
   display(midChoices,code?usageChildren('medium',code):[]);
   refreshSmall();
  };
+ large.addEventListener('input',refreshMedium);
  large.addEventListener('change',()=>{middle.value='';small.value='';refreshMedium();});
  middle.addEventListener('change',()=>{small.value='';refreshSmall();});
  middle.addEventListener('input',refreshSmall);

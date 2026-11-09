@@ -3,7 +3,6 @@
 // Read-only, ONE official court case request per invocation.
 // Diagnostic only: never infers status codes, saves raw personal data,
 // or writes production listings. No retries and no bypass on denial.
-const fs=require('node:fs');
 const ENDPOINT='https://www.courtauction.go.kr/pgj/pgj15A/selectAuctnCsSrchRslt.on';
 const IDENTIFIER=/^court-(B\d{6})\|(20\d{2}타경\d{1,10})\|([1-9]\d{0,3})$/;
 function describeResponse(json){
@@ -20,15 +19,34 @@ function describeResponse(json){
   .map(key=>entry.key+'.'+key)).slice(0,80);
  return {httpPayloadStatus:typeof json?.status==='string'||typeof json?.status==='number'?String(json.status):'not-present',
   blocked:data.ipcheck===false||json?.ipcheck===false,
-  plausibleResponse:String(json?.status)==='200'&&entries.some(x=>x.kind==='array'||x.kind==='object'),
+  plausibleResponse:String(json?.status)==='200'&&Object.values(data).some(x=>Array.isArray(x)?x.some(y=>isObject(y)&&Object.keys(y).length>0):isObject(x)&&Object.keys(x).length>0),
   sections:entries,possibleStatusFields,
   note:'응답 구조만 진단. 사건/물건 신원 및 상태코드 의미를 검증하지 않았으며 자동 판정 금지.'};
+}
+// Strict identity checks only; never output original response values.
+function assessIdentity(json,{courtCode,caseNo,itemNo}){
+ const data=json&&typeof json.data==='object'&&!Array.isArray(json.data)?json.data:{};
+ const records=Object.values(data).flatMap(value=>Array.isArray(value)?value:[value])
+  .filter(value=>value&&typeof value==='object'&&!Array.isArray(value));
+ const get=(record,keys)=>keys.map(k=>record[k]).find(v=>v!==undefined&&v!==null&&String(v).trim()!=='');
+ let caseMatch=false,lotMatch=false;
+ for(const record of records){
+  const court=get(record,['cortOfcCd','boCd']);
+  const foundCase=get(record,['csNo','srnSaNo']);
+  const lot=get(record,['maemulSer','mokmulSer']);
+  if(String(court??'')===courtCode&&String(foundCase??'')===caseNo){
+   caseMatch=true;
+   if(String(lot??'')===itemNo)lotMatch=true;
+  }
+ }
+ return {caseIdentityMatched:caseMatch,lotIdentityMatched:lotMatch,
+  statusDecisionAllowed:false,note:'신원 일치 여부만 진단. 실제 상태코드 의미 검증 전이므로 판정 금지.'};
 }
 async function main(){
  const id=process.argv[2];
  const match=IDENTIFIER.exec(id||'');
  if(!match){console.error('Usage: node scripts/probe-court-case-status.cjs "court-B000210|2026타경12345|1"');process.exitCode=2;return;}
- const [,courtCode,caseNo]=match;
+ const [,courtCode,caseNo,itemNo]=match;
  const controller=new AbortController();
  const timeout=setTimeout(()=>controller.abort(),12000);
  try{
@@ -45,9 +63,9 @@ async function main(){
   const summary=describeResponse(json);
   if(summary.blocked)throw Error('court access rejected; no retries');
   if(!summary.plausibleResponse)throw Error('court response schema not verified; no status inference');
-  console.log(JSON.stringify({requestedCase:caseNo,requestedCourt:courtCode,lotIdentityNotVerified:true,...summary},null,2));
+  console.log(JSON.stringify({requestedCase:caseNo,requestedCourt:courtCode,...assessIdentity(json,{courtCode,caseNo,itemNo}),...summary},null,2));
  }catch(error){console.error('Probe not verified:',String(error?.message||error).slice(0,180));process.exitCode=1;}
  finally{clearTimeout(timeout);}
 }
-module.exports={describeResponse};
+module.exports={describeResponse,assessIdentity};
 if(require.main===module)main();

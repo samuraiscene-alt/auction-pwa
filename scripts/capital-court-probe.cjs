@@ -80,4 +80,7 @@ async function search(region){
  fs.mkdirSync('data',{recursive:true});
  fs.writeFileSync('data/capital-court-probe.json',JSON.stringify(snapshot,null,2)+'\n');
  console.log('Probe data saved:',unique.length,'records, NOT a complete regional catalogue.');
+ console.log('Regional unique counts:',JSON.stringify(Object.fromEntries(REGIONS.map(r=>[r.label,new Set(items.filter(x=>x.region===r.label).map(x=>x.id)).size]))));
+ console.log('Duplicate IDs count:',items.length-unique.length);
+ console.log('Sample IDs:',JSON.stringify(items.slice(0,10).map(x=>({id:x.id,region:x.region,address:x.address.slice(0,45)}))));
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -1,0 +1,30 @@
+name: Court case single-request live diagnostic
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/court-case-live-probe.yml
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run structural tests before any live call
+        run: node tests/court-status-probe.cjs
+      - name: Single diagnostic attempt against published sample
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/probe-court-case-status.cjs 'court-B000210|2008타경25092|1'
+      - name: Diagnostics boundary
+        if: always()
+        run: |
+          echo "This workflow never publishes court status or modifies stored auction items."
+          echo "An HTTP success alone never certifies sale, withdrawal, or postponement."

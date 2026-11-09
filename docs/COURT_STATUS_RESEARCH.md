@@ -176,3 +176,9 @@
 - `scripts/extract-court-status-evidence.cjs`의 `safeDay`를 YYYYMMDD 정규식 통과만으로 수용하던 방식에서 **그레고리력 일자(월 범위·월별 최대일수·윤년)** 실제 검증으로 강화. `20261399`, `20260229` 거부, `20240229` 허용.
 - `tests/court-status-evidence.cjs` 회귀 사례 추가; 기존 신원 검증 테스트와 함께 모두 통과. 실서버 보고서 `data/court-case-list-bridge-status.json` (2026-11-09T23:40:04.049Z)에서 사건 연결 성공, 결과 기일 `20261015` 정상, 법적 상태 미검증.
 - 앱 버전 v0.7.5, 805건 시범 목록, 사용자의 직접 등록/저장 자료 불변. 결과코드와 최종 법적 상태를 연결하는 자동 기능은 미적용.
+
+## 2026-11-10 법원 결과코드의 기일 종류 혼동 차단
+- 법원 공개 화면 `PGJ15BM01.xml`에서 **기일 결과명**은 `LJH/AUCTN_DXDY_RSLT_CD`, **기일 종류명**은 `PGJ/AUCTN_DXDY_KND_CD`로 별도 조회함. 그룹은 다르며 코드값 숫자가 같아도 의미가 같다는 뜻이 아님. 출처: https://gist.github.com/wiggleji/e091fc7827d7032ce638a162777c0602
+- `scripts/court-status-meaning-gate.cjs`는 공식 화면 대조를 기록하기 전 사건 물건 신원 확인에 더해 **같은 날짜, 같은 결과코드, 같은 기일종류 코드**의 단일 행만 허용. 다른 기일종류의 결과코드와 오인 연결 차단.
+- `scheduleConflictDetected=true`, `scheduleEvidenceTruncated=true`, `historyBounded=false`인 경우 아예 비교를 거부. 코드 뜻을 추측하거나 자동 앱 상태를 확정하지 않는 기존 방침 유지(`verified:false`, `label:null`).
+- `tests/court-status-meaning-gate.cjs` 회귀 테스트 통과. `.github/workflows/court-case-list-bridge.yml`에도 실행 연결. 공식 코드값 `002`의 이름은 아직 미확인. 앱 v0.7.5/805건 스냅샷/개인자료 무변경.

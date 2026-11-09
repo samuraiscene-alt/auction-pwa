@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-09T12:07:56.720Z",
-  "outcome": "failed",
+  "attemptedAt": "2026-11-09T12:11:32.484Z",
+  "outcome": "success",
   "scope": "서울·경기·인천",
-  "reason": "validation_rejected",
-  "detail": "법원 데이터 검증 미통과 · 이전 목록 유지"
+  "reason": "validated",
+  "detail": "수집·기본 안전검사 통과"
 }

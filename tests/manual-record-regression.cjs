@@ -103,6 +103,16 @@ async function createTestCase(page){
   assert.equal(await grouped.locator('.capital-property').count(),15,'15 individual items preserved');
   await grouped.locator('summary').click();
   assert(await grouped.evaluate(x=>x.open),'same-case details can be expanded');
+  // Official small-class filter: only matching item numbers remain, even inside mixed cases.
+  const types=await page.locator('#capitalTypeFilter option').allTextContents();
+  assert(types.includes('아파트'),'apartment available in court category selector');
+  await page.locator('#capitalTypeFilter').selectOption('20104');
+  const selected=await page.locator('.capital-property .auction-type').allTextContents();
+  assert(selected.length>0&&selected.every(x=>x.trim()==='아파트'),'apartment filter uses legal small-class code');
+  assert.equal(await page.locator('#capitalTypeFilter').inputValue(),'20104','type persists');
+  await page.locator('#capitalTypeFilter').selectOption('전체');
+  assert.equal(await page.locator('.capital-property').count(),54,'all property types restored');
+  console.log('PASS court-category dropdown filters individual auction items');
   await page.locator('[data-capital-region="서울"]').click();
   assert((await page.locator('body').textContent()).includes('수집된 물건'),'Seoul filter renders');
   await page.locator('[data-capital-region="전체"]').click();

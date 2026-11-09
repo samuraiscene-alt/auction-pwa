@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-09T22:00:35.516Z",
+  "attemptedAt": "2026-11-09T22:00:51.620Z",
   "outcome": "unverified",
-  "reason": "not_verified",
+  "reason": "identity_mismatch",
   "caseIdentityMatched": false,
   "lotIdentityMatched": false,
   "legalStatusVerified": false,

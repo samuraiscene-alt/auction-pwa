@@ -66,6 +66,11 @@ jobs:
               evidence.scheduleResultObservations.slice(0,20).filter(o=>o&&/^20\d{6}$/.test(String(o.day))&&safeCode(o.resultCode)).map(o=>({
                 day:String(o.day),resultCode:safeCode(o.resultCode),kindCode:safeCode(o.kindCode)
               })):[],
+            listingDisplayEvidence:Array.isArray(evidence.listingDisplayEvidence)?
+              evidence.listingDisplayEvidence.filter(v=>v&&['userStPrint','userLstPrint','mulStatNm','maemulStatNm'].includes(v.field)).slice(0,4).map(v=>({
+                field:v.field,fieldPresent:v.fieldPresent===true,
+                exactDisplayLabel:['진행','매각','유찰','취하','변경','연기','정지','취소','종국','미종국','신건'].includes(v.exactDisplayLabel)?v.exactDisplayLabel:null
+              })):[],
             legalStatusVerified:false
           }:{identityVerified:false,statusEvidenceAvailable:false,legalStatusVerified:false};
           const report={

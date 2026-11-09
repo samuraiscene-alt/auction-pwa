@@ -2,7 +2,8 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.7.4 (법원 물건 재조회 가격·기일 형식 검증, 진행상태 미확인 유지)
+- 현재 버전: v0.7.5 (물건 재조회 확인시각·수집 성공표시 신뢰성 보강)
+- v0.7.5: 물건 재조회 결과에 Asia/Seoul 확인시각 표시. 목록 수집시각보다 과거의 성공 status만 있으면 경고, 새 목록 V 성공 제스처는 status.outcome=success이고 status.attemptedAt>=snapshot.fetchedAt인 경우에만 표시. 매각·취하 상태 자동 확정은 미구현. 실제 Pages 배포 확인 및 iPhone 테스트 필요.
 - v0.7.4: 법원 물건 재조회 가격·날짜가 비정상·누락이면 차이/일치로 오판하지 않고 미확인으로 처리. 날짜가 다르면 기일 차이 감지로만 표시하고 '변경' 상태로 확정하지 않음. 매각·취하·변경 상태는 계속 공식 확인 필요. GitHub Pages 배포 및 아이폰 테스트 별도 확인.
 - v0.7.3: 수도권 목록 재조회 실패 시 단발 토스트 외에 상단 경고를 계속 표시. 마지막 검증된 메모리 목록을 보여주되 최신 정보로 오인하지 않도록 함. 개인 자료와 승인 디자인 구조는 변경하지 않음. 신규 배포 성공은 별도 확인 필요.
 - v0.7.2: capital load는 validation.passed===true 및 validation.validatedItems===items.length 필수. 기록이 없거나 개수가 다르면 새 스냅샷을 거절하고 기존 메모리의 정상본만 유지. 805건 실제 수집 성공 상태는 확인했으나 Pages v0.7.2 배포 성공은 별도 확인 필요.

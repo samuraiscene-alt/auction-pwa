@@ -34,6 +34,24 @@ const dateOnly=value=>{
  return dt.getUTCFullYear()===y&&dt.getUTCMonth()===m-1&&dt.getUTCDate()===d?
   s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6):null;
 };
+// Only explicit, single-purpose court object classification labels qualify.
+// No guess from address, land-lot number, or sale amount. Mixed objects => null.
+const identifyPropertyType=(objects)=>{
+ if(!Array.isArray(objects)||objects.length===0)return null;
+ const candidates=['objctKndNm','gdsKndNm','dspslObjctKndNm','rletKndNm','rletUseNm','bldgUseNm'];
+ const classifications=objects.map(object=>{
+  if(!object||typeof object!=='object')return null;
+  const labels=candidates.map(k=>object[k]).filter(v=>typeof v==='string'&&v.trim());
+  if(labels.length!==1)return null;
+  const label=labels[0].trim();
+  const exact={'아파트':'아파트','공동주택(아파트)':'아파트','연립주택':'빌라','다세대주택':'빌라',
+    '단독주택':'단독주택','다가구주택':'단독주택','근린생활시설':'상가','판매시설':'상가',
+    '토지':'토지','대지':'토지','전':'토지','답':'토지','임야':'토지'};
+  return exact[label]||null;
+ });
+ return classifications.every(v=>v&&v===classifications[0])?classifications[0]:null;
+};
+
 const readItem=(json,courtCode,caseNo,itemNo)=>{
  const data=json?.data,d=data?.dma_result,base=d?.csBaseInfo,item=d?.dspslGdsDxdyInfo;
  if(String(json?.status)!=='200'||json?.errors||!d||!base||!item||data?.ipcheck===false)
@@ -47,7 +65,7 @@ const readItem=(json,courtCode,caseNo,itemNo)=>{
  const address=addressCandidates.length===1&&addressCandidates[0].length<=250?addressCandidates[0]:null;
  return {verified:true,source:'courtauction.go.kr',courtCode:courtCode.toUpperCase(),caseNo,itemNo,
   checkedAt:new Date().toISOString(),courtName:String(base.cortOfcNm||'').slice(0,100),
-  address,appraisalWon:amount(item.aeeEvlAmt),
+  address,propertyType:identifyPropertyType(d.gdsDspslObjctLst),appraisalWon:amount(item.aeeEvlAmt),
   minimumWon:prices.length===1?prices[0]:null,
   saleDate:dateOnly(item.dspslDxdyYmd),
   priceAmbiguous:prices.length>1,

@@ -77,3 +77,10 @@
 - 사건번호 `csNo`가 화면용 사건번호인지 내부 숫자코드인지 알 수 없어, 값 자체를 출력하지 않고 `responseCaseFormat` 형식 분류만 결과에 저장하도록 수정. 임의 변환/매칭은 하지 않음.
 - 결과 파일의 마지막 확인 항목은 여전히 `identity_mismatch`; 실서버 상태 신원 검증 실패 및 자동 상태 표시 비활성화 유지.
 - 수정된 저장소 스크립트와 오프라인 테스트 실행 통과. GitHub Actions 최신 실행 결과와 법원 상태 코드 의미 검증은 별도 미확인.
+
+## 2026-11-10 숫자형 내부 사건번호 확인과 비식별 힌트
+- 실서버 후속 결과 `data/court-case-probe-status.json`: `responseCaseFormat=digits_only`, `reason=identity_mismatch`. 사건 기본정보 `dma_csBasInf.csNo`의 형식이 화면용 `2008타경…`와 다르다는 점 확인.
+- 숫자형 내부 사건번호를 화면용 사건번호로 무리하게 변환하거나 신원 일치를 추정하지 않음.
+- `assessIdentity`에 `baseCourtMatches`, `internalCaseYearMatches`, `internalCaseSerialSuffixMatches`, `relatedDisplayAliasMatched`, `internalLotRowFound`를 추가. 모두 진단용 불리언 정보로, `caseIdentityMatched`/`lotIdentityMatched`를 조작하지 않음.
+- 워크플로우는 `identityHints`에 각 항목의 참/거짓만 기록하며 내부 사건번호 원문, 개인정보, 진행상태코드 값은 저장하지 않음.
+- 최근 보고서에는 아직 새 `identityHints` 항목이 없으므로 실제 일치 여부는 **미확인**. 오프라인 회귀 테스트 통과, 앱/법적 상태 자동판정/수집목록 변경 없음.

@@ -1,2 +1,2 @@
-0.5.2
-Open newly registered case detail immediately; show unknown amounts as unverified instead of ₩0.
+0.5.3
+Read user-selected court PDF text to prefill auction case details; user review required.

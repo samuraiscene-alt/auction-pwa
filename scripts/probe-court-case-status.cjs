@@ -49,6 +49,8 @@ function assessIdentity(json,{courtCode,caseNo,itemNo}){
      digits.endsWith(caseParts[2].padStart(6,'0'))
  }:{yearMatches:false,serialSuffixMatches:false};
  const baseCourtMatches=String(base?.cortOfcCd??'')===courtCode;
+ const baseExpCaseExact=typeof base?.expCsNo==='string'&&base.expCsNo===caseNo;
+ const baseExpCaseFormat=typeof base?.expCsNo==='string'?(/^20\d{2}타경\d{1,10}$/.test(base.expCsNo)?'display_case':/^\d{8,20}$/.test(base.expCsNo)?'digits_only':'other'):'unavailable';
  // Related-case fields can refer to different proceedings, so only report alias
  // equality as a diagnostic clue, not as proof of the primary case or lot.
  const displayAliasMatched=records.some(record=>
@@ -63,7 +65,7 @@ function assessIdentity(json,{courtCode,caseNo,itemNo}){
    String(record.cortOfcCd??'')===courtCode&&String(record.csNo??'')===digits);
  const matchingLotRowUnique=matchingInternalRows.length===1;
  return {caseIdentityMatched:directCaseMatch,lotIdentityMatched:directLotMatch,
-  responseCaseFormat,baseCourtMatches,
+  responseCaseFormat,baseCourtMatches,baseExpCaseExact,baseExpCaseFormat,
   internalCaseYearMatches:numberHints.yearMatches,
   internalCaseSerialSuffixMatches:numberHints.serialSuffixMatches,
   relatedDisplayAliasMatched:displayAliasMatched,internalLotRowFound,
@@ -107,7 +109,7 @@ async function main(){
   if(!summary.plausibleResponse)throw Error('court response schema not verified; no status inference');
   const identity=assessIdentity(json,{courtCode,caseNo,itemNo});
   if(!identity.caseIdentityMatched){
-    console.log(JSON.stringify({caseIdentityMatched:false,lotIdentityMatched:false,statusDecisionAllowed:false,responseCaseFormat:identity.responseCaseFormat,identityHints:{baseCourtMatches:identity.baseCourtMatches,internalCaseYearMatches:identity.internalCaseYearMatches,internalCaseSerialSuffixMatches:identity.internalCaseSerialSuffixMatches,relatedDisplayAliasMatched:identity.relatedDisplayAliasMatched,internalLotRowFound:identity.internalLotRowFound,internalCaseRowsConsistent:identity.internalCaseRowsConsistent,matchingLotRowUnique:identity.matchingLotRowUnique},structuralSummary:summary},null,2));
+    console.log(JSON.stringify({caseIdentityMatched:false,lotIdentityMatched:false,statusDecisionAllowed:false,responseCaseFormat:identity.responseCaseFormat,identityHints:{baseCourtMatches:identity.baseCourtMatches,baseExpCaseExact:identity.baseExpCaseExact,baseExpCaseFormat:identity.baseExpCaseFormat,internalCaseYearMatches:identity.internalCaseYearMatches,internalCaseSerialSuffixMatches:identity.internalCaseSerialSuffixMatches,relatedDisplayAliasMatched:identity.relatedDisplayAliasMatched,internalLotRowFound:identity.internalLotRowFound,internalCaseRowsConsistent:identity.internalCaseRowsConsistent,matchingLotRowUnique:identity.matchingLotRowUnique},structuralSummary:summary},null,2));
     throw Error('case identity not matched; structural field names only reported');
   }
   console.log(JSON.stringify({requestedCase:caseNo,requestedCourt:courtCode,...identity,...summary},null,2));

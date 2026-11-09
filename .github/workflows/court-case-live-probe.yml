@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - scripts/probe-court-case-status.cjs
       - .github/workflows/court-case-live-probe.yml
 permissions:
   contents: write
@@ -57,11 +58,21 @@ jobs:
             /access rejected|HTTP 403|HTTP 429/i.test(errorText)?'access_rejected':
             /case identity not matched/i.test(errorText)?'identity_mismatch':
             'not_verified';
+          const structure=parsed?.structuralSummary||parsed;
+          const safeField=x=>typeof x==='string'&&/^[A-Za-z][A-Za-z0-9_]{0,59}$/.test(x);
+          const fields=Array.isArray(structure?.sections)?
+            structure.sections.slice(0,12).map(section=>({
+              key:safeField(section.key)?section.key:'unrecognized',
+              kind:['array','object','null','boolean','number','string'].includes(section.kind)?section.kind:'unknown',
+              rows:Number.isInteger(section.rows)?Math.min(section.rows,100000):undefined,
+              fields:Array.isArray(section.fields)?section.fields.filter(safeField).slice(0,25):[]
+            })):[];
           const report={
             schemaVersion:1,attemptedAt:new Date().toISOString(),outcome:passed?'case_schema_observed':'unverified',
             reason,caseIdentityMatched:passed,lotIdentityMatched:passed&&parsed?.lotIdentityMatched===true,
             legalStatusVerified:false,rawResponseSaved:false,
-            note:'진단 상태만 기록. 매각·취하·기일변경의 법원 확정정보 아님.'
+            responseShape:fields,
+            note:'진단 필드명·행수만 기록. 원본값과 매각·취하 상태의 의미는 검증하지 않음.'
           };
           fs.writeFileSync('/tmp/court-probe-summary.json',JSON.stringify(report,null,2)+'\n');
           console.log('Redacted diagnostic:',JSON.stringify(report));

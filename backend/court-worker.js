@@ -75,8 +75,8 @@ const courtUsageFromItem=(detail,item)=>{
 // Read-only cascading court usage taxonomy. No generated classifications.
 const USAGE_ENDPOINTS={
  large:{url:'https://www.courtauction.go.kr/pgj/pgj002/selectLclLst.on',body:{dsignUsgDvsCd:''}},
- medium:{url:'https://www.courtauction.go.kr/pgj/pgj002/selectMclLst.on',key:'lclDspslGdsLstUsgCd'},
- small:{url:'https://www.courtauction.go.kr/pgj/pgj002/selectSclLst.on',key:'mclDspslGdsLstUsgCd'}
+ medium:{url:'https://www.courtauction.go.kr/pgj/pgj002/selectMclLst.on',key:'code'},
+ small:{url:'https://www.courtauction.go.kr/pgj/pgj002/selectSclLst.on',key:'code'}
 };
 const taxonomyRows=(payload,level,parent)=>{
  const expectedKeys=level==='large'?['lclLst','usgLclLst']:level==='medium'?['mclLst','usgMclLst']:['sclLst','usgSclLst'];

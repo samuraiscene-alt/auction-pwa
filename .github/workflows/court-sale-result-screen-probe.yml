@@ -31,7 +31,7 @@ jobs:
           const ids=Array.isArray(j.dataMapIds)?j.dataMapIds.filter(s=>
             typeof s==='string'&&/^(dma|dlt)_[A-Za-z0-9_]{1,60}$/.test(s)).slice(0,50):[];
           const result={schemaVersion:1,attemptedAt:new Date().toISOString(),
-            observed:j.observed===true,screen:'PGJ158M01',
+            observed:j.observed===true,screen:'PGJ158M02',
             reason:['timeout','http_error','not_xml','oversize','unexpected_document','network_error'].includes(j.reason)?j.reason:null,
             saleResultSearchEndpointPresent:paths.includes('/pgj/pgjsearch/selectDspslSchdRsltSrch.on'),
             officialApiPaths:paths,dataMapIds:ids,

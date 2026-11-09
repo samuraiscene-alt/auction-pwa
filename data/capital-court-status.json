@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-09T12:04:00.516Z",
+  "attemptedAt": "2026-11-09T12:07:56.720Z",
   "outcome": "failed",
   "scope": "서울·경기·인천",
-  "reason": "conflicting_records",
-  "detail": "물건번호 데이터 충돌 · 이전 목록 유지"
+  "reason": "validation_rejected",
+  "detail": "법원 데이터 검증 미통과 · 이전 목록 유지"
 }

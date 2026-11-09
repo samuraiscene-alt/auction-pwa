@@ -29,17 +29,19 @@ function assessIdentity(json,{courtCode,caseNo,itemNo}){
  const records=Object.values(data).flatMap(value=>Array.isArray(value)?value:[value])
   .filter(value=>value&&typeof value==='object'&&!Array.isArray(value));
  const get=(record,keys)=>keys.map(k=>record[k]).find(v=>v!==undefined&&v!==null&&String(v).trim()!=='');
- let caseMatch=false,lotMatch=false;
- for(const record of records){
-  const court=get(record,['cortOfcCd','boCd']);
-  const foundCase=get(record,['csNo','srnSaNo']);
-  const lot=get(record,['maemulSer','mokmulSer']);
-  if(String(court??'')===courtCode&&String(foundCase??'')===caseNo){
-   caseMatch=true;
-   if(String(lot??'')===itemNo)lotMatch=true;
-  }
- }
- return {caseIdentityMatched:caseMatch,lotIdentityMatched:lotMatch,
+ const matchesCase=record=>String(get(record,['cortOfcCd','boCd'])??'')===courtCode&&
+   String(get(record,['csNo','srnSaNo'])??'')===caseNo;
+ const caseMatch=records.some(matchesCase);
+ // Different response sections may contain case and lot rows.
+ // A lot identifier matches only if its own row also carries the same case identity.
+ const lotMatch=records.some(record=>matchesCase(record)&&
+   String(get(record,['dspslGdsSeq','maemulSer','mokmulSer'])??'')===itemNo);
+ const base=data.dma_csBasInf&&typeof data.dma_csBasInf==='object'&&!Array.isArray(data.dma_csBasInf)?data.dma_csBasInf:null;
+ const rawCase=base?.csNo;
+ const responseCaseFormat=typeof rawCase==='string'?
+   (/^20\d{2}타경\d{1,10}$/.test(rawCase)?'display_case':/^\d{8,20}$/.test(rawCase)?'digits_only':'other'):
+   typeof rawCase==='number'?'number':rawCase==null?'missing':'other';
+ return {caseIdentityMatched:caseMatch,lotIdentityMatched:lotMatch,responseCaseFormat,
   statusDecisionAllowed:false,note:'신원 일치 여부만 진단. 실제 상태코드 의미 검증 전이므로 판정 금지.'};
 }
 async function main(){

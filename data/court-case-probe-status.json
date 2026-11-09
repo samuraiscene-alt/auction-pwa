@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-09T21:56:30.025Z",
+  "attemptedAt": "2026-11-09T21:56:50.415Z",
   "outcome": "unverified",
   "reason": "identity_mismatch",
   "caseIdentityMatched": false,
@@ -8,6 +8,13 @@
   "legalStatusVerified": false,
   "rawResponseSaved": false,
   "responseCaseFormat": "digits_only",
+  "identityHints": {
+    "baseCourtMatches": true,
+    "internalCaseYearMatches": true,
+    "internalCaseSerialSuffixMatches": true,
+    "relatedDisplayAliasMatched": false,
+    "internalLotRowFound": true
+  },
   "responseShape": [
     {
       "key": "ipcheck",

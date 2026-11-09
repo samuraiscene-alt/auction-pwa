@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.4';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.5';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -1360,6 +1360,7 @@ function capital(){
  const safetyNotice=capitalLoadStatus==='ready'?
   (capitalLoadError?'<div class="status">⚠ 최신 목록 다시 불러오기 실패: '+escapeHtml(capitalLoadError)+' · 이전에 검증된 목록을 표시합니다.</div>':'')+
   (!capitalAttemptStatus?'<div class="status">⚠ 마지막 자동 수집 시도의 성공·실패 정보를 확인할 수 없습니다. 법원 원문을 확인하세요.</div>':'')+
+  (capitalAttemptStatus?.outcome==='success'&&Date.parse(capitalAttemptStatus.attemptedAt)<capturedTime?'<div class="status">⚠ 목록 수집시각보다 이전의 성공기록만 있습니다. 최신 수집 상태를 확인할 수 없습니다.</div>':'')+
   (latestFailed?'<div class="status">⚠ '+escapeHtml(
    capitalAttemptStatus.reason==='connection_timeout'?'법원 서버 접속 시간 초과 · 이전 목록 표시':
    capitalAttemptStatus.reason==='conflicting_records'?'법원 물건정보 충돌 · 이전 목록 표시':
@@ -1430,7 +1431,7 @@ async function verifyCapitalItem(id,button){
   const prefix=changes.length?'⚠ 법원 재조회와 수집 목록에 차이가 있습니다. 기일 변경·가격 변경 여부를 원문에서 확인하세요: '+changes.join(' / '):
     unknown.length?'⚠ 재조회했지만 일부 가격·기일을 정확히 대조하지 못했습니다.':
     '✓ 수집 목록과 재조회한 가격·기일이 일치합니다.';
-  output.textContent=prefix+
+  output.textContent='조회시각 '+new Date().toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})+' · '+prefix+
    (equal.length?' · 일치: '+equal.join(', '):'')+
    (unknown.length?' · 미확인: '+unknown.join(', '):'')+
    ' · 매각·취하·변경 등 사건 진행상태는 검증되지 않았습니다. 법원 원문에서 확인하세요.';
@@ -1462,7 +1463,7 @@ async function loadCapital(force=false){
     throw Error('목록 데이터 형식 확인 실패');
   if(payload.validation?.passed!==true||!Number.isSafeInteger(payload.validation.validatedItems)||payload.validation.validatedItems!==payload.items.length)throw Error('검증 완료 기록이 없는 목록은 표시하지 않습니다.');
   capitalSnapshot=payload;capitalLoadStatus='ready';
-  if(force&&payload.validation?.passed===true&&!(capitalAttemptStatus?.outcome==='failed'&&Date.parse(capitalAttemptStatus.attemptedAt)>Date.parse(payload.fetchedAt)))showSavedCheck('검증된 자료 불러오기 완료');
+  if(force&&capitalAttemptStatus?.outcome==='success'&&Date.parse(capitalAttemptStatus.attemptedAt)>=Date.parse(payload.fetchedAt)&&payload.validation?.passed===true)showSavedCheck('검증된 자료 불러오기 완료');
  }catch(e){
   capitalLoadError=e?.name==='AbortError'?'시간 초과':String(e.message||'연결 오류');
   // Keep the last successfully loaded snapshot on a network failure.

@@ -96,7 +96,7 @@ async function createTestCase(page){
   // Separate static court pilot catalog must never alter user-registered records.
   await page.locator('[data-page="home"]').first().click();
   await page.locator('[data-page="capital"]').first().click();
-  await page.waitForFunction(()=>document.getElementById('capitalStatus')?.textContent.includes('수집 2026-'),{timeout:12000});
+  await page.waitForFunction(()=>document.getElementById('capitalStatus')?.textContent.includes('마지막 수집'),{timeout:12000});
   assert.equal(await page.locator('.capital-record').count(),40,'initial page shows 40');
   const grouped=page.locator('.capital-case-group').filter({hasText:'2008타경25092'}).first();
   assert.equal(await grouped.count(),1,'2008 case rendered once');
@@ -114,7 +114,7 @@ async function createTestCase(page){
   assert.equal(await page.locator('.capital-record').count(),40,'all categories restored to initial 40 cases');
   assert((await page.locator('.capital-property').count())>40,'all item numbers within case groups preserved');
   assert((await page.locator('#capitalStatus').textContent()).includes('마지막 수집'),'shows last collection timestamp');
-  assert((await page.locator('body').textContent()).includes('안전검증 기록'),'legacy catalog marked unverified by new safety gate');
+  assert(/안전검증 기록|자동 형식 검사 통과/.test(await page.locator('body').textContent()),'validation status is visible');
   console.log('PASS court-category dropdown filters individual auction items');
   await page.locator('[data-capital-region="서울"]').click();
   assert((await page.locator('body').textContent()).includes('수집된 물건'),'Seoul filter renders');

@@ -1,8 +1,9 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-09T22:38:57.728Z",
+  "attemptedAt": "2026-11-09T22:39:10.873Z",
   "outcome": "list_response_observed",
   "reason": "processed",
+  "failedStage": "none",
   "exactDisplayLotRows": 1,
   "directInternalCaseMapping": false,
   "csNoFieldPresent": false,

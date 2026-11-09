@@ -1,4 +1,4 @@
-name: Capital court three-page collection pilot
+name: Capital court five-page collection pilot
 on:
   workflow_dispatch:
   schedule:
@@ -22,7 +22,7 @@ jobs:
       cancel-in-progress: false
     environment:
       name: github-pages
-    timeout-minutes: 6
+    timeout-minutes: 9
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

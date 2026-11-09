@@ -1,0 +1,87 @@
+name: Court 3-region identity and raw-code sample checks
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/court-three-region-probe.yml
+permissions:
+  contents: write
+jobs:
+  sample:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    concurrency:
+      group: court-three-region-sample-report
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify safety tests before requests
+        run: |
+          node tests/court-case-bridge.cjs
+          node tests/court-status-evidence.cjs
+      - name: Bounded cross-region court probes
+        shell: bash
+        run: |
+          mkdir -p /tmp/court-region
+          for entry in \
+            'seoul|court-B000210|2025타경663|1' \
+            'gyeonggi|court-B000214|2025타경2098|1' \
+            'incheon|court-B000240|2025타경39|1'; do
+            region="${entry%%|*}"
+            identifier="${entry#*|}"
+            node scripts/probe-court-case-list-bridge.cjs "$identifier" \
+              > "/tmp/court-region/$region.json" 2> "/tmp/court-region/$region.err" || true
+          done
+      - name: Save redacted status only
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const safeCode=v=>typeof v==='string'&&/^[A-Za-z0-9_-]{1,24}$/.test(v)?v:null;
+          const checks=['seoul','gyeonggi','incheon'].map(region=>{
+            let d=null;
+            try{d=JSON.parse(fs.readFileSync('/tmp/court-region/'+region+'.json','utf8'));}catch{}
+            let error='';
+            try{error=fs.readFileSync('/tmp/court-region/'+region+'.err','utf8');}catch{}
+            const reason=/BRIDGE_REASON=([a-z_]+)/.exec(error)?.[1]||'not_recorded';
+            const stage=/BRIDGE_STAGE=(list|detail)/.exec(error)?.[1]||'unknown';
+            const linked=d?.detailCaseCrossChecked===true&&d?.exactDisplayLotRows===1;
+            const ev=d?.statusEvidence;
+            const verified=linked&&ev?.identityVerified===true&&ev?.legalStatusVerified===false;
+            return {region,identityLinked:linked,reason:linked?'linked':reason,failedStage:linked?'none':stage,
+              statusEvidenceAvailable:verified&&ev.statusEvidenceAvailable===true,
+              lotStatusCode:verified?safeCode(ev.lotStatusCode):null,
+              caseProgressCode:verified?safeCode(ev.caseProgressCode):null,
+              caseSuspensionCode:verified?safeCode(ev.caseSuspensionCode):null,
+              lastResultCode:verified&&Array.isArray(ev.scheduleResultObservations)&&ev.scheduleResultObservations.length?
+                safeCode(ev.scheduleResultObservations.at(-1)?.resultCode):null,
+              legalStatusVerified:false};
+          });
+          const report={schemaVersion:1,attemptedAt:new Date().toISOString(),sampleCount:3,
+            allIdentitiesLinked:checks.every(c=>c.identityLinked),cases:checks,
+            legalStatusVerified:false,rawResponseSaved:false,
+            note:'각 지역 기존 목록 표본 1건. 상태 원시코드 의미 미확인, 법원 전체의 대표성 없음.'};
+          fs.writeFileSync('/tmp/court-region-summary.json',JSON.stringify(report,null,2)+'\n');
+          console.log(JSON.stringify(report));
+          NODE
+      - name: Commit only bounded sample report
+        shell: bash
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for n in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            cp /tmp/court-region-summary.json data/court-three-region-probe-status.json
+            git add data/court-three-region-probe-status.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "diagnostic: three-region redacted court status samples"
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 2
+          done
+          exit 1

@@ -1,16 +1,25 @@
 name: Capital court three-page collection pilot
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '15 18 * * *' # 03:15 Asia/Seoul, next calendar day
   push:
     branches: [main]
     paths:
       - scripts/capital-court-pilot.cjs
       - .github/workflows/capital-court-pilot.yml
 permissions:
-  contents: read
+  contents: write
+  pages: write
+  id-token: write
 jobs:
   collect:
     runs-on: ubuntu-24.04
+    concurrency:
+      group: auction-metropolitan-collection
+      cancel-in-progress: false
+    environment:
+      name: github-pages
     timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
@@ -25,3 +34,20 @@ jobs:
           name: metropolitan-limited-list
           path: data/capital-court-pilot.json
           retention-days: 7
+      - name: Publish validated partial snapshot to repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/capital-court-pilot.json
+          if git diff --cached --quiet; then
+            echo "No new data"; exit 0
+          fi
+          git commit -m "data: update metropolitan court limited-page snapshot"
+          git push
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - uses: actions/deploy-pages@v4

@@ -29,7 +29,10 @@ jobs:
       - id: collection
         name: Collect and safety-check limited pages
         continue-on-error: true
-        run: node scripts/capital-court-pilot.cjs
+        run: |
+          set +e
+          node scripts/capital-court-pilot.cjs 2>&1 | tee /tmp/auction-court-collection.log
+          exit ${PIPESTATUS[0]}
       - name: Record last attempt without publishing rejected listings
         env:
           COLLECT_OUTCOME: ${{ steps.collection.outcome }}
@@ -37,11 +40,20 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const ok=process.env.COLLECT_OUTCOME==='success';
+          const raw=fs.existsSync('/tmp/auction-court-collection.log')?fs.readFileSync('/tmp/auction-court-collection.log','utf8'):'';
+          const reason=ok?'validated':
+            /UND_ERR_CONNECT_TIMEOUT|ETIMEDOUT|AbortError|EHOSTUNREACH/.test(raw)?'connection_timeout':
+            /Too many conflicting IDs|Conflicting duplicate/.test(raw)?'conflicting_records':
+            /Safety validation FAILED|invalid records|validation/.test(raw)?'validation_rejected':
+            'collection_failed';
           fs.mkdirSync('data',{recursive:true});
           fs.writeFileSync('data/capital-court-status.json',JSON.stringify({
             schemaVersion:1,attemptedAt:new Date().toISOString(),
-            outcome:ok?'success':'failed',scope:'서울·경기·인천',
-            detail:ok?'수집·기본 안전검사 통과':'수집 오류 또는 안전검사 미통과. 이전 목록 유지'
+            outcome:ok?'success':'failed',scope:'서울·경기·인천',reason,
+            detail:ok?'수집·기본 안전검사 통과':
+              reason==='connection_timeout'?'법원 서버 연결 시간 초과 · 이전 목록 유지':
+              reason==='conflicting_records'?'물건번호 데이터 충돌 · 이전 목록 유지':
+              '법원 데이터 검증 미통과 · 이전 목록 유지'
           },null,2)+'\n');
           console.log('Last attempt status:',ok?'success':'failed');
           NODE

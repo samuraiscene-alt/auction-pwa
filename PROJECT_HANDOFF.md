@@ -2,12 +2,13 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.5.5 (물건번호별 서버 조회 후 원문 대조·확인·빈칸 자동 입력)
+- 현재 버전: v0.5.6 (가격 표시 개선·물건종류 기본값 제거·보수적 종류 판별 준비)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.
 - iOS 한글 조합: 라이브 검색 DOM 갱신 금지. 검색 완료 키 또는 화면의 검색 버튼으로 결과 반영.
 - 형광펜 2탭: splitNoteUnits()는 Intl.Segmenter(단어/글자)로 렌더할 선택 범위를 만들고, 형광펜 읽기 화면에서 시작·끝 두 번 터치해 선택. 기본 iOS long-press 선택 미사용. 기존 마크를 누르면 포스트잇. annotations 데이터 포맷 그대로.
+- v0.5.6: detail 최저입찰가 compactAuctionPrice()로 천단위 8,000원→8천원 표시, CSS word-break keep-all 및 반응형 글자크기. 신규 공식 사건 폼 #officialType 기본 '아파트' 제거하고 필수 미선택 상태. Worker /item 응답에 propertyType 후보 생성(법원 목적물 명시적 단일 분류명만), 확인 후 빈칸만 입력, 혼합·미확인 분류는 수동 선택. Worker GitHub 소스는 별도 Cloudflare 배포가 필요하며 실제 타입 필드는 미검증. 기존 등록 및 저장 포맷 변경 없음. SW v056.
 - v0.5.5 물건정보: #fetchOfficialItem에서 Cloudflare /item?courtCode=B000210&caseNo=...&itemNo=... 조회. verified·courtCode·caseNo·courtName·itemNo 일치 검증 후 주소/감정가/최저가/매각기일 단일 명확한 값만 확인창 거쳐 빈 입력칸에 반영. 기존 입력은 절대 덮어쓰지 않음, 물건종류는 사용자 선택, 직접 사건 등록해야 저장. 아이폰 테스트 필요. APP_VERSION 0.5.5 SW v055.
 - v0.5.4 사건번호 검증: 공식 사건 등록 화면 #verifyOfficialCase → Cloudflare Worker https://joon-auction-court.samuraiscene.workers.dev/case. 서울중앙지방법원 B000210만 지원, verified=true·법원명·법원코드·사건번호 일치 검증 후 상태문구 출력. 가격/기일 미수집, 조회 상태 및 데이터 미저장. 실패 시 입력값 보존, 12초 제한. SW v054 APP_VERSION 0.5.4. iPhone 실제 테스트 필요.
 - v0.5.3 PDF 입력: extractCourtFields()는 고정 라벨·단일 값만 파싱하고 readAuctionPdfFields()로 PDF.js 최대 12MB 15페이지 분석. #officialPdfInput 신규 사건 등록 폼 자동 채움(빈 칸만), 상세 #detailPdfInput은 사건번호/법원 동일성 확인 후 미입력 가격/기일만 confirm 후 보완. OCR·공식 API·시세·권리 자동 판단 미지원, 원문 파일 별도 미저장. SW v053 / APP_VERSION 0.5.3.

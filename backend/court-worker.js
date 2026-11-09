@@ -91,7 +91,7 @@ const taxonomyRows=(payload,level,parent)=>{
   if(!/^\d{5}$/.test(code)||!name||name.length>80)return null;
   entries.push({code,name,...(parent?{parentCode:parent}:{})});
  }
- if(entries.length>120||new Set(entries.map(x=>x.code)).size!==entries.length)return null;
+ if(entries.length===0||entries.length>120||new Set(entries.map(x=>x.code)).size!==entries.length)return null;
  return entries;
 };
 async function fetchTaxonomy(level,parent){

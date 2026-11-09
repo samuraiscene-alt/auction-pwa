@@ -182,3 +182,10 @@
 - `scripts/court-status-meaning-gate.cjs`는 공식 화면 대조를 기록하기 전 사건 물건 신원 확인에 더해 **같은 날짜, 같은 결과코드, 같은 기일종류 코드**의 단일 행만 허용. 다른 기일종류의 결과코드와 오인 연결 차단.
 - `scheduleConflictDetected=true`, `scheduleEvidenceTruncated=true`, `historyBounded=false`인 경우 아예 비교를 거부. 코드 뜻을 추측하거나 자동 앱 상태를 확정하지 않는 기존 방침 유지(`verified:false`, `label:null`).
 - `tests/court-status-meaning-gate.cjs` 회귀 테스트 통과. `.github/workflows/court-case-list-bridge.yml`에도 실행 연결. 공식 코드값 `002`의 이름은 아직 미확인. 앱 v0.7.5/805건 스냅샷/개인자료 무변경.
+
+## 2026-11-10 법원 매각결과검색 전용 화면 진단
+- 제3자 공개 기술조사 `Jaemnani/auction`의 `docs/api_recon.md`에서 매각결과검색 화면 `PGJ158M00/01` 및 API 후보 `/pgj/pgjsearch/selectDspslSchdRsltSrch.on` 단서를 확인. 타인 분석자료이므로 공식 동작/요청형식 확정 근거로 취급하지 않음.
+- `scripts/probe-court-sale-result-screen.cjs` 추가: 법원 공식 `/pgj/ui/pgj100/PGJ158M01.xml`을 **단 1회 읽기 전용** GET하여 API 경로/화면 참조/제출항목 이름만 정규식으로 추출. 개인정보·응답 원문·코드값 저장하지 않음. 별도 `.github/workflows/court-sale-result-screen-probe.yml`에서 단발 실행 및 비식별 `data/court-sale-screen-status.json` 기록.
+- 첫 실서버 보고(2026-11-09T23:53:51.498Z): `observed=true`로 공식 화면 XML 조회 성공. 하지만 `officialApiPaths=[]`, `dataMapIds=[]`, `saleResultSearchEndpointPresent=false`; **API 경로는 이 화면 텍스트에서 직접 확인되지 않음.** 부재가 API 존재하지 않음을 뜻하지는 않음. 화면 참조/제출 태그 추가 진단 결과는 후속 보고를 확인해야 함.
+- 민간 웹페이지에서 `002`를 유찰 횟수와 함께 표기하는 사례를 찾았으나, 법원이 해당 코드의 이름을 공식적으로 직접 확정한 값 대응표가 아니므로 `002=유찰`을 제품에 반영하지 않음. 예: https://auction-seven-omega.vercel.app/p/B2508262024013006910033
+- **안전:** 앱 v0.7.5, 805건 목록, 사용자 저장자료, 법적 상태 자동판정 모두 불변.

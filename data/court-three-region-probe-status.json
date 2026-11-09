@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "attemptedAt": "2026-11-09T22:58:55.199Z",
+  "sampleCount": 3,
+  "allIdentitiesLinked": true,
+  "cases": [
+    {
+      "region": "seoul",
+      "identityLinked": true,
+      "reason": "linked",
+      "failedStage": "none",
+      "statusEvidenceAvailable": true,
+      "lotStatusCode": "01",
+      "caseProgressCode": "0002100001",
+      "caseSuspensionCode": "00",
+      "lastResultCode": null,
+      "legalStatusVerified": false
+    },
+    {
+      "region": "gyeonggi",
+      "identityLinked": true,
+      "reason": "linked",
+      "failedStage": "none",
+      "statusEvidenceAvailable": true,
+      "lotStatusCode": "01",
+      "caseProgressCode": "0002100001",
+      "caseSuspensionCode": "04",
+      "lastResultCode": "002",
+      "legalStatusVerified": false
+    },
+    {
+      "region": "incheon",
+      "identityLinked": true,
+      "reason": "linked",
+      "failedStage": "none",
+      "statusEvidenceAvailable": true,
+      "lotStatusCode": "01",
+      "caseProgressCode": "0002100001",
+      "caseSuspensionCode": "00",
+      "lastResultCode": "002",
+      "legalStatusVerified": false
+    }
+  ],
+  "legalStatusVerified": false,
+  "rawResponseSaved": false,
+  "note": "각 지역 기존 목록 표본 1건. 상태 원시코드 의미 미확인, 법원 전체의 대표성 없음."
+}

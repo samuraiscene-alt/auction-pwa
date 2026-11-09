@@ -1,2 +1,2 @@
-0.7.0
-Expand metropolitan limited listing to eight pages per region and explicitly show unknown sale/withdrawal status.
+0.7.1
+Show an explicit warning when court collection attempt status cannot be verified; add collection safety regression checks.

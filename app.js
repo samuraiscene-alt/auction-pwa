@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.5.2';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.5.3';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -502,7 +502,7 @@ function detail(){
  const navTabs=[['overview','개요'],['rights','권리'],['market','시세'],['docs','서류']].map(([v,name])=>`<button type="button" class="detail-tab ${tab===v?'selected':''}" data-detail-tab="${v}" aria-pressed="${tab===v}">${name}</button>`).join('');
  let panel='';
  if(tab==='overview'){
-  panel=`<div class="row"><div class="metric"><div class="smTitle">감정가</div><b>${p.userRegistered?knownAuctionPrice(p,p.valueWon):escapeHtml(p.value)}</b></div><div class="metric"><div class="smTitle">최저입찰가</div><b class="detail-price">${knownAuctionPrice(p,propertyPrice(p))}</b></div></div><div class="divider"></div><div class="line"><span class="muted">매각기일</span><strong>${escapeHtml(p.date||'미확인')}</strong></div><div class="divider"></div><div class="line"><span class="muted">물건 종류</span><strong>${escapeHtml(p.type)}</strong></div><div class="divider"></div><div class="status">⚠ 법원 서류와 점유관계는 아직 확인되지 않았어요.</div>`;
+  panel=`<div class="row"><div class="metric"><div class="smTitle">감정가</div><b>${p.userRegistered?knownAuctionPrice(p,p.valueWon):escapeHtml(p.value)}</b></div><div class="metric"><div class="smTitle">최저입찰가</div><b class="detail-price">${knownAuctionPrice(p,propertyPrice(p))}</b></div></div><div class="divider"></div><div class="line"><span class="muted">매각기일</span><strong>${escapeHtml(p.date||'미확인')}</strong></div><div class="divider"></div><div class="line"><span class="muted">물건 종류</span><strong>${escapeHtml(p.type)}</strong></div>${p.userRegistered?'<div class="court-detail-pdf"><label class="official-pdf-label" for="detailPdfInput">▤ 법원 PDF에서 개요 보완</label><input type="file" id="detailPdfInput" accept="application/pdf,.pdf" hidden><p class="helper" id="detailPdfStatus">기존 사건번호와 법원을 대조하고 미확인 항목만 추가해요.</p></div>':''}<div class="divider"></div><div class="status">⚠ 법원 서류와 점유관계는 아직 확인되지 않았어요.</div>`;
  }else if(tab==='rights'){
   panel=`<div class="detail-panel-heading">권리분석</div><div class="status">⚠ 등기·임차인·점유 자료가 연결되지 않았어요.</div><div class="info-row"><span>말소기준권리</span><strong>확인 필요</strong></div><div class="info-row"><span>임차인 현황</span><strong>확인 필요</strong></div><div class="info-row"><span>인수 가능 권리</span><strong>확인 필요</strong></div><button class="secondary full-secondary" id="rightsBtn" type="button">권리분석 상세 보기 →</button>`;
  }else if(tab==='market'){
@@ -635,6 +635,43 @@ async function loadPdfTextEngine(){
   return module;
  }).catch(err=>{pdfJsPromise=null;throw err;});
  return pdfJsPromise;
+}
+
+
+function extractCourtFields(text){
+ const s=String(text||'').normalize('NFKC').replace(/\r/g,'').replace(/[ \t]+/g,' ');
+ const unique=a=>{const x=[...new Set(a.filter(Boolean))];return x.length===1?x[0]:''};
+ const collect=(re,fn)=>unique([...s.matchAll(re)].map(fn));
+ const caseNum=collect(/(?:사건번호|사건)\s*[:：]?\s*(20\d{2})\s*타\s*경\s*(\d{1,10})/g,m=>m[1]+'타경'+m[2]);
+ const court=collect(/(?:담당법원|관할법원|법원명|집행법원)\s*[:：]?\s*([가-힣]{2,20}(?:지방법원|지원|고등법원))/g,m=>m[1]);
+ function amount(label){
+  const re=new RegExp('(?:'+label+')\\s*[:：]?\\s*([0-9][0-9,]{2,17})\\s*원','g');
+  const value=collect(re,m=>{const n=Number(m[1].replace(/,/g,''));return Number.isSafeInteger(n)&&n>0?String(n):''});
+  return value?Number(value):null;
+ }
+ const date=collect(/(?:매각기일|입찰기일)\s*[:：]?\s*(20\d{2})[.\-/년]\s*(\d{1,2})[.\-/월]\s*(\d{1,2})/g,m=>{
+  const y=Number(m[1]),mo=Number(m[2]),day=Number(m[3]),d=new Date(y,mo-1,day);
+  return d.getFullYear()===y&&d.getMonth()+1===mo&&d.getDate()===day?y+'-'+String(mo).padStart(2,'0')+'-'+String(day).padStart(2,'0'):'';
+ });
+ const address=collect(/(?:소재지|소재장소)\s*[:：]?\s*([^\n]{8,140})/g,m=>m[1].trim());
+ return {caseNum,court,valueWon:amount('감정평가액|감정가'),minWon:amount('최저매각가격|최저입찰가|최저매각가'),date,address};
+}
+async function readAuctionPdfFields(file){
+ if(!file||file.type!=='application/pdf'&&!/\.pdf$/i.test(file.name))throw Error('PDF 파일을 선택해 주세요.');
+ if(file.size>12*1024*1024)throw Error('12MB 이하 PDF를 선택해 주세요.');
+ const engine=await loadPdfTextEngine();
+ const pdf=await engine.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
+ try{
+  const lines=[];
+  for(let p=1;p<=Math.min(pdf.numPages,15);p++){
+   const page=await pdf.getPage(p);
+   const content=await page.getTextContent();
+   lines.push(content.items.map(x=>String(x.str||'')+(x.hasEOL?'\n':' ')).join(''));
+  }
+  const text=lines.join('\n');
+  if(text.trim().length<12)throw Error('스캔 PDF는 글자 인식(OCR)이 필요해요.');
+  return {fields:extractCourtFields(text),readPages:Math.min(15,pdf.numPages),totalPages:pdf.numPages};
+ }finally{await pdf.destroy();}
 }
 
 function pdfSearchIndex(value){
@@ -1238,6 +1275,7 @@ function official(){
  return `<div class="card official-intro"><strong>대한민국 법원경매정보</strong><p class="helper">법원 공식 사이트에서 물건을 검색해 사건번호와 매각기일·가격을 확인하세요. 이 앱은 아직 공식 실시간 데이터 자동 수집을 지원하지 않습니다.</p><button type="button" class="primary" id="openOfficialCourt">⚖ 법원경매정보 열기 ↗</button><p class="helper">공식 사이트에서 확인한 사건만 아래에 직접 등록해 주세요. 직접 입력값은 법원 검증 완료 표시가 아닙니다.</p></div>
  <form class="card official-form" id="officialRecordForm">
  <strong>실제 경매사건 직접 등록</strong>
+ <div class="court-pdf-import"><label class="official-pdf-label" for="officialPdfInput">▤ 법원 PDF로 정보 자동 입력</label><input type="file" id="officialPdfInput" accept="application/pdf,.pdf" hidden><p class="helper" id="officialPdfStatus">법원 사이트에서 저장한 텍스트 PDF를 선택하세요. 확실한 정보만 추출하며 등록 전에 검토해야 해요.</p></div>
  <label class="label" for="officialCourt">담당 법원</label><input class="search" id="officialCourt" required maxlength="100" placeholder="예: 서울중앙지방법원">
  <label class="label" for="officialCase">사건번호</label><input class="search" id="officialCase" required placeholder="예: 2025타경12345" inputmode="text">
  <label class="label" for="officialItemNo">물건번호</label><input class="search" id="officialItemNo" placeholder="예: 1 (선택)" inputmode="numeric" maxlength="4">
@@ -1291,6 +1329,49 @@ document.querySelectorAll('[data-favorite-date]').forEach(btn=>btn.onclick=()=>{
 });
 
 if($('#openOfficialCourt'))$('#openOfficialCourt').onclick=()=>window.open(OFFICIAL_AUCTION_URL,'_blank','noopener');
+
+if($('#officialPdfInput'))$('#officialPdfInput').onchange=async event=>{
+ const input=event.target,file=input.files?.[0],status=$('#officialPdfStatus');if(!file)return;
+ status.textContent='PDF 글자 분석 중…';
+ try{
+  const result=await readAuctionPdfFields(file);
+  if(!status.isConnected)return;
+  const map={caseNum:'officialCase',court:'officialCourt',address:'officialAddress',valueWon:'officialAppraisal',minWon:'officialMin',date:'officialSaleDate'};
+  const names={caseNum:'사건번호',court:'법원',address:'소재지',valueWon:'감정가',minWon:'최저가',date:'매각기일'};
+  const filled=[];
+  for(const [field,id] of Object.entries(map)){
+   const value=result.fields[field],element=document.getElementById(id);
+   if(value===null||value===undefined||value===''||!element||element.value.trim())continue;
+   element.value=String(value);filled.push(names[field]);
+  }
+  status.textContent=filled.length?'PDF 자동 입력: '+filled.join(' · ')+' ('+result.readPages+'/'+result.totalPages+'페이지 읽음). 원문과 대조한 후 등록하세요.':'확실하게 추출할 수 있는 정보가 없어요. 법원 원문을 확인해 직접 입력하세요.';
+ }catch(error){if(status.isConnected)status.textContent='PDF 분석 실패: '+(error.message||'파일을 확인해 주세요.');}
+ finally{input.value='';}
+};
+if($('#detailPdfInput'))$('#detailPdfInput').onchange=async event=>{
+ const input=event.target,file=input.files?.[0],status=$('#detailPdfStatus');if(!file)return;
+ const id=state.detail;
+ status.textContent='PDF 글자 분석 중…';
+ try{
+  const result=await readAuctionPdfFields(file);
+  if(state.page!=='detail'||state.detail!==id)return;
+  const current=registeredProperties().find(p=>p.id===id);
+  if(!current)throw Error('등록된 사건이 없어요.');
+  if(result.fields.caseNum&&result.fields.caseNum!==current.case)throw Error('다른 사건번호의 PDF예요.');
+  if(result.fields.court&&result.fields.court!==current.court)throw Error('법원이 다른 PDF예요.');
+  const patch={};
+  if(result.fields.valueWon!==null&&!(current.valueWon>0))patch.valueWon=result.fields.valueWon;
+  if(result.fields.minWon!==null&&!(current.minWon>0))patch.minWon=result.fields.minWon;
+  if(result.fields.date&&!current.date)patch.date=result.fields.date.replaceAll('-','.');
+  const labels={valueWon:'감정가',minWon:'최저가',date:'매각기일'};
+  const summary=Object.entries(patch).map(([k,v])=>labels[k]+': '+(k==='date'?v:prettyPrice(v))).join('\n');
+  if(!summary){status.textContent='추가할 수 있는 미확인 항목이 없어요.';return;}
+  if(!confirm('PDF에서 추출한 정보예요. 법원 원문과 일치하는지 확인한 후 적용해 주세요.\n\n'+summary+'\n\n미확인 칸에 입력할까요?')){status.textContent='변경하지 않았어요.';return;}
+  Object.assign(current,patch);write();render();showSavedCheck('개요 보완 완료');
+ }catch(error){if(status.isConnected)status.textContent='PDF 분석 실패: '+(error.message||'파일을 확인해 주세요.');}
+ finally{input.value='';}
+};
+
 if($('#officialRecordForm'))$('#officialRecordForm').onsubmit=event=>{
  event.preventDefault();
  const court=$('#officialCourt').value.trim(),caseNumber=$('#officialCase').value.trim().replace(/\s+/g,''),itemNo=$('#officialItemNo').value.trim()||'1',name=$('#officialAddress').value.trim(),type=$('#officialType').value;

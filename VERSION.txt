@@ -1,2 +1,2 @@
-0.5.0
-Prevent horizontal overflow and restore centered iPhone home dashboard.
+0.5.1
+Official court search entry and user-entered auction case management; no automatic live data API.

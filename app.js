@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.6.5';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.6.6';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -1349,7 +1349,11 @@ function capital(){
    capitalLoadStatus==='ready'?'마지막 수집 '+escapeHtml(new Date(capturedTime).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}))+' · 부분 수집':'목록 확인 전';
  const latestFailed=capitalAttemptStatus?.outcome==='failed'&&Date.parse(capitalAttemptStatus.attemptedAt)>capturedTime;
  const safetyNotice=capitalLoadStatus==='ready'?
-  (latestFailed?'<div class="status">⚠ 최근 법원 자동 수집 실패 · 이전 목록 표시 중. 법원 원문 확인 필요.</div>':'')+
+  (latestFailed?'<div class="status">⚠ '+escapeHtml(
+   capitalAttemptStatus.reason==='connection_timeout'?'법원 서버 접속 시간 초과 · 이전 목록 표시':
+   capitalAttemptStatus.reason==='conflicting_records'?'법원 물건정보 충돌 · 이전 목록 표시':
+   capitalAttemptStatus.reason==='validation_rejected'?'법원 수집자료 검증 실패 · 이전 목록 표시':
+   '최근 자동 수집 실패 · 이전 목록 표시')+' · 법원 원문 확인 필요.</div>':'')+
   (isStale?'<div class="status">⚠ 마지막 수집 후 30시간 이상 경과했습니다. 자료가 오래되었을 수 있습니다.</div>':
    safetyVerified?'<div class="status">✓ 자동 형식 검사 통과 · 법원 원문 확인을 대체하지 않습니다.</div>':
    '<div class="status">⚠ 기존 시범 수집본입니다. 새로운 안전검증 기록이 아직 없습니다.</div>')+

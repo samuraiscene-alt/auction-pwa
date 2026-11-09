@@ -64,7 +64,10 @@ jobs:
             listStatusCode:safeCode(evidence.listStatusCode),
             listProgressCode:safeCode(evidence.listProgressCode),
             listProgressFlag:safeCode(evidence.listProgressFlag),
-            scheduleResultObservations:Array.isArray(evidence.scheduleResultObservations)?
+            scheduleConflictDetected:evidence.scheduleConflictDetected===true,
+            scheduleEvidenceTruncated:evidence.scheduleEvidenceTruncated===true,
+            scheduleResultObservations:evidence.scheduleConflictDetected===true?[]:
+              Array.isArray(evidence.scheduleResultObservations)?
               evidence.scheduleResultObservations.slice(0,20).filter(o=>o&&/^20\d{6}$/.test(String(o.day))&&safeCode(o.resultCode)).map(o=>({
                 day:String(o.day),resultCode:safeCode(o.resultCode),kindCode:safeCode(o.kindCode)
               })):[],

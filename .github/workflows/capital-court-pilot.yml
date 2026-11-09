@@ -63,33 +63,69 @@ jobs:
         env:
           COLLECT_OUTCOME: ${{ steps.collection.outcome }}
         run: |
+          set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/capital-court-status.json
+          cp data/capital-court-status.json /tmp/court-attempt-status.json
           if [ "$COLLECT_OUTCOME" = "success" ]; then
-            git add data/capital-court-pilot.json
+            cp data/capital-court-pilot.json /tmp/court-validated-snapshot.json
           fi
-          if git diff --cached --quiet; then
-            echo "No changed status"; exit 0
-          fi
-          git commit -m "data: record metropolitan court validation attempt"
-          # A source-code commit may land while collection is running.
-          # Rebase only if our validated data files have no conflicts; never force-push.
-          for attempt in 1 2 3; do
+          for attempt in 1 2 3 4; do
             git fetch origin main
-            if ! git rebase origin/main; then
-              git rebase --abort
-              echo "::error::Concurrent change to court data: refusing to overwrite it"
-              exit 1
+            git reset --hard origin/main
+            if node - <<'NODE'
+          const fs=require('fs');
+          try {
+            const remote=JSON.parse(fs.readFileSync('data/capital-court-status.json','utf8'));
+            const local=JSON.parse(fs.readFileSync('/tmp/court-attempt-status.json','utf8'));
+            if(Date.parse(remote.attemptedAt)>Date.parse(local.attemptedAt)){
+              console.log('Newer attempt already published; skipping stale attempt.');
+              process.exit(3);
+            }
+          } catch(error) {if(error.code!=='ENOENT')throw error;}
+          NODE
+            then
+              :
+            else
+              code=$?
+              if [ "$code" -eq 3 ]; then exit 0; fi
+              exit "$code"
             fi
-            if git push origin HEAD:main; then
-              echo "Published validated listing/status after safe rebase"
+            cp /tmp/court-attempt-status.json data/capital-court-status.json
+            git add data/capital-court-status.json
+            if [ "$COLLECT_OUTCOME" = "success" ]; then
+              if node - <<'NODE'
+          const fs=require('fs');
+          try {
+            const remote=JSON.parse(fs.readFileSync('data/capital-court-pilot.json','utf8'));
+            const candidate=JSON.parse(fs.readFileSync('/tmp/court-validated-snapshot.json','utf8'));
+            if(Date.parse(remote.fetchedAt)>Date.parse(candidate.fetchedAt)){
+              console.log('Newer validated data already published; keep it.');
+              process.exit(3);
+            }
+          } catch(error) {if(error.code!=='ENOENT')throw error;}
+          NODE
+              then
+                cp /tmp/court-validated-snapshot.json data/capital-court-pilot.json
+                git add data/capital-court-pilot.json
+              else
+                code=$?
+                if [ "$code" -ne 3 ]; then exit "$code"; fi
+              fi
+            fi
+            if git diff --cached --quiet; then
+              echo "No change to publish"
               exit 0
             fi
-            echo "New repository commit arrived; retrying safe rebase ($attempt/3)"
+            git commit -m "data: publish validated metropolitan listing and status"
+            if git push origin HEAD:main; then
+              echo "Published validated data onto latest branch"
+              exit 0
+            fi
+            echo "Concurrent commit: retrying safe data-only publication ($attempt/4)"
             sleep 2
           done
-          echo "::error::Could not safely publish validated court data"
+          echo "::error::Could not publish verified collection safely"
           exit 1
       - name: Deploy current saved snapshot with status
         if: always() && steps.collection.outcome != ''

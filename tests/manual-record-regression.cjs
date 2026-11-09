@@ -108,7 +108,7 @@ async function createTestCase(page){
   const first=courtData.items.find(x=>x.caseNo==='2008타경25092');
   assert(first&&first.minimumWon,'sample must include known first lot');
   await page.route('**/item?*',async route=>{
-    const url=new URL(route.request().url());
+    const url=new (require('node:url').URL)(route.request().url());
     await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
       verified:true,source:'courtauction.go.kr',
       courtCode:url.searchParams.get('courtCode'),caseNo:url.searchParams.get('caseNo'),

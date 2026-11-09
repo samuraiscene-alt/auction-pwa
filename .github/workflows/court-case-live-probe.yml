@@ -55,6 +55,13 @@ jobs:
           const allowedReasons=new Set(['timeout','dns_failure','network_failure','access_rejected','http_error','non_json','response_schema_invalid','identity_mismatch','unexpected_failure']);
           const reason=process.env.OFFLINE_OUTCOME!=='success'?'offline_test_failed':
             passed?'case_identity_matched':
+            tagged==='identity_mismatch'&&parsed?.responseCaseFormat==='digits_only'&&
+              parsed?.identityHints?.baseCourtMatches===true&&
+              parsed?.identityHints?.internalCaseYearMatches===true&&
+              parsed?.identityHints?.internalCaseSerialSuffixMatches===true&&
+              parsed?.identityHints?.internalLotRowFound===true&&
+              parsed?.identityHints?.internalCaseRowsConsistent===true&&
+              parsed?.identityHints?.matchingLotRowUnique===true?'internal_case_id_unmapped':
             allowedReasons.has(tagged)?tagged:
             process.env.LIVE_OUTCOME==='skipped'?'probe_skipped':
             'unclassified_failure';

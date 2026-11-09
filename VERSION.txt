@@ -1,2 +1,2 @@
-0.5.8
-Partial verified court usage catalogue: 4 large, 2 medium, 2 small; parent-scoped suggestions, raw names retained.
+0.5.9
+98 court-verified hierarchical usage codes: 4 large / 12 medium / 82 small, exact-code three-level selectors.

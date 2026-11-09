@@ -104,17 +104,22 @@ async function search(region,pageNo){
   await new Promise(resolve=>setTimeout(resolve,700));
  }
  if(errors.length){console.error('Probe incomplete. No output JSON published:',errors.join(' / '));process.exitCode=1;return;}
- const uniqueMap=new Map(),conflicts=new Set(),conflictExamples=[];
+ const uniqueMap=new Map(),conflicts=new Set(),conflictExamples=[],conflictFieldCounts={};
  for(const item of items){
   const previous=uniqueMap.get(item.id);
-  if(previous&&['region','address','appraisalWon','minimumWon','saleDate','smallCode'].some(k=>previous[k]!==item[k])){
-   conflicts.add(item.id);
-   if(conflictExamples.length<4)conflictExamples.push({id:item.id,
-    first:{region:previous.region,address:previous.address,price:previous.minimumWon,date:previous.saleDate},
-    next:{region:item.region,address:item.address,price:item.minimumWon,date:item.saleDate}});
+  if(previous){
+   const changedFields=['region','address','appraisalWon','minimumWon','saleDate','smallCode'].filter(k=>previous[k]!==item[k]);
+   if(changedFields.length){
+    conflicts.add(item.id);
+    for(const field of changedFields)conflictFieldCounts[field]=(conflictFieldCounts[field]||0)+1;
+    if(conflictExamples.length<4)conflictExamples.push({id:item.id,
+      changedFields,first:Object.fromEntries(changedFields.map(k=>[k,previous[k]])),
+      next:Object.fromEntries(changedFields.map(k=>[k,item[k]]))});
+   }
   }
   if(!previous)uniqueMap.set(item.id,item);
  }
+ console.log('Conflict field distribution:',JSON.stringify(conflictFieldCounts));
  console.log('Conflicting record samples:',JSON.stringify(conflictExamples));
  console.log('Duplicate-ID conflict rate:',conflicts.size+'/'+uniqueMap.size,'(publish is blocked above 5%)');
  // Quarantine disagreeing records. Never silently choose one conflicting value.

@@ -60,3 +60,10 @@ GitHub `backend/court-worker.js`에 `GET /taxonomy?level=large|medium|small&pare
 - 공동주택 `21200`의 소분류 `selectSclLst.on`: HTTP 200 / API 200, 응답 키 `usgSclLst`, 실제 항목 0개.
 - 비어 있는 배열이므로 현재 요청으로는 분류표를 수집할 수 없음. `completed/success`는 **정상 수집 성공을 의미하지 않는다**.
 - 검사 기준을 `0개 → 실패`로 수정했으며, Worker 역시 중·소분류가 0개이면 오류 반환하도록 변경. 응답 조건을 확인할 때까지 앱 v0.5.8에 미연결.
+
+## 2026-11-09 추가 검증: 중·소분류 빈 목록 원인 범위 축소
+- 검증 실행 [42601334650](https://github.com/samuraiscene-alt/auction-pwa/actions/runs/42601334650): 건물 중분류 및 공동주택 소분류 HTTP 200 / API 200. `message="중분류 목록 조회가 완료되었습니다."`, `usgMclLst=[]`, `usgSclLst=[]`. `ipcheck` 키는 반환되지 않음.
+- 실험 실행 [42601424519](https://github.com/samuraiscene-alt/auction-pwa/actions/runs/42601424519): 기존 상위 분류 필드 이외에 대분류 조회에서 사용한 `dsignUsgDvsCd:""`를 함께 보내도 두 계층 모두 결과 0개.
+- 따라서 확인한 두 요청 모양으로는 하위 코드표 전체 수집 불가. 해당 엔드포인트 존재 및 성공 메시지만으로 항목 조회 성공이라고 판단하지 않음.
+- 다음: 실제 법원 WebSquare UI에서 중·소분류를 선택하는 **정확한 요청 본문과 요청 헤더 및 응답 샘플**을 얻은 후 1회 재검증. 더 많은 페이로드 추측 호출을 하지 않는다.
+- 기존 v0.5.8 앱 및 운영 Cloudflare Worker는 변경되지 않았음. GitHub Worker `/taxonomy` 소스는 아직 운영 배포 전이며 배열이 비면 오류를 반환하도록 유지.

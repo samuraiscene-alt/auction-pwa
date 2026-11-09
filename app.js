@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.6.6';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.6.7';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -1310,7 +1310,8 @@ function capital(){
  const snapshot=capitalSnapshot;
  const items=Array.isArray(snapshot?.items)?snapshot.items:[];
  const region=state.capitalRegion,query=state.capitalQuery.trim().normalize('NFC').toLocaleLowerCase('ko');
- const presentCodes=new Set(items.filter(x=>region==='전체'||x.region===region).map(x=>x.smallCode).filter(Boolean));
+ const componentsFor=x=>Array.isArray(x.components)&&x.components.length?x.components:[{address:x.address,largeCode:x.largeCode,mediumCode:x.mediumCode,smallCode:x.smallCode}];
+ const presentCodes=new Set(items.filter(x=>region==='전체'||x.region===region).flatMap(x=>componentsFor(x).map(c=>c.smallCode)).filter(Boolean));
  const preferred=['20104','20101','20102','20105','20106','20108','10108','20110','21101','21104'];
  const available=COURT_USAGE_CATALOG.filter(x=>x.level==='small'&&presentCodes.has(x.code));
  const sortedTypes=available.sort((a,b)=>{
@@ -1318,21 +1319,26 @@ function capital(){
   return (ia<0?999:ia)-(ib<0?999:ib)||a.name.localeCompare(b.name,'ko');
  });
  const typeOptions=[{code:'전체',name:'전체 물건'},...sortedTypes];
- if(items.some(x=>(region==='전체'||x.region===region)&&!COURT_USAGE_CATALOG.some(z=>z.level==='small'&&z.code===x.smallCode)))typeOptions.push({code:'미확인',name:'분류 미확인'});
+ if(items.some(x=>(region==='전체'||x.region===region)&&componentsFor(x).every(c=>!COURT_USAGE_CATALOG.some(z=>z.level==='small'&&z.code===c.smallCode))))typeOptions.push({code:'미확인',name:'분류 미확인'});
  const isType=x=>state.capitalType==='전체'||(state.capitalType==='미확인'
-  ?!COURT_USAGE_CATALOG.some(t=>t.level==='small'&&t.code===x.smallCode)
-  :x.smallCode===state.capitalType);
+  ?componentsFor(x).every(c=>!COURT_USAGE_CATALOG.some(t=>t.level==='small'&&t.code===c.smallCode))
+  :componentsFor(x).some(c=>c.smallCode===state.capitalType));
  const matched=items.filter(x=>(region==='전체'||x.region===region)&&isType(x)&&
-  (!query||[x.address,x.caseNo,x.courtName,x.itemNo].some(v=>String(v||'').normalize('NFC').toLocaleLowerCase('ko').includes(query))));
+  (!query||[x.address,x.caseNo,x.courtName,x.itemNo,...componentsFor(x).map(c=>c.address)].some(v=>String(v||'').normalize('NFC').toLocaleLowerCase('ko').includes(query))));
  const groupedMap=new Map();
  for(const x of matched){const k=x.courtCode+'|'+x.caseNo;if(!groupedMap.has(k))groupedMap.set(k,[]);groupedMap.get(k).push(x);}
  const grouped=[...groupedMap.values()];
  const renderCapitalProperty=x=>{
 
+  const components=componentsFor(x);
   const entry=COURT_USAGE_CATALOG.find(t=>t.level==='small'&&t.code===x.smallCode);
-  const category=entry?entry.name:'분류 미확인';
+  const category=components.length>1?'복합물건':entry?entry.name:'분류 미확인';
+  const partList=components.length>1?`<details class="capital-components"><summary>구성요소 ${components.length}개 · 토지·건물·소재지 펼치기</summary>${components.map(c=>{
+   const kind=COURT_USAGE_CATALOG.find(t=>t.level==='small'&&t.code===c.smallCode)?.name||'분류 미확인';
+   return `<p class="helper">${escapeHtml(kind)} · ${escapeHtml(c.address)}</p>`;
+  }).join('')}</details>`:'';
   return `<div class="capital-property"><div class="auction-card-top"><span class="auction-type">${escapeHtml(category)}</span><span class="auction-demo user-record">법원 수집 · 시범</span></div>
-   <strong>${escapeHtml(x.address)}</strong><p class="helper">${escapeHtml(x.courtName||'법원 미확인')} · ${escapeHtml(x.caseNo)} · 물건 ${escapeHtml(x.itemNo)}번</p>
+   <strong>${escapeHtml(x.address)}${components.length>1?' 외 구성요소 있음':''}</strong><p class="helper">${escapeHtml(x.courtName||'법원 미확인')} · ${escapeHtml(x.caseNo)} · 물건 ${escapeHtml(x.itemNo)}번</p>${partList}
    <div class="line"><span class="muted">감정평가액</span><strong>${escapeHtml(formatAmount(x.appraisalWon))}</strong></div>
    <div class="line"><span class="muted">최저매각가</span><strong>${escapeHtml(formatAmount(x.minimumWon))}</strong></div>
    <div class="line"><span class="muted">매각기일</span><strong>${escapeHtml(x.saleDate||'미확인')}</strong></div>
@@ -1356,7 +1362,7 @@ function capital(){
    '최근 자동 수집 실패 · 이전 목록 표시')+' · 법원 원문 확인 필요.</div>':'')+
   (isStale?'<div class="status">⚠ 마지막 수집 후 30시간 이상 경과했습니다. 자료가 오래되었을 수 있습니다.</div>':
    safetyVerified?'<div class="status">✓ 자동 형식 검사 통과 · 법원 원문 확인을 대체하지 않습니다.</div>':
-   '<div class="status">⚠ 기존 시범 수집본입니다. 새로운 안전검증 기록이 아직 없습니다.</div>')+
+   '<div class="status">⚠ 기존 시범 수집본입니다. 토지·건물 등 복합 구성요소가 일부 누락됐을 수 있으며, 안전검증 기록이 아직 없습니다.</div>')+
   (safetyVerified&&snapshot.validation.warnings?.length?
    '<div class="status">⚠ 이전 수집본과 차이 감지: '+escapeHtml(snapshot.validation.warnings.join(' / '))+'</div>':'')+
   '<p class="helper">이 화면은 한정된 3페이지 자료만 제공합니다. 목록에 없다고 매각·취하된 것은 아닙니다.</p>':'';
@@ -1395,8 +1401,9 @@ async function loadCapital(force=false){
   capitalAttemptStatus=attempt;
   if(!response.ok)throw Error('목록 파일이 아직 배포되지 않았습니다.');
   const payload=await response.json();
-  if(payload?.schemaVersion!==1||payload.complete!==false||!Array.isArray(payload.items)||payload.items.length===0||payload.items.length>5000||
-    !payload.items.every(x=>x&&typeof x.id==='string'&&x.id.startsWith('court-')&&['서울','경기','인천'].includes(x.region)&&typeof x.address==='string'&&x.address.length<=260))
+  if(![1,2].includes(payload?.schemaVersion)||payload.complete!==false||!Array.isArray(payload.items)||payload.items.length===0||payload.items.length>5000||
+    !payload.items.every(x=>x&&typeof x.id==='string'&&x.id.startsWith('court-')&&['서울','경기','인천'].includes(x.region)&&typeof x.address==='string'&&x.address.length<=260&&
+    (payload.schemaVersion!==2||(Array.isArray(x.components)&&x.components.length>0&&x.components.length<=100&&x.components.every(c=>c&&typeof c.address==='string'&&c.address.length<=260)))))
     throw Error('목록 데이터 형식 확인 실패');
   if(payload.validation&&payload.validation.passed!==true)throw Error('안전 검사 실패 자료가 전달됐습니다.');
   capitalSnapshot=payload;capitalLoadStatus='ready';

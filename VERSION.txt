@@ -1,2 +1,2 @@
-0.5.7
-Court 3-level classification record structure; exact source names preserved, complete code master not yet verified.
+0.5.8
+Partial verified court usage catalogue: 4 large, 2 medium, 2 small; parent-scoped suggestions, raw names retained.

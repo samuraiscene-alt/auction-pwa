@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-09T22:12:20.760Z",
+  "attemptedAt": "2026-11-09T22:12:34.654Z",
   "outcome": "list_response_observed",
   "reason": "processed",
   "exactDisplayLotRows": 1,
@@ -14,6 +14,10 @@
   "docidFormat": "other",
   "docidExactlyMatches": false,
   "listCsNoExactlyMatches": false,
+  "saNoFieldPresent": true,
+  "printCsNoFieldPresent": true,
+  "listSaNoExactlyMatches": true,
+  "printCsNoMatchesDisplay": false,
   "legalStatusVerified": false,
   "rawResponseSaved": false
 }

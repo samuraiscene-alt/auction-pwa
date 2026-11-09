@@ -170,3 +170,9 @@
 - 동일 물건의 같은 날짜·기일종류에 서로 다른 `auctnDxdyRsltCd`가 존재하면 `scheduleConflictDetected=true`로 표시하고 해당 기일 결과 전체를 빈 배열로 처리. 동일 코드 중복은 단일 항목으로 정리. 결과 개수가 20건을 넘는지는 `scheduleEvidenceTruncated`로 별도 표시.
 - `tests/court-status-evidence.cjs`의 최신순 정렬/충돌/중복 회귀 테스트 통과. `.github/workflows/court-case-list-bridge.yml`에도 안전장치 플래그 저장 및 충돌 시 결과 봉쇄 적용.
 - 공식 기일 결과코드 `002`의 정확한 법적 의미는 여전히 미확인. 앱 v0.7.5 및 기존 805건 목록, 개인 저장자료·화면 변경 없음.
+
+## 2026-11-10 기일 날짜 실제 달력 검증
+- 공개 법원 화면 소스 `PGJ15BM01.xml`에서 `AUCTN_DXDY_RSLT_CD` 그룹을 이름으로 변환하는 호출만 확인됨. 값 `002`의 의미를 공식적으로 확정할 수 있는 코드/이름표는 미확보: https://gist.github.com/wiggleji/e091fc7827d7032ce638a162777c0602
+- `scripts/extract-court-status-evidence.cjs`의 `safeDay`를 YYYYMMDD 정규식 통과만으로 수용하던 방식에서 **그레고리력 일자(월 범위·월별 최대일수·윤년)** 실제 검증으로 강화. `20261399`, `20260229` 거부, `20240229` 허용.
+- `tests/court-status-evidence.cjs` 회귀 사례 추가; 기존 신원 검증 테스트와 함께 모두 통과. 실서버 보고서 `data/court-case-list-bridge-status.json` (2026-11-09T23:40:04.049Z)에서 사건 연결 성공, 결과 기일 `20261015` 정상, 법적 상태 미검증.
+- 앱 버전 v0.7.5, 805건 시범 목록, 사용자의 직접 등록/저장 자료 불변. 결과코드와 최종 법적 상태를 연결하는 자동 기능은 미적용.

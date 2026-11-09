@@ -1,2 +1,2 @@
-0.4.7
-Compact PDF search icon and prevent header truncation on iPhone.
+0.4.8
+Whitespace-insensitive PDF search and clear search state whenever the panel reopens.

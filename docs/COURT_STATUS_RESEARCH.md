@@ -147,3 +147,8 @@
 - 3건 모두 `lotStatusCode=01`, `caseProgressCode=0002100001`; `caseSuspensionCode`는 서울/인천 `00`, 경기 `04`. **코드 의미는 공식 검증 전이므로 정지·취하 등 법적 상태로 해석하지 않는다.**
 - 최근 기일 결과코드는 3건에서 `null`(검증된 기일 결과코드 없음)이며, 이는 매각/유찰/변경을 의미하지 않음. 기일 코드 반환 순서를 최신순으로 오인하지 않도록 날짜 기준 정렬 적용.
 - 지역마다 1건씩이므로 법원별 스키마의 다른 기일/상태 사례까지 대표하지 않음. `legalStatusVerified=false` 및 자동분류 차단 계속 유지.
+
+## 2026-11-10 법원 원문 코드명 변환 경로 확인 및 판정 게이트
+- 공개된 법원 UI 원본 자료(https://gist.github.com/wiggleji/e091fc7827d7032ce638a162777c0602)의 매각기일 결과 렌더링 코드에 `pgjUtil.getSTGcodeSystemNm('LJH', 'AUCTN_DXDY_RSLT_CD', gdsDspslDxdyLst[i].auctnDxdyRsltCd)`가 확인됨. 종류는 `PGJ/AUCTN_DXDY_KND_CD`를 별도로 사용함. 이것은 **코드 그룹 식별**의 근거이며, 예를 들어 `002`가 매각/유찰/취하 중 무엇인지를 보여주는 코드표는 아님.
+- `scripts/court-status-meaning-gate.cjs`, `tests/court-status-meaning-gate.cjs` 추가. 공식 화면의 같은 법원·사건·물건·기일 결과임을 사람이 실제로 확인한 비교증거만 수용 대상으로 제한하고, 민간 사이트/다른 코드 그룹/다른 물건·기일/중복 행을 거부. 현재는 비교 일치하더라도 항상 `verified:false` 및 `label:null`로 자동 상태 표시를 차단.
+- 회귀검증 통과. 공식 코드표/공식 UI의 동일 사례 결과를 아직 직접 읽어 확정하지 못했으므로 원시코드 `01`/`002` 등의 뜻은 **미확인**. 매각·유찰·취하·변경 자동판정 미구현.

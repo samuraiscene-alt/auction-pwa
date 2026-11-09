@@ -74,6 +74,22 @@ jobs:
               console.log('Case basic info populated:', hasBase);
               console.log('Basic info shape:', Array.isArray(base) ? 'array (' + base.length + ')' : base === null ? 'null' : typeof base);
               console.log('Basic info field names:', hasBase ? Object.keys(record).slice(0,80).join(', ') : '(none)');
+              // Check that the returned case corresponds to the requested case, not merely any case.
+              const normalizeDigits = v => String(v ?? '').replace(/[^0-9]/g, '');
+              const expectedDigits = normalizeDigits(caseNo);
+              const returnedDigits = normalizeDigits(record?.csNo);
+              const caseMatch = !!returnedDigits && (returnedDigits === expectedDigits ||
+                (returnedDigits.startsWith(expectedDigits.slice(0, 4)) && returnedDigits.endsWith(expectedDigits.slice(4).replace(/^0+/, '') || '0')));
+              const courtMatch = String(record?.cortOfcCd ?? '').toUpperCase() === court.toUpperCase();
+              console.log('Returned case number matches request:', caseMatch);
+              console.log('Returned court code matches request:', courtMatch);
+              console.log('Case number format:', returnedDigits.length ? 'digits-' + returnedDigits.length : 'missing');
+              const candidateKeys = Object.keys(record || {}).filter(k => /(?:appr|asmt|prc|price|amt|bid|sale|schd|dt|ymd|mnim|lws|eval)/i.test(k));
+              console.log('Basic field candidates for price/date:', candidateKeys.join(', ') || '(none)');
+              if (!caseMatch || !courtMatch) {
+                console.error('Case or court identity mismatch. Do not use this response for autofill.');
+                process.exitCode = 1;
+              }
               if (!hasBase) {
                 console.error('No populated basic case information. API response alone does not prove case lookup.');
                 process.exitCode = 1;

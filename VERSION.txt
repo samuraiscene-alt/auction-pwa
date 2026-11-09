@@ -1,2 +1,2 @@
-0.7.3
-Persist a visible warning when court listing reload fails and the previous verified snapshot is shown.
+0.7.4
+Court item comparison validates amount/date formats and does not infer auction status.

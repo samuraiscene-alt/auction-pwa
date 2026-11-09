@@ -1,2 +1,2 @@
-0.4.8
-Whitespace-insensitive PDF search and clear search state whenever the panel reopens.
+0.4.9
+Remember the last viewed PDF page on this device; explicit source links take priority.

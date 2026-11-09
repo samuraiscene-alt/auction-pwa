@@ -164,3 +164,9 @@
 - `scripts/extract-court-status-evidence.cjs`는 세 필드만 이름으로 진단하고, `listProgressCode`(`jinstatCd`) 및 `listProgressFlag`(`mulJinYn`)를 안전한 문자형 원시코드로만 기록. 기존 `listStatusCode`(`mulStatcd`) 유지. 코드 의미는 절대 추정하지 않음.
 - `.github/workflows/court-case-list-bridge.yml`의 결과 저장도 3개 필드 화이트리스트로 제한. 기존 무관한 이름 필드 기록은 중단.
 - 기존 브리지/원시코드 추출 테스트를 실제 GitHub 저장소 소스로 다시 실행하여 모두 통과. 신규 진단 이후 Actions 실서버 결과의 성공 여부는 별도 확인 필요하며, 앱 v0.7.5·805건 목록·개인정보와 자동 매각/취하 판정은 변경하지 않음.
+
+## 2026-11-10 기일 결과 이력 순서·충돌 안전장치
+- 법원 기일 이력 `dlt_rletCsGdsDtsDxdyInf`의 행 순서가 최신순임을 가정하지 않도록 `dxdyYmd` 날짜 내림차순 정렬 후 최대 20개만 기록. 기존 코드는 처음 20개를 선택하여 최신 기일이 뒤쪽에 있으면 누락될 가능성이 있었음.
+- 동일 물건의 같은 날짜·기일종류에 서로 다른 `auctnDxdyRsltCd`가 존재하면 `scheduleConflictDetected=true`로 표시하고 해당 기일 결과 전체를 빈 배열로 처리. 동일 코드 중복은 단일 항목으로 정리. 결과 개수가 20건을 넘는지는 `scheduleEvidenceTruncated`로 별도 표시.
+- `tests/court-status-evidence.cjs`의 최신순 정렬/충돌/중복 회귀 테스트 통과. `.github/workflows/court-case-list-bridge.yml`에도 안전장치 플래그 저장 및 충돌 시 결과 봉쇄 적용.
+- 공식 기일 결과코드 `002`의 정확한 법적 의미는 여전히 미확인. 앱 v0.7.5 및 기존 805건 목록, 개인 저장자료·화면 변경 없음.

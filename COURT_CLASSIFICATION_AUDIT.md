@@ -52,3 +52,11 @@ GitHub `backend/court-worker.js`에 `GET /taxonomy?level=large|medium|small&pare
 `.github/workflows/court-usage-audit.yml`에 중분류 `20000`, 소분류 `21200` 검증 요청을 각각 1회 추가함. **현재 실제 실행 결과 및 정확한 응답 키는 아직 미확인.** 이 코드도 아직 Cloudflare에 배포하지 않았으며 GitHub Pages 앱 화면 v0.5.8은 변경하지 않았다.
 
 조회가 성공하면 실제 응답 키에 맞춰 Worker를 보완한 뒤, 앱의 중·소분류 선택을 원격 연동한다. 다수 조회로 차단을 유도하거나 접근 제한을 우회하지 않는다.
+
+## 2026-11-09 실행 결과 (확인됨)
+- GitHub Actions 실행 [42600690180](https://github.com/samuraiscene-alt/auction-pwa/actions/runs/42600690180): `completed/success`, **하지만 부분 검증에 결함 발견**.
+- 대분류 조회 HTTP 200, `usgLclLst` 4개 반환, 기존 4개 코드와 일치.
+- 건물 `20000`의 중분류 `selectMclLst.on`: HTTP 200 / API 200, 응답 키 `usgMclLst`, 실제 항목 0개.
+- 공동주택 `21200`의 소분류 `selectSclLst.on`: HTTP 200 / API 200, 응답 키 `usgSclLst`, 실제 항목 0개.
+- 비어 있는 배열이므로 현재 요청으로는 분류표를 수집할 수 없음. `completed/success`는 **정상 수집 성공을 의미하지 않는다**.
+- 검사 기준을 `0개 → 실패`로 수정했으며, Worker 역시 중·소분류가 0개이면 오류 반환하도록 변경. 응답 조건을 확인할 때까지 앱 v0.5.8에 미연결.

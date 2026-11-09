@@ -302,7 +302,7 @@ const MAIN_TABS=['home','search','schedule','favorites','study'];
 let capitalSnapshot=null,capitalLoadStatus='unloaded',capitalLoadError='';
 let appDepth=0;
 const viewHistory=new Map();
-function snapshot(){return {page:state.page,filter:state.filter,selected:state.selected,viewMonth:state.viewMonth,calendarFavoritesOnly:state.calendarFavoritesOnly,detail:state.detail,note:state.note,search:state.search,region:state.region,minPrice:state.minPrice,maxPrice:state.maxPrice,priceUnit:state.priceUnit,detailTab:state.detailTab,favoriteSort:state.favoriteSort,favoriteType:state.favoriteType,capitalRegion:state.capitalRegion,capitalQuery:state.capitalQuery,capitalLimit:state.capitalLimit,editRealId:state.editRealId,noteQuery:state.noteQuery,noteSort:state.noteSort,studyCategory:state.studyCategory,noteTopicDraft:state.noteTopicDraft}}
+function snapshot(){return {page:state.page,filter:state.filter,selected:state.selected,viewMonth:state.viewMonth,calendarFavoritesOnly:state.calendarFavoritesOnly,detail:state.detail,note:state.note,search:state.search,region:state.region,minPrice:state.minPrice,maxPrice:state.maxPrice,priceUnit:state.priceUnit,detailTab:state.detailTab,favoriteSort:state.favoriteSort,favoriteType:state.favoriteType,capitalRegion:state.capitalRegion,capitalType:state.capitalType,capitalQuery:state.capitalQuery,capitalLimit:state.capitalLimit,editRealId:state.editRealId,noteQuery:state.noteQuery,noteSort:state.noteSort,studyCategory:state.studyCategory,noteTopicDraft:state.noteTopicDraft}}
 viewHistory.set(0,snapshot());
 history.replaceState({auctionApp:true,depth:0,view:snapshot()},'',location.pathname+location.search);
 function nav(page,extra={}){

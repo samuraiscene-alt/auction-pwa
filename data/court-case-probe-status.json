@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "attemptedAt": "2026-11-09T20:07:28.543Z",
+  "outcome": "unverified",
+  "reason": "identity_mismatch",
+  "caseIdentityMatched": false,
+  "lotIdentityMatched": false,
+  "legalStatusVerified": false,
+  "rawResponseSaved": false,
+  "note": "진단 상태만 기록. 매각·취하·기일변경의 법원 확정정보 아님."
+}

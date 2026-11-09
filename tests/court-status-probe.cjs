@@ -92,4 +92,16 @@ assert.equal(classifyProbeFailure({message:'non-JSON response'}),'non_json');
 assert.equal(classifyProbeFailure({message:'court response schema not verified; no status inference'}),'response_schema_invalid');
 assert.equal(classifyProbeFailure({message:'case identity not matched; structural field names only reported'}),'identity_mismatch');
 assert.equal(classifyProbeFailure({message:'private-secret-error'}),'unexpected_failure');
+const expCase=assessIdentity({data:{
+ dma_csBasInf:{cortOfcCd:'B000210',csNo:'20080130025092',expCsNo:'2008타경25092'},
+ dlt_dspslGdsDspslObjctLst:[{cortOfcCd:'B000210',csNo:'20080130025092',dspslGdsSeq:'1'}]
+}},{courtCode:'B000210',caseNo:'2008타경25092',itemNo:'1'});
+assert.equal(expCase.baseExpCaseExact,true);
+assert.equal(expCase.baseExpCaseFormat,'display_case');
+assert.equal(expCase.statusDecisionAllowed,false);
+const expWrong=assessIdentity({data:{
+ dma_csBasInf:{cortOfcCd:'B000210',csNo:'20080130025092',expCsNo:'2008타경25093'}
+}},{courtCode:'B000210',caseNo:'2008타경25092',itemNo:'1'});
+assert.equal(expWrong.baseExpCaseExact,false);
+assert.equal(expWrong.statusDecisionAllowed,false);
 console.log('PASS: structural-only status probe; block and redaction');

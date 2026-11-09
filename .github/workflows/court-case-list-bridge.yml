@@ -1,0 +1,77 @@
+name: Court listing-to-detail bridge diagnostic
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/probe-court-case-list-bridge.cjs
+      - scripts/validate-court-case-bridge.cjs
+      - tests/court-case-bridge.cjs
+      - .github/workflows/court-case-list-bridge.yml
+permissions:
+  contents: write
+jobs:
+  bridge:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    concurrency:
+      group: court-case-list-bridge-report
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - id: offline
+        name: Validate strict case bridge
+        run: node tests/court-case-bridge.cjs
+      - id: query
+        name: Single court list lookup
+        continue-on-error: true
+        shell: bash
+        run: |
+          node scripts/probe-court-case-list-bridge.cjs 'court-B000210|2008타경25092|1' > /tmp/case-list-bridge.json 2>/tmp/case-list-error.txt
+      - name: Store non-sensitive summary only
+        if: always()
+        env:
+          OFFLINE: ${{ steps.offline.outcome }}
+          QUERY: ${{ steps.query.outcome }}
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          let result=null;
+          try { result=JSON.parse(fs.readFileSync('/tmp/case-list-bridge.json','utf8')); } catch {}
+          const error=fs.existsSync('/tmp/case-list-error.txt')?fs.readFileSync('/tmp/case-list-error.txt','utf8'):'';
+          const reason=/BRIDGE_REASON=([a-z_]+)/.exec(error)?.[1]||'not_recorded';
+          const valid=process.env.OFFLINE==='success'&&process.env.QUERY==='success'&&
+            result?.schemaVersion===1&&Number.isInteger(result.exactDisplayLotRows);
+          const report={
+            schemaVersion:1,attemptedAt:new Date().toISOString(),
+            outcome:valid?'list_response_observed':'unverified',
+            reason:valid?'processed':reason,
+            exactDisplayLotRows:valid?Math.min(result.exactDisplayLotRows,50):0,
+            directInternalCaseMapping:valid&&result.directInternalCaseMapping===true,
+            internalCaseFormatObserved:valid&&result.internalCaseFormatObserved==='digits_only'?'digits_only':'unavailable',
+            detailCaseCrossChecked:false,legalStatusVerified:false,
+            rawResponseSaved:false
+          };
+          fs.writeFileSync('/tmp/case-list-summary.json',JSON.stringify(report,null,2)+'\n');
+          console.log(JSON.stringify(report));
+          NODE
+      - name: Publish only redacted bridge status
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for retry in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            mkdir -p data
+            cp /tmp/case-list-summary.json data/court-case-list-bridge-status.json
+            git add data/court-case-list-bridge-status.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "diagnostic: record redacted court list-case bridge result"
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 2
+          done
+          exit 1

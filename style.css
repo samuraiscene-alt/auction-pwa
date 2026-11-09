@@ -668,3 +668,46 @@ body.attachment-viewing{overflow:hidden!important}
 .attachment-search-hit{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;color:#22304a;background:#fff;border:0;border-radius:9px;padding:10px;width:100%}
 .attachment-search-hit strong{color:#2764bf;font-size:12px}
 .attachment-search-hit span{font-size:13px;line-height:1.5;word-break:break-word}
+
+/* v0.4.7 iPhone PDF header: avoid truncated search text and header overflow */
+.attachment-viewer-bar{
+ display:flex;
+ gap:8px;
+ padding-left:12px;
+ padding-right:12px;
+ width:100%;
+ min-width:0;
+ overflow:hidden;
+}
+.attachment-viewer-bar #attachmentViewerName{
+ display:block;
+ flex:1 1 0;
+ min-width:0;
+ overflow:hidden;
+ text-overflow:ellipsis;
+ white-space:nowrap;
+ font-size:15px;
+ line-height:1.35;
+}
+.attachment-viewer-bar #attachmentSearchOpen,
+.attachment-viewer-bar #attachmentViewerClose{
+ flex:0 0 42px;
+ width:42px!important;
+ min-width:42px;
+ height:42px;
+ min-height:42px;
+ padding:0!important;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ border-radius:11px;
+ box-sizing:border-box;
+}
+.attachment-viewer-bar #attachmentSearchOpen{font-size:0;background:#405374}
+.attachment-viewer-bar #attachmentSearchOpen svg{width:24px;height:24px;display:block;flex-shrink:0}
+.attachment-viewer-bar #attachmentSearchOpen[hidden]{display:none!important}
+@media(max-width:360px){
+ .attachment-viewer-bar{gap:6px;padding-left:9px;padding-right:9px}
+ .attachment-viewer-bar #attachmentSearchOpen,
+ .attachment-viewer-bar #attachmentViewerClose{flex-basis:39px;width:39px!important;min-width:39px}
+}

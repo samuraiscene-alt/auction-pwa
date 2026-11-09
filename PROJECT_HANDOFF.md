@@ -2,12 +2,13 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.6.1 (수도권 법원 자동 수집 시범 목록 화면)
+- 현재 버전: v0.6.2 (수도권 동일 사건 물건 묶음)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.
 - iOS 한글 조합: 라이브 검색 DOM 갱신 금지. 검색 완료 키 또는 화면의 검색 버튼으로 결과 반영.
 - 형광펜 2탭: splitNoteUnits()는 Intl.Segmenter(단어/글자)로 렌더할 선택 범위를 만들고, 형광펜 읽기 화면에서 시작·끝 두 번 터치해 선택. 기본 iOS long-press 선택 미사용. 기존 마크를 누르면 포스트잇. annotations 데이터 포맷 그대로.
+- v0.6.2: 수도권 자동목록에서 법원코드+사건번호 그룹화하여 details 접기/펼치기. 물건번호마다 별도 가격/기일 보존, 40개 사건씩 더 보기. 기존 데이터 변경 없음. SW v062.
 - v0.6.1: 수도권 법원 PGJ151M01 검색 결과를 scripts/capital-court-pilot.cjs로 최대 서울/경기/인천 각 3페이지씩 조회, data/capital-court-pilot.json 생성. .github/workflows/capital-court-pilot.yml은 매일 03:15 KST 실행하여 파일 git commit 후 Pages 배포. 앱 capital 화면은 별도 수집 스냅샷을 가져와 필터/검색/40개 pagination을 제공. 로컬 개인 데이터 수정 없음. 정보는 일부 페이지만 수집한 시범 목록이며 전국/수도권 전체를 뜻하지 않음. SW v061.
 - v0.6.0: 직접 등록 목록 data-edit-real 및 상세 id=editRealDetail → nav('official',{editRealId:id}), 등록 폼은 state.editRealId로 사전값 로드. 법원/사건번호/물건번호 readOnly. 기존 type legacy 분류는 선택 공란 시 보존; 새로운 대중소분류 선택 시 코드 변경. 변경 저장은 동일 id 항목을 map 교체, enteredAt/관심물건/일정 유지. editedAt 추가, SW v060. iPhone 실기기 테스트 필요.
 - v0.5.9: 법원 pgj.js getUsgMclLst/getUsgSclLst 실제 POST JSON 본문 {code:parent} 검증. 대 4/중 12/소 82개 실제 조회 성공. 전체 분류 snapshot court-usage-codes.json. 등록 화면 대/중/소 select로 부모 연동. 자동 채움은 명확한 공식 분류 계층 코드+이름만 반영. 기존 과거 기록은 그대로, SW v059. 법원 코드 추후 변경 가능; Cloudflare 소스 아직 따로 배포 필요.

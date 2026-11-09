@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-09T23:34:23.265Z",
+  "attemptedAt": "2026-11-09T23:34:41.581Z",
   "outcome": "list_response_observed",
   "reason": "processed",
   "failedStage": "none",
@@ -30,6 +30,8 @@
     "listStatusCode": "01",
     "listProgressCode": "0002100001",
     "listProgressFlag": "Y",
+    "scheduleConflictDetected": false,
+    "scheduleEvidenceTruncated": false,
     "scheduleResultObservations": [
       {
         "day": "20261015",

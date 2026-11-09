@@ -115,3 +115,10 @@
 - 결과 `data/court-case-list-bridge-status.json` (2026-11-09T22:10:09.757Z): `exactDisplayLotRows=1`, `detailInternalCaseConsistent=true`, `detailLotRowUnique=true`, `docidFormat=other`, `docidExactlyMatches=false`, `listCsNoExactlyMatches=false`, `detailCaseCrossChecked=false`, `legalStatusVerified=false`.
 - **목록 `docid`를 내부 사건번호로 바로 쓸 수 없음.** 값에 임의 파싱/접두·접미 처리나 변환을 적용해 신원을 확정하지 말 것.
 - 브리지 테스트 중 두 후보값이 동시에 있던 가상 테스트 케이스를 분리하여 전체 오프라인 회귀 통과. 불충분한 매핑 및 상태코드 확정은 계속 금지.
+
+## 2026-11-10 목록의 saNo·printCsNo 직접 대조 시도
+- 공개 개발 이슈에는 물건 목록 응답 후보 필드 `saNo`(사건번호), `printCsNo`(표시번호)가 언급됨: https://github.com/NomaDamas/k-skill/issues/184 . 이 정보는 **제3자 참고자료**이며 공식 의미를 검증하지 못함.
+- 목록/상세 교차검증 코드에서 목록의 `saNo`와 상세 `dma_csBasInf.csNo`가 정확히 일치하는지, 동일한 목록행 `printCsNo`와 화면용 사건번호가 정확히 일치하는지 동시에 검사. 한쪽만 일치/누락/중복이면 연결 실패. 추정 파싱 금지.
+- 불리언 진단 필드: `saNoFieldPresent`, `printCsNoFieldPresent`, `listSaNoExactlyMatches`, `printCsNoMatchesDisplay`. 원본 번호 값은 출력·저장하지 않음.
+- 저장소 소스로 오프라인 테스트 전체 통과. 마지막 확인한 실서버 보고서(2026-11-09T22:12:20.760Z)에는 신규 필드가 아직 없고 `detailCaseCrossChecked=false`; 실서버 매핑 성공 주장 금지.
+- 앱 v0.7.5와 기존 목록, 개인 저장자료, 매각·취하 미확인 표시 유지.

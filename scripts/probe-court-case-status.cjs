@@ -31,18 +31,39 @@ function assessIdentity(json,{courtCode,caseNo,itemNo}){
  const get=(record,keys)=>keys.map(k=>record[k]).find(v=>v!==undefined&&v!==null&&String(v).trim()!=='');
  const matchesCase=record=>String(get(record,['cortOfcCd','boCd'])??'')===courtCode&&
    String(get(record,['csNo','srnSaNo'])??'')===caseNo;
- const caseMatch=records.some(matchesCase);
- // Different response sections may contain case and lot rows.
- // A lot identifier matches only if its own row also carries the same case identity.
- const lotMatch=records.some(record=>matchesCase(record)&&
+ const directCaseMatch=records.some(matchesCase);
+ const directLotMatch=records.some(record=>matchesCase(record)&&
    String(get(record,['dspslGdsSeq','maemulSer','mokmulSer'])??'')===itemNo);
  const base=data.dma_csBasInf&&typeof data.dma_csBasInf==='object'&&!Array.isArray(data.dma_csBasInf)?data.dma_csBasInf:null;
  const rawCase=base?.csNo;
  const responseCaseFormat=typeof rawCase==='string'?
    (/^20\d{2}타경\d{1,10}$/.test(rawCase)?'display_case':/^\d{8,20}$/.test(rawCase)?'digits_only':'other'):
    typeof rawCase==='number'?'number':rawCase==null?'missing':'other';
- return {caseIdentityMatched:caseMatch,lotIdentityMatched:lotMatch,responseCaseFormat,
-  statusDecisionAllowed:false,note:'신원 일치 여부만 진단. 실제 상태코드 의미 검증 전이므로 판정 금지.'};
+ // An internal numeric case number is not comparable with a displayed 타경 number.
+ // Collect separate boolean clues but NEVER infer a legal status from them.
+ const digits=typeof rawCase==='string'&&/^\d{8,20}$/.test(rawCase)?rawCase:null;
+ const caseParts=/^(20\d{2})타경([1-9]\d{0,9})$/.exec(caseNo);
+ const numberHints=digits&&caseParts?{
+   yearMatches:digits.startsWith(caseParts[1]),
+   serialSuffixMatches:digits.endsWith(caseParts[2])||
+     digits.endsWith(caseParts[2].padStart(6,'0'))
+ }:{yearMatches:false,serialSuffixMatches:false};
+ const baseCourtMatches=String(base?.cortOfcCd??'')===courtCode;
+ // Related-case fields can refer to different proceedings, so only report alias
+ // equality as a diagnostic clue, not as proof of the primary case or lot.
+ const displayAliasMatched=records.some(record=>
+   String(get(record,['reltCortOfcCd','reltCsCortOfcCd','cortOfcCd'])??'')===courtCode&&
+   String(get(record,['userReltCsNo'])??'')===caseNo);
+ const internalLotRowFound=!!digits&&records.some(record=>
+   String(get(record,['cortOfcCd'])??'')===courtCode&&
+   String(get(record,['csNo'])??'')===digits&&
+   String(get(record,['dspslGdsSeq'])??'')===itemNo);
+ return {caseIdentityMatched:directCaseMatch,lotIdentityMatched:directLotMatch,
+  responseCaseFormat,baseCourtMatches,
+  internalCaseYearMatches:numberHints.yearMatches,
+  internalCaseSerialSuffixMatches:numberHints.serialSuffixMatches,
+  relatedDisplayAliasMatched:displayAliasMatched,internalLotRowFound,
+  statusDecisionAllowed:false,note:'내부 사건번호 형식/별도 연관사건 별칭은 확정 신원증거가 아님. 상태코드 판정 금지.'};
 }
 async function main(){
  const id=process.argv[2];
@@ -67,7 +88,7 @@ async function main(){
   if(!summary.plausibleResponse)throw Error('court response schema not verified; no status inference');
   const identity=assessIdentity(json,{courtCode,caseNo,itemNo});
   if(!identity.caseIdentityMatched){
-    console.log(JSON.stringify({caseIdentityMatched:false,lotIdentityMatched:false,statusDecisionAllowed:false,responseCaseFormat:identity.responseCaseFormat,structuralSummary:summary},null,2));
+    console.log(JSON.stringify({caseIdentityMatched:false,lotIdentityMatched:false,statusDecisionAllowed:false,responseCaseFormat:identity.responseCaseFormat,identityHints:{baseCourtMatches:identity.baseCourtMatches,internalCaseYearMatches:identity.internalCaseYearMatches,internalCaseSerialSuffixMatches:identity.internalCaseSerialSuffixMatches,relatedDisplayAliasMatched:identity.relatedDisplayAliasMatched,internalLotRowFound:identity.internalLotRowFound},structuralSummary:summary},null,2));
     throw Error('case identity not matched; structural field names only reported');
   }
   console.log(JSON.stringify({requestedCase:caseNo,requestedCourt:courtCode,...identity,...summary},null,2));

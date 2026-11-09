@@ -71,6 +71,45 @@ const courtUsageFromItem=(detail,item)=>{
    verifiedBy:'returned-fields-only'};
 };
 
+
+// Read-only cascading court usage taxonomy. No generated classifications.
+const USAGE_ENDPOINTS={
+ large:{url:'https://www.courtauction.go.kr/pgj/pgj002/selectLclLst.on',body:{dsignUsgDvsCd:''}},
+ medium:{url:'https://www.courtauction.go.kr/pgj/pgj002/selectMclLst.on',key:'lclDspslGdsLstUsgCd'},
+ small:{url:'https://www.courtauction.go.kr/pgj/pgj002/selectSclLst.on',key:'mclDspslGdsLstUsgCd'}
+};
+const taxonomyRows=(payload,level,parent)=>{
+ const expectedKeys=level==='large'?['lclLst','usgLclLst']:level==='medium'?['mclLst','usgMclLst']:['sclLst','usgSclLst'];
+ if(String(payload?.status)!=='200'||payload?.errors||(payload?.data?.ipcheck===false))return null;
+ const lists=expectedKeys.map(k=>payload?.data?.[k]).filter(Array.isArray);
+ if(lists.length!==1)return null;
+ const entries=[];
+ for(const item of lists[0]){
+  if(!item||typeof item!=='object')return null;
+  const code=String(item.code??item.usgCd??item.dspslGdsLstUsgCd??'').trim();
+  const name=String(item.name??item.usgNm??item.dspslGdsLstUsgNm??'').trim();
+  if(!/^\d{5}$/.test(code)||!name||name.length>80)return null;
+  entries.push({code,name,...(parent?{parentCode:parent}:{})});
+ }
+ if(entries.length>120||new Set(entries.map(x=>x.code)).size!==entries.length)return null;
+ return entries;
+};
+async function fetchTaxonomy(level,parent){
+ const conf=USAGE_ENDPOINTS[level];
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
+ try{
+  const body=conf.key?{[conf.key]:parent}:conf.body;
+  const response=await fetch(conf.url,{method:'POST',
+   headers:{'Content-Type':'application/json; charset=UTF-8','Accept':'application/json','Referer':'https://www.courtauction.go.kr/pgj/index.on'},
+   body:JSON.stringify(body),signal:controller.signal});
+  if(!response.ok)return {error:'법원 분류 조회 연결 실패',status:502};
+  const rows=taxonomyRows(await response.json(),level,parent);
+  if(!rows)return {error:'법원 분류 응답 형식을 확인할 수 없습니다.',status:502};
+  return {level,parentCode:parent||null,items:rows,source:'courtauction.go.kr',checkedAt:new Date().toISOString()};
+ }catch{return {error:'법원 분류 조회 중 통신 오류가 발생했습니다.',status:502}}
+ finally{clearTimeout(timer)}
+}
+
 const readItem=(json,courtCode,caseNo,itemNo)=>{
  const data=json?.data,d=data?.dma_result,base=d?.csBaseInfo,item=d?.dspslGdsDxdyInfo;
  if(String(json?.status)!=='200'||json?.errors||!d||!base||!item||data?.ipcheck===false)
@@ -97,6 +136,18 @@ export default {
   if(origin&&origin!==ALLOWED_ORIGIN)return respond({error:'Origin not allowed'},403);
   if(request.method!=='GET')return respond({error:'GET only'},405);
   const url=new URL(request.url);
+  if(url.pathname==='/taxonomy'){
+   const level=url.searchParams.get('level');
+   const parent=url.searchParams.get('parentCode');
+   if(!Object.prototype.hasOwnProperty.call(USAGE_ENDPOINTS,level))
+    return respond({error:'large, medium 또는 small 단계만 지원합니다.'},400);
+   if(level==='large'&&parent)return respond({error:'대분류에는 상위 코드가 필요하지 않습니다.'},400);
+   if(level!=='large'&&!/^\d{5}$/.test(String(parent||'')))
+    return respond({error:'유효한 상위 분류코드가 필요합니다.'},400);
+   const result=await fetchTaxonomy(level,parent);
+   if(result.error)return respond({error:result.error},result.status);
+   return new Response(JSON.stringify(result),{status:200,headers:{...headers,'cache-control':'public, max-age=300'}});
+  }
   if(url.pathname!=='/case'&&url.pathname!=='/item')return respond({service:'court-case-gateway',ready:true});
   const courtCode=String(url.searchParams.get('courtCode')||'').trim();
   const caseNo=normalizeCase(url.searchParams.get('caseNo'));

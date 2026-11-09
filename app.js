@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.4.8';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.4.9';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -629,6 +629,20 @@ function pdfSearchIndex(value){
  }
  return {folded,positions,ends};
 }
+
+const PDF_LAST_PAGE_PREFIX='auction_pdf_last_page_v1:';
+function getPdfLastPage(fileId){
+ if(!fileId)return 1;
+ try{
+  const data=JSON.parse(localStorage.getItem(PDF_LAST_PAGE_PREFIX+fileId)||'null');
+  return Number.isSafeInteger(data?.page)&&data.page>0?data.page:1;
+ }catch{return 1;}
+}
+function rememberPdfLastPage(fileId,pageNumber){
+ if(!fileId||!Number.isSafeInteger(pageNumber)||pageNumber<1)return;
+ try{localStorage.setItem(PDF_LAST_PAGE_PREFIX+fileId,JSON.stringify({page:pageNumber,updatedAt:Date.now()}));}
+ catch(error){/* Reading position is optional. Do not block PDF viewing when storage is full. */}
+}
 function createAttachmentViewer(){
  const overlay=$('#attachmentViewer'),content=$('#attachmentViewerContent'),bar=$('#attachmentViewerName'),zoom=$('#attachmentViewerZoom'),pdfControls=$('#attachmentPdfControls');
  // Mount outside the scrolling/transformed app so iOS fixed positioning uses the actual viewport.
@@ -654,6 +668,7 @@ function createAttachmentViewer(){
   overlay.hidden=true;content.replaceChildren();
   if(url){URL.revokeObjectURL(url);url=null;}
   const pagePicker=$('#attachmentPagePicker');if(pagePicker)pagePicker.hidden=true;
+  if(currentFile&&(currentFile.type==='application/pdf'||/\.pdf$/i.test(currentFile.name)))rememberPdfLastPage(currentFile.id,page);
   currentFile=null;loadedBlob=null;resetExtract();document.body.classList.remove('attachment-viewing');restoreViewer();
  }
  function updatePageControls(){
@@ -810,7 +825,7 @@ function createAttachmentViewer(){
   const max=pdfDocument?.numPages||10000;
   const next=Math.max(1,Math.min(max,page+delta));
   if(next===page)return;
-  page=next;updatePageControls();
+  page=next;rememberPdfLastPage(currentFile.id,page);updatePageControls();
   if(extractMode)showExtractedPage();
   else if(pdfAvailable)renderPdfPage();
   else fallbackPdf();
@@ -867,7 +882,7 @@ function createAttachmentViewer(){
      const excerpt=document.createElement('span');excerpt.textContent=snippet;
      button.append(number,excerpt);
      button.onclick=()=>{
-      closeSearch();page=i;updatePageControls();
+      closeSearch();page=i;rememberPdfLastPage(currentFile.id,page);updatePageControls();
       if(extractMode)showExtractedPage();else if(pdfAvailable)renderPdfPage();else fallbackPdf();
      };
      fragment.appendChild(button);
@@ -934,7 +949,7 @@ function createAttachmentViewer(){
   const selected=pickerSelectedPage();
   dismissPicker();
   if(selected===page)return;
-  page=selected;updatePageControls();
+  page=selected;rememberPdfLastPage(currentFile.id,page);updatePageControls();
   if(extractMode)showExtractedPage();
   else if(pdfAvailable)renderPdfPage();
   else fallbackPdf();
@@ -975,10 +990,13 @@ function createAttachmentViewer(){
   if(base>0){event.preventDefault();setZoom(Number(content.dataset.pinchScale)*distance/base);}
  },{passive:false});
  return {
-  async open(file,initialPage=1){
+  async open(file,initialPage=null){
    if(!file||typeof file.data!=='string')return toast('첨부파일을 찾지 못했어요.');
    close();currentFile=file;
-   const sequence=viewerSeq;bar.textContent=file.name;page=Math.max(1,Math.floor(Number(initialPage)||1));scale=1;
+   const sequence=viewerSeq;bar.textContent=file.name;
+   // An explicit source-page link always wins; normal attachment opens resume reading.
+   const requested=initialPage===null?getPdfLastPage(file.id):Number(initialPage);
+   page=Math.max(1,Math.floor(Number.isFinite(requested)?requested:1));scale=1;
    mountViewer();content.replaceChildren();zoom.hidden=true;pdfControls.hidden=true;overlay.hidden=false;document.body.classList.add('attachment-viewing');
    try{
     const response=await fetch(file.data),blob=await response.blob();

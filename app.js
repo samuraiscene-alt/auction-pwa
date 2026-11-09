@@ -226,16 +226,16 @@ function propertyPrice(p){return p&&p.userRegistered?Number(p.minWon)||0:DEMO_PR
 function propertyDate(p){return String(p.date||'').replaceAll('.','-')}
 function nextRegisteredAuction(){const today=new Date(),key=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');return registeredProperties().filter(p=>propertyDate(p)>=key).sort((a,b)=>propertyDate(a).localeCompare(propertyDate(b)))[0]||null;}
 function realCaseId(court,caseNumber,itemNo){return 'real-'+[court,caseNumber,itemNo].join('|')}
-function isSafeAuctionUrl(url){try{const u=new URL(url);return u.protocol==='https:'&&(/(^|\\.)courtauction\\.go\\.kr$/i).test(u.hostname)}catch{return false}}
+function isSafeAuctionUrl(url){try{const u=new URL(url);return u.protocol==='https:'&&(/(^|\.)courtauction\.go\.kr$/i).test(u.hostname)}catch{return false}}
 function validateRealProperty(p){
  return p&&p.userRegistered===true&&typeof p.id==='string'&&p.id.startsWith('real-')&&
  ['아파트','빌라','단독주택','상가','토지','기타'].includes(p.type)&&
  typeof p.name==='string'&&p.name.trim().length>0&&p.name.length<=300&&
  typeof p.court==='string'&&p.court.trim().length>0&&p.court.length<=100&&
- typeof p.case==='string'&&/^\\d{4}타경\\d{1,10}$/.test(p.case)&&
+ typeof p.case==='string'&&/^\d{4}타경\d{1,10}$/.test(p.case)&&
  Number.isSafeInteger(p.minWon)&&p.minWon>=0&&
  Number.isSafeInteger(p.valueWon)&&p.valueWon>=0&&
- (!p.date||/^\\d{4}[.-]\\d{2}[.-]\\d{2}$/.test(p.date))&&
+ (!p.date||/^\d{4}[.-]\d{2}[.-]\d{2}$/.test(p.date))&&
  (!p.sourceUrl||isSafeAuctionUrl(p.sourceUrl));
 }
 const titles={home:'부동산 경매',search:'통합검색',schedule:'경매일정',favorites:'관심물건',study:'경매 공부방',advanced:'상세검색',special:'특수물건 검색',detail:'물건 상세',rights:'권리분석',note:'공부 노트',settings:'설정',official:'법원경매 연결'};function toast(t){$('#toast').textContent=t;$('#toast').classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>$('#toast').classList.remove('show'),2200)}
@@ -1291,10 +1291,10 @@ document.querySelectorAll('[data-favorite-date]').forEach(btn=>btn.onclick=()=>{
 if($('#openOfficialCourt'))$('#openOfficialCourt').onclick=()=>window.open(OFFICIAL_AUCTION_URL,'_blank','noopener');
 if($('#officialRecordForm'))$('#officialRecordForm').onsubmit=event=>{
  event.preventDefault();
- const court=$('#officialCourt').value.trim(),caseNumber=$('#officialCase').value.trim().replace(/\\s+/g,''),itemNo=$('#officialItemNo').value.trim()||'1',name=$('#officialAddress').value.trim(),type=$('#officialType').value;
+ const court=$('#officialCourt').value.trim(),caseNumber=$('#officialCase').value.trim().replace(/\s+/g,''),itemNo=$('#officialItemNo').value.trim()||'1',name=$('#officialAddress').value.trim(),type=$('#officialType').value;
  const minWon=Number($('#officialMin').value||0),valueWon=Number($('#officialAppraisal').value||0),date=$('#officialSaleDate').value.replaceAll('-','.');
- if(!/^\\d{4}타경\\d{1,10}$/.test(caseNumber)){toast('사건번호는 2025타경12345 형식으로 입력해 주세요.');return;}
- if(!/^\\d{1,4}$/.test(itemNo)||!court||!name||!Number.isSafeInteger(minWon)||!Number.isSafeInteger(valueWon)||minWon<0||valueWon<0){toast('법원·소재지·가격·물건번호를 확인해 주세요.');return;}
+ if(!/^\d{4}타경\d{1,10}$/.test(caseNumber)){toast('사건번호는 2025타경12345 형식으로 입력해 주세요.');return;}
+ if(!/^\d{1,4}$/.test(itemNo)||!court||!name||!Number.isSafeInteger(minWon)||!Number.isSafeInteger(valueWon)||minWon<0||valueWon<0){toast('법원·소재지·가격·물건번호를 확인해 주세요.');return;}
  const id=realCaseId(court,caseNumber,itemNo);
  const record={id,userRegistered:true,name,court,case:caseNumber,itemNo,type,minWon,valueWon,date,sourceUrl:OFFICIAL_AUCTION_URL,enteredAt:Date.now()};
  if(!validateRealProperty(record)){toast('등록 내용의 형식을 확인해 주세요.');return;}

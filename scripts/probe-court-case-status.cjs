@@ -67,7 +67,7 @@ async function main(){
   if(!summary.plausibleResponse)throw Error('court response schema not verified; no status inference');
   const identity=assessIdentity(json,{courtCode,caseNo,itemNo});
   if(!identity.caseIdentityMatched){
-    console.log(JSON.stringify({caseIdentityMatched:false,lotIdentityMatched:false,statusDecisionAllowed:false,structuralSummary:summary},null,2));
+    console.log(JSON.stringify({caseIdentityMatched:false,lotIdentityMatched:false,statusDecisionAllowed:false,responseCaseFormat:identity.responseCaseFormat,structuralSummary:summary},null,2));
     throw Error('case identity not matched; structural field names only reported');
   }
   console.log(JSON.stringify({requestedCase:caseNo,requestedCourt:courtCode,...identity,...summary},null,2));

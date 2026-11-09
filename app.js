@@ -248,7 +248,7 @@ function availablePropertyTypes(){
 function validCourtUsage(v){
  if(v==null)return true;
  const validName=x=>x==null||(typeof x==='string'&&x.length<=80);
- const validCode=x=>x==null||(typeof x==='string'&&/^\\d{4,15}$/.test(x));
+ const validCode=x=>x==null||(typeof x==='string'&&/^\d{4,15}$/.test(x));
  return v&&typeof v==='object'&&!Array.isArray(v)&&
   ['large','medium','small'].every(k=>validName(v.names?.[k])&&validCode(v.codes?.[k]));
 }
@@ -1496,7 +1496,7 @@ if($('#detailPdfInput'))$('#detailPdfInput').onchange=async event=>{
 
 if($('#officialRecordForm'))$('#officialRecordForm').onsubmit=event=>{
  event.preventDefault();
- const court=$('#officialCourt').value.trim(),caseNumber=$('#officialCase').value.trim().replace(/\\s+/g,''),itemNo=$('#officialItemNo').value.trim()||'1',name=$('#officialAddress').value.trim(),type=$('#officialType').value.trim();
+ const court=$('#officialCourt').value.trim(),caseNumber=$('#officialCase').value.trim().replace(/\s+/g,''),itemNo=$('#officialItemNo').value.trim()||'1',name=$('#officialAddress').value.trim(),type=$('#officialType').value.trim();
  const usageLarge=$('#officialUsageLarge').value,usageMedium=$('#officialUsageMedium').value.trim();
  const largeCode=COURT_USAGE_LARGE.find(x=>x.name===usageLarge)?.code||null;
  const courtUsage={codes:{large:largeCode,medium:null,small:null},

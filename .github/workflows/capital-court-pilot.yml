@@ -26,28 +26,51 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Limited three-page collection (not full)
+      - id: collection
+        name: Collect and safety-check limited pages
+        continue-on-error: true
         run: node scripts/capital-court-pilot.cjs
-      - name: Upload validated partial catalog
-        uses: actions/upload-artifact@v4
-        with:
-          name: metropolitan-limited-list
-          path: data/capital-court-pilot.json
-          retention-days: 7
-      - name: Publish validated partial snapshot to repository
+      - name: Record last attempt without publishing rejected listings
+        env:
+          COLLECT_OUTCOME: ${{ steps.collection.outcome }}
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const ok=process.env.COLLECT_OUTCOME==='success';
+          fs.mkdirSync('data',{recursive:true});
+          fs.writeFileSync('data/capital-court-status.json',JSON.stringify({
+            schemaVersion:1,attemptedAt:new Date().toISOString(),
+            outcome:ok?'success':'failed',scope:'서울·경기·인천',
+            detail:ok?'수집·기본 안전검사 통과':'수집 오류 또는 안전검사 미통과. 이전 목록 유지'
+          },null,2)+'\n');
+          console.log('Last attempt status:',ok?'success':'failed');
+          NODE
+      - name: Publish attempt status and ONLY validated snapshot
+        env:
+          COLLECT_OUTCOME: ${{ steps.collection.outcome }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/capital-court-pilot.json
-          if git diff --cached --quiet; then
-            echo "No new data"; exit 0
+          git add data/capital-court-status.json
+          if [ "$COLLECT_OUTCOME" = "success" ]; then
+            git add data/capital-court-pilot.json
           fi
-          git commit -m "data: update metropolitan court limited-page snapshot"
+          if git diff --cached --quiet; then
+            echo "No changed status"; exit 0
+          fi
+          git commit -m "data: record metropolitan court validation attempt"
           git push
-      - uses: actions/configure-pages@v5
+      - name: Deploy current saved snapshot with status
+        if: always() && steps.collection.outcome != ''
+        uses: actions/configure-pages@v5
         with:
           enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
       - uses: actions/deploy-pages@v4
+      - name: Mark collection as failed after safely publishing status
+        if: steps.collection.outcome == 'failure'
+        run: |
+          echo "::error::Court search could not be validated. Previous listing snapshot retained."
+          exit 1

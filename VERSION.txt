@@ -1,2 +1,2 @@
-0.5.4
-Court case identity check via Cloudflare Worker, Seoul Central only; price/date autofill not yet supported.
+0.5.5
+Court item-specific address, appraisal, minimum price and sale date prefill with confirmation; Seoul Central only.

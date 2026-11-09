@@ -15,6 +15,31 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
+      - name: Inspect official usage selector JavaScript without extracting user data
+        run: |
+          node --input-type=module <<'NODE'
+          const urls=[
+            'https://www.courtauction.go.kr/pgj/cm/js/pgj.js',
+            'https://www.courtauction.go.kr/pgj/ui/pgj100/PGJ151F00.xml'
+          ];
+          for(const url of urls){
+            const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+            try{
+              const r=await fetch(url,{signal:controller.signal,headers:{Accept:'text/plain, text/xml, application/javascript, */*'}});
+              const data=await r.text();
+              const text=data.slice(0,500000);
+              console.log('Source:',new URL(url).pathname,'HTTP:',r.status,'bytes:',data.length,'type:',r.headers.get('content-type'));
+              for(const needle of ['selectMclLst','selectSclLst','dsignUsgDvsCd','lclDspslGdsLstUsgCd']){
+                const ix=text.indexOf(needle);
+                const snippet=ix<0?'not found':text.slice(Math.max(0,ix-300),Math.min(text.length,ix+350))
+                  .replace(/[^\x20-\x7E가-힣]/g,' ').slice(0,650);
+                console.log('  Search:',needle,'match:',snippet);
+              }
+            }catch(e){console.log('Source unavailable:',new URL(url).pathname,e.name,e.message)}
+            finally{clearTimeout(timer)}
+          }
+          NODE
+
       - name: Probe court medium and small classification endpoints
         run: |
           node --input-type=module <<'NODE'

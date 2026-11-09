@@ -6,6 +6,8 @@ on:
     paths:
       - scripts/probe-court-case-list-bridge.cjs
       - scripts/validate-court-case-bridge.cjs
+      - scripts/extract-court-status-evidence.cjs
+      - tests/court-status-evidence.cjs
       - tests/court-case-bridge.cjs
       - .github/workflows/court-case-list-bridge.yml
 permissions:
@@ -24,7 +26,9 @@ jobs:
           node-version: '22'
       - id: offline
         name: Validate strict case bridge
-        run: node tests/court-case-bridge.cjs
+        run: |
+          node tests/court-case-bridge.cjs
+          node tests/court-status-evidence.cjs
       - id: query
         name: Single court list lookup
         continue-on-error: true
@@ -46,6 +50,24 @@ jobs:
           const stage=/BRIDGE_STAGE=(list|detail)/.exec(error)?.[1]||'unknown';
           const valid=process.env.OFFLINE==='success'&&process.env.QUERY==='success'&&
             result?.schemaVersion===1&&Number.isInteger(result.exactDisplayLotRows);
+          const evidence=result?.statusEvidence;
+          const safeCode=v=>typeof v==='string'&&/^[A-Za-z0-9_-]{1,24}$/.test(v)?v:null;
+          const accepted=valid&&result?.detailCaseCrossChecked===true&&
+            evidence?.identityVerified===true&&evidence?.legalStatusVerified===false;
+          const safeEvidence=accepted?{
+            identityVerified:true,
+            statusEvidenceAvailable:evidence.statusEvidenceAvailable===true,
+            caseProgressCode:safeCode(evidence.caseProgressCode),
+            caseSuspensionCode:safeCode(evidence.caseSuspensionCode),
+            lotStatusCode:safeCode(evidence.lotStatusCode),
+            lotProgressFlag:safeCode(evidence.lotProgressFlag),
+            listStatusCode:safeCode(evidence.listStatusCode),
+            scheduleResultObservations:Array.isArray(evidence.scheduleResultObservations)?
+              evidence.scheduleResultObservations.slice(0,20).filter(o=>o&&/^20\d{6}$/.test(String(o.day))&&safeCode(o.resultCode)).map(o=>({
+                day:String(o.day),resultCode:safeCode(o.resultCode),kindCode:safeCode(o.kindCode)
+              })):[],
+            legalStatusVerified:false
+          }:{identityVerified:false,statusEvidenceAvailable:false,legalStatusVerified:false};
           const report={
             schemaVersion:1,attemptedAt:new Date().toISOString(),
             outcome:valid?'list_response_observed':'unverified',
@@ -67,6 +89,7 @@ jobs:
             listSaNoExactlyMatches:valid&&result.listSaNoExactlyMatches===true,
             printCsNoMatchesDisplay:valid&&result.printCsNoMatchesDisplay===true,
             legalStatusVerified:false,
+            statusEvidence:safeEvidence,
             rawResponseSaved:false
           };
           fs.writeFileSync('/tmp/case-list-summary.json',JSON.stringify(report,null,2)+'\n');

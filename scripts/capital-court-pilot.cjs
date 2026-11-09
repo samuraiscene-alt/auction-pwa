@@ -7,6 +7,7 @@
  */
 const fs=require('node:fs');
 const {validateSnapshot}=require('./validate-capital-snapshot.cjs');
+const {mergeCourtLots}=require('./merge-capital-components.cjs');
 const SCHEMA_KEYS=[
 'rletDspslSpcCondCd','bidDvsCd','mvprpRletDvsCd','cortAuctnSrchCondCd',
 'rprsAdongSdCd','rprsAdongSggCd','rprsAdongEmdCd',
@@ -104,34 +105,22 @@ async function search(region,pageNo){
   await new Promise(resolve=>setTimeout(resolve,700));
  }
  if(errors.length){console.error('Probe incomplete. No output JSON published:',errors.join(' / '));process.exitCode=1;return;}
- const uniqueMap=new Map(),conflicts=new Set(),conflictExamples=[],conflictFieldCounts={};
- for(const item of items){
-  const previous=uniqueMap.get(item.id);
-  if(previous){
-   const changedFields=['region','address','appraisalWon','minimumWon','saleDate','smallCode'].filter(k=>previous[k]!==item[k]);
-   if(changedFields.length){
-    conflicts.add(item.id);
-    for(const field of changedFields)conflictFieldCounts[field]=(conflictFieldCounts[field]||0)+1;
-    if(conflictExamples.length<4)conflictExamples.push({id:item.id,
-      changedFields,first:Object.fromEntries(changedFields.map(k=>[k,previous[k]])),
-      next:Object.fromEntries(changedFields.map(k=>[k,item[k]]))});
-   }
-  }
-  if(!previous)uniqueMap.set(item.id,item);
+ const merged=mergeCourtLots(items);
+ const unique=merged.items;
+ // Distinct land/building/address components are valid parts of one auction lot.
+ // Disagreeing price, date or region is unsafe and is not published.
+ const unsafeRatio=merged.unsafeIds.length/Math.max(1,unique.length+merged.unsafeIds.length);
+ console.log('MULTI-COMPONENT lots:',merged.stats.multiComponentLots,
+  'distinct component rows:',merged.stats.distinctComponents);
+ console.log('UNSAFE price/date/region IDs:',merged.unsafeIds.length,
+  'field counts:',JSON.stringify(merged.conflictFieldCounts));
+ if(unsafeRatio>0.05){
+  console.error('Too many unsafe conflicting IDs. Keep previous snapshot:',merged.unsafeIds.length);
+  process.exitCode=1;return;
  }
- console.log('Conflict field distribution:',JSON.stringify(conflictFieldCounts));
- console.log('Conflicting record samples:',JSON.stringify(conflictExamples));
- console.log('Duplicate-ID conflict rate:',conflicts.size+'/'+uniqueMap.size,'(publish is blocked above 5%)');
- // Quarantine disagreeing records. Never silently choose one conflicting value.
- // If more than 5% of unique IDs disagree, reject the entire daily snapshot.
- const conflictRate=conflicts.size/Math.max(1,uniqueMap.size);
- if(conflictRate>0.05){console.error('Too many conflicting IDs. Keep last snapshot:',conflicts.size,uniqueMap.size);process.exitCode=1;return;}
- for(const id of conflicts)uniqueMap.delete(id);
- const unique=[...uniqueMap.values()];
- console.log('QUARANTINED conflicting unique IDs:',conflicts.size,'rate:',conflictRate.toFixed(3));
- const snapshot={schemaVersion:1,scope:'서울·경기·인천',collectionMode:'limited-pages-pilot',
+ const snapshot={schemaVersion:2,scope:'서울·경기·인천',collectionMode:'limited-pages-pilot',
   complete:false,source:'courtauction.go.kr',fetchedAt:new Date().toISOString(),
-  regions,quarantine:{conflictingItems:conflicts.size,description:'동일 물건번호에 서로 다른 값이 있어 표시에서 제외함'},items:unique};
+  regions,quarantine:{conflictingItems:merged.unsafeIds.length,description:'금액·기일 등 안전하지 않은 값 충돌은 제외'},items:unique};
  const target='data/capital-court-pilot.json';
  let previous=null;
  if(fs.existsSync(target)){
@@ -141,13 +130,13 @@ async function search(region,pageNo){
  const result=validateSnapshot(snapshot,previous,{strict:true});
  if(!result.ok){console.error('Safety validation FAILED. Old published snapshot kept:',result.errors);process.exitCode=1;return;}
  snapshot.validation={passed:true,checkedAt:new Date().toISOString(),...result.summary,
-  warnings:[...(conflicts.size?['서로 다른 값이 발견된 물건 '+conflicts.size+'건을 목록에서 제외함']:[]),...result.warnings],
+  warnings:[...(merged.unsafeIds.length?['금액·기일 등이 충돌한 물건 '+merged.unsafeIds.length+'건을 제외함']:[]),...result.warnings],
   changeSamples:result.changeSamples};
  fs.mkdirSync('data',{recursive:true});
  fs.writeFileSync(target,JSON.stringify(snapshot,null,2)+'\n');
  console.log('SAFETY PASS',JSON.stringify(result.summary),'warnings',JSON.stringify(result.warnings));
  console.log('Probe data saved:',unique.length,'records, NOT a complete regional catalogue.');
  console.log('Regional unique counts:',JSON.stringify(Object.fromEntries(REGIONS.map(r=>[r.label,new Set(items.filter(x=>x.region===r.label).map(x=>x.id)).size]))));
- console.log('Duplicate IDs count:',items.length-unique.length);
+ console.log('Repeated component/lot rows count:',items.length-unique.length);
  console.log('Regional totals:',JSON.stringify(regions));
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.6.2';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.6.3';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -1310,7 +1310,19 @@ function capital(){
  const snapshot=capitalSnapshot;
  const items=Array.isArray(snapshot?.items)?snapshot.items:[];
  const region=state.capitalRegion,query=state.capitalQuery.trim().normalize('NFC').toLocaleLowerCase('ko');
- const matched=items.filter(x=>(region==='전체'||x.region===region)&&
+ const presentCodes=new Set(items.filter(x=>region==='전체'||x.region===region).map(x=>x.smallCode).filter(Boolean));
+ const preferred=['20104','20101','20102','20105','20106','20108','10108','20110','21101','21104'];
+ const available=COURT_USAGE_CATALOG.filter(x=>x.level==='small'&&presentCodes.has(x.code));
+ const sortedTypes=available.sort((a,b)=>{
+  const ia=preferred.indexOf(a.code),ib=preferred.indexOf(b.code);
+  return (ia<0?999:ia)-(ib<0?999:ib)||a.name.localeCompare(b.name,'ko');
+ });
+ const typeOptions=[{code:'전체',name:'전체 물건'},...sortedTypes];
+ if(items.some(x=>(region==='전체'||x.region===region)&&!COURT_USAGE_CATALOG.some(z=>z.level==='small'&&z.code===x.smallCode)))typeOptions.push({code:'미확인',name:'분류 미확인'});
+ const isType=x=>state.capitalType==='전체'||(state.capitalType==='미확인'
+  ?!COURT_USAGE_CATALOG.some(t=>t.level==='small'&&t.code===x.smallCode)
+  :x.smallCode===state.capitalType);
+ const matched=items.filter(x=>(region==='전체'||x.region===region)&&isType(x)&&
   (!query||[x.address,x.caseNo,x.courtName,x.itemNo].some(v=>String(v||'').normalize('NFC').toLocaleLowerCase('ko').includes(query))));
  const groupedMap=new Map();
  for(const x of matched){const k=x.courtCode+'|'+x.caseNo;if(!groupedMap.has(k))groupedMap.set(k,[]);groupedMap.get(k).push(x);}
@@ -1335,6 +1347,10 @@ function capital(){
  <p class="helper">자동 수집 시범 목록입니다. 수도권 전체 사건 목록이 아니며, 매각기일·가격·진행 상태는 법원 원문에서 다시 확인해야 합니다.</p>
  <p class="helper" id="capitalStatus">${info}</p>
  <div class="filters">${['전체','서울','경기','인천'].map(r=>`<button type="button" class="chip ${region===r?'active':''}" data-capital-region="${r}">${r}</button>`).join('')}</div>
+ <label class="label" for="capitalTypeFilter">물건 종류</label>
+ <select id="capitalTypeFilter" class="select" aria-label="물건 종류별 필터">
+ ${typeOptions.map(t=>`<option value="${escapeHtml(t.code)}" ${state.capitalType===t.code?'selected':''}>${escapeHtml(t.name)}</option>`).join('')}</select>
+ <p class="helper">현재 수집된 물건 종류만 표시합니다. 종류를 선택하면 해당 물건만 보여줍니다.</p>
  <form id="capitalSearchForm" class="search-form"><input id="capitalSearch" class="search" type="search" placeholder="소재지·법원·사건번호 검색" value="${escapeHtml(state.capitalQuery)}"><button class="search-submit" type="submit">검색</button></form>
  <button type="button" class="secondary full-secondary" id="capitalReload">목록 다시 불러오기</button></div>
  <div class="section"><h2>수집된 물건 <span class="result-count">${matched.length}건</span></h2><span class="muted">사건 ${grouped.length}건 · 물건번호별 정보 보존</span></div>
@@ -1465,8 +1481,11 @@ if($('#cancelRealEdit'))$('#cancelRealEdit').onclick=()=>{
 };
 if($('#capitalReload'))$('#capitalReload').onclick=()=>loadCapital(true);
 document.querySelectorAll('[data-capital-region]').forEach(button=>button.onclick=()=>{
- state.capitalRegion=button.dataset.capitalRegion;state.capitalLimit=40;render();
+ state.capitalRegion=button.dataset.capitalRegion;state.capitalType='전체';state.capitalLimit=40;render();
 });
+if($('#capitalTypeFilter'))$('#capitalTypeFilter').onchange=event=>{
+ state.capitalType=event.target.value;state.capitalLimit=40;render();
+};
 if($('#capitalSearchForm'))$('#capitalSearchForm').onsubmit=event=>{
  event.preventDefault();state.capitalQuery=$('#capitalSearch').value.trim();state.capitalLimit=40;render();
 };

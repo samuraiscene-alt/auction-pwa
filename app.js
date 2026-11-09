@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.1';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.2';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -1452,7 +1452,7 @@ async function loadCapital(force=false){
     !payload.items.every(x=>x&&typeof x.id==='string'&&x.id.startsWith('court-')&&['서울','경기','인천'].includes(x.region)&&typeof x.address==='string'&&x.address.length<=260&&
     (payload.schemaVersion!==2||(Array.isArray(x.components)&&x.components.length>0&&x.components.length<=100&&x.components.every(c=>c&&typeof c.address==='string'&&c.address.length<=260)))))
     throw Error('목록 데이터 형식 확인 실패');
-  if(payload.validation&&payload.validation.passed!==true)throw Error('안전 검사 실패 자료가 전달됐습니다.');
+  if(payload.validation?.passed!==true||!Number.isSafeInteger(payload.validation.validatedItems)||payload.validation.validatedItems!==payload.items.length)throw Error('검증 완료 기록이 없는 목록은 표시하지 않습니다.');
   capitalSnapshot=payload;capitalLoadStatus='ready';
   if(force&&payload.validation?.passed===true&&!(capitalAttemptStatus?.outcome==='failed'&&Date.parse(capitalAttemptStatus.attemptedAt)>Date.parse(payload.fetchedAt)))showSavedCheck('검증된 자료 불러오기 완료');
  }catch(e){

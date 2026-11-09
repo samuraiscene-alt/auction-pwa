@@ -1,2 +1,2 @@
-0.5.5
-Court item-specific address, appraisal, minimum price and sale date prefill with confirmation; Seoul Central only.
+0.5.6
+Safer court item type selection and compact detail price display; Worker classification requires deployment and validation.

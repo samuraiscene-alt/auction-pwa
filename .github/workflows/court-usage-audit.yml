@@ -1,0 +1,47 @@
+name: Court usage codes audit (read-only)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/court-usage-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Query official large classification list once
+        run: |
+          node --input-type=module <<'NODE'
+          const endpoint='https://www.courtauction.go.kr/pgj/pgj002/selectLclLst.on';
+          const controller=new AbortController();
+          const timer=setTimeout(()=>controller.abort(),15000);
+          const expected=[['10000','토지'],['20000','건물'],['30000','차량및운송장비'],['40000','기타']];
+          try {
+            const response=await fetch(endpoint,{method:'POST',headers:{
+              'Accept':'application/json','Content-Type':'application/json; charset=UTF-8',
+              'Referer':'https://www.courtauction.go.kr/pgj/index.on'
+            },body:JSON.stringify({dsignUsgDvsCd:''}),signal:controller.signal});
+            console.log('HTTP:',response.status);
+            if(!response.ok)throw new Error('HTTP '+response.status);
+            const json=await response.json();
+            if(String(json.status)!=='200')throw new Error('Non-success court response status');
+            const list=json?.data?.usgLclLst;
+            if(!Array.isArray(list))throw new Error('Classification list missing');
+            const found=list.filter(x=>x&&/^\d{5}$/.test(String(x.code))&&
+              typeof x.name==='string'&&x.name.length<=80).map(x=>[String(x.code),x.name]);
+            console.log('Court large classes:',JSON.stringify(found));
+            console.log('Large count:',found.length);
+            console.log('All known codes match:',expected.every(([code,name])=>found.some(x=>x[0]===code&&x[1]===name)));
+            console.log('Unrecognized large classes:',JSON.stringify(found.filter(x=>!expected.some(y=>y[0]===x[0]&&y[1]===x[1]))));
+            if(!expected.every(([code,name])=>found.some(x=>x[0]===code&&x[1]===name)))process.exitCode=1;
+          } catch(error) {
+            console.error('Audit failed:',error?.name,error?.cause?.code||error?.message||'unknown');
+            process.exitCode=1;
+          } finally {clearTimeout(timer);}
+          NODE

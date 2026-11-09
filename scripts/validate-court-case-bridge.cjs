@@ -13,6 +13,8 @@ function assessSearchBridge(rows,{courtCode,caseNo,itemNo}){
   schemaVersion:1,
   exactDisplayLotRows:exact.length,
   directInternalCaseMapping:exact.length===1&&distinct.length===1,
+  csNoFieldPresent:exact.length===1&&Object.hasOwn(exact[0],'csNo'),
+  docidFieldPresent:exact.length===1&&Object.hasOwn(exact[0],'docid'),
   internalCaseFormatObserved:distinct.length===1?'digits_only':'unavailable',
   internalCaseValueSaved:false,
   legalStatusVerified:false,

@@ -58,10 +58,11 @@ async function createTestCase(page){
   assert(data.favorites.includes(old.id),'favorite preserved');
   assert(data.realProperties[0].editedAt,'edited timestamp');
   await page.locator('[data-page="schedule"]').first().click();
-  await page.locator('#todayMonth').count(); // calendar mounted
-  await page.locator('#nextMonth').count();
-  const dateMatch=await page.locator('body').textContent();
-  assert(dateMatch.includes('11월')||dateMatch.includes('12월'),'calendar renders');
+  // The date selector must show the edited event, not the old event date.
+  await page.locator('[data-day="2026-11-22"]').click();
+  assert((await page.locator('body').textContent()).includes('2026타경999991'),'edited event visible on updated day');
+  await page.locator('[data-day="2026-11-19"]').click();
+  assert(!(await page.locator('body').textContent()).includes('2026타경999991'),'edited event absent from previous day');
   console.log('PASS new record -> favorite -> edit price/date -> identity and favorite preserved');
   // Legacy type record without any courtUsage, must be editable without reclassification.
   const legacy={id:'real-서울중앙지방법원|2023타경4869|1',userRegistered:true,

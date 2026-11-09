@@ -768,3 +768,8 @@ html,body{
 .official-saved-item{margin-bottom:14px}
 .official-saved-item .listItem{margin-bottom:5px}
 .official-saved-item>.secondary{width:100%;background:#fff0f2;color:#ad5163}
+
+/* v0.5.3 locally parse selected official auction PDF */
+.court-pdf-import,.court-detail-pdf{border:1px dashed #a3bce1;background:#f3f8ff;border-radius:13px;padding:11px;margin:12px 0}
+.official-pdf-label{display:flex;align-items:center;justify-content:center;min-height:44px;padding:9px;text-align:center;border-radius:10px;background:#e4efff;color:#286ab9;font-size:14px;font-weight:800;cursor:pointer}
+.court-pdf-import .helper,.court-detail-pdf .helper{margin:7px 2px 0;font-size:12px;line-height:1.5}

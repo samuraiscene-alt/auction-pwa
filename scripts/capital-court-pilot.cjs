@@ -87,17 +87,22 @@ async function search(region,pageNo){
   await new Promise(resolve=>setTimeout(resolve,700));
  }
  if(errors.length){console.error('Probe incomplete. No output JSON published:',errors.join(' / '));process.exitCode=1;return;}
- const uniqueMap=new Map(),conflicts=[];
+ const uniqueMap=new Map(),conflicts=new Set();
  for(const item of items){
   const previous=uniqueMap.get(item.id);
-  if(previous&&['address','appraisalWon','minimumWon','saleDate','smallCode'].some(k=>previous[k]!==item[k]))conflicts.push(item.id);
+  if(previous&&['region','address','appraisalWon','minimumWon','saleDate','smallCode'].some(k=>previous[k]!==item[k]))conflicts.add(item.id);
   if(!previous)uniqueMap.set(item.id,item);
  }
- if(conflicts.length){console.error('Conflicting duplicate case/item records:',conflicts.slice(0,10));process.exitCode=1;return;}
+ // Quarantine disagreeing records. Never silently choose one conflicting value.
+ // If more than 5% of unique IDs disagree, reject the entire daily snapshot.
+ const conflictRate=conflicts.size/Math.max(1,uniqueMap.size);
+ if(conflictRate>0.05){console.error('Too many conflicting IDs. Keep last snapshot:',conflicts.size,uniqueMap.size);process.exitCode=1;return;}
+ for(const id of conflicts)uniqueMap.delete(id);
  const unique=[...uniqueMap.values()];
+ console.log('QUARANTINED conflicting unique IDs:',conflicts.size,'rate:',conflictRate.toFixed(3));
  const snapshot={schemaVersion:1,scope:'서울·경기·인천',collectionMode:'limited-pages-pilot',
   complete:false,source:'courtauction.go.kr',fetchedAt:new Date().toISOString(),
-  regions,items:unique};
+  regions,quarantine:{conflictingItems:conflicts.size,description:'동일 물건번호에 서로 다른 값이 있어 표시에서 제외함'},items:unique};
  const target='data/capital-court-pilot.json';
  let previous=null;
  if(fs.existsSync(target)){
@@ -107,7 +112,8 @@ async function search(region,pageNo){
  const result=validateSnapshot(snapshot,previous,{strict:true});
  if(!result.ok){console.error('Safety validation FAILED. Old published snapshot kept:',result.errors);process.exitCode=1;return;}
  snapshot.validation={passed:true,checkedAt:new Date().toISOString(),...result.summary,
-  warnings:result.warnings,changeSamples:result.changeSamples};
+  warnings:[...(conflicts.size?['서로 다른 값이 발견된 물건 '+conflicts.size+'건을 목록에서 제외함']:[]),...result.warnings],
+  changeSamples:result.changeSamples};
  fs.mkdirSync('data',{recursive:true});
  fs.writeFileSync(target,JSON.stringify(snapshot,null,2)+'\n');
  console.log('SAFETY PASS',JSON.stringify(result.summary),'warnings',JSON.stringify(result.warnings));

@@ -11,6 +11,16 @@ const safeDay=value=>{
  const s=String(value??'').trim();
  return /^20\d{6}$/.test(s)?s:null;
 };
+// Exact, allowlisted court LIST display text only; never strip arbitrary HTML or
+// infer a label from an unknown code. No addresses or free-form text can escape.
+const DISPLAY_LABELS=new Set(['진행','매각','유찰','취하','변경','연기','정지','취소','종국','미종국','신건']);
+const labelOf=value=>typeof value==='string'&&DISPLAY_LABELS.has(value.trim())?value.trim():null;
+const displayEvidence=row=>{
+ const names=['userStPrint','userLstPrint','mulStatNm','maemulStatNm'];
+ return names.map(field=>({
+  field,fieldPresent:Object.hasOwn(row,field),exactDisplayLabel:labelOf(row[field])
+ }));
+};
 function extractStatusEvidence(rows,detail,identity,bridge){
  if(bridge?.detailCaseCrossChecked!==true||bridge?.exactDisplayLotRows!==1)
   return {identityVerified:false,statusEvidenceAvailable:false,legalStatusVerified:false};
@@ -49,6 +59,7 @@ function extractStatusEvidence(rows,detail,identity,bridge){
   evidenceSchemaVersion:1,
   ...status,
   scheduleResultObservations:dates,
+  listingDisplayEvidence:displayEvidence(listRow[0]),
   matchingScheduleRows:historyBounded?matched.length:null,
   historyBounded,
   legalStatusVerified:false,

@@ -54,4 +54,24 @@ assert(!observed.listingDisplayCandidateFieldNames.includes('buldNm'));
 assert(!display.listingDisplayCandidateFieldNames.includes('maemulSer'));
 assert(!JSON.stringify(display.listingDisplayCandidateFieldNames).includes('서울 주소'));
 assert.equal(extractStatusEvidence([{...rows[0],userStPrint:'매각완료 상세주소'}],detail,identity,verified).listingDisplayEvidence[0].exactDisplayLabel,null);
+
+const unsorted=JSON.parse(JSON.stringify(detail));
+unsorted.data.dlt_rletCsGdsDtsDxdyInf=[
+ {cortOfcCd:'B000210',csNo:'20080130025092',dspslGdsSeq:'1',dxdyYmd:'20250102',auctnDxdyRsltCd:'R1',auctnDxdyKndCd:'K1'},
+ {cortOfcCd:'B000210',csNo:'20080130025092',dspslGdsSeq:'1',dxdyYmd:'20261015',auctnDxdyRsltCd:'R2',auctnDxdyKndCd:'K1'}
+];
+const ordered=extractStatusEvidence(rows,unsorted,identity,verified);
+assert.equal(ordered.scheduleResultObservations[0].day,'20261015');
+assert.equal(ordered.scheduleConflictDetected,false);
+const conflicting=JSON.parse(JSON.stringify(unsorted));
+conflicting.data.dlt_rletCsGdsDtsDxdyInf.push({
+ cortOfcCd:'B000210',csNo:'20080130025092',dspslGdsSeq:'1',
+ dxdyYmd:'20261015',auctnDxdyRsltCd:'R3',auctnDxdyKndCd:'K1'});
+const conflictResult=extractStatusEvidence(rows,conflicting,identity,verified);
+assert.equal(conflictResult.scheduleConflictDetected,true);
+assert.deepEqual(conflictResult.scheduleResultObservations,[]);
+assert.equal(conflictResult.legalStatusVerified,false);
+const identical=JSON.parse(JSON.stringify(unsorted));
+identical.data.dlt_rletCsGdsDtsDxdyInf.push({...identical.data.dlt_rletCsGdsDtsDxdyInf[1]});
+assert.equal(extractStatusEvidence(rows,identical,identity,verified).scheduleResultObservations.length,2);
 console.log('PASS: identity gated, one-lot, bounded, code-only evidence; no inferred legal outcome');

@@ -4,6 +4,7 @@
 // A missing/mismatched row is NOT evidence of withdrawal or sale.
 // Nothing is persisted; output is strictly Boolean/field-name diagnostics.
 const {assessSearchBridge,assessCrossBridge}=require('./validate-court-case-bridge.cjs');
+const {extractStatusEvidence}=require('./extract-court-status-evidence.cjs');
 const CASE=/^court-(B\d{6})\|(20\d{2}타경\d{1,10})\|([1-9]\d{0,3})$/;
 const KEYS=[
 'rletDspslSpcCondCd','bidDvsCd','mvprpRletDvsCd','cortAuctnSrchCondCd',
@@ -63,7 +64,8 @@ async function main(){
   if(detail?.data?.ipcheck===false||detail?.ipcheck===false)throw Error('access_rejected');
   if(String(detail?.status)!=='200'||!detail?.data?.dma_csBasInf)throw Error('detail_invalid_response');
   const comparison=assessCrossBridge(rows,detail,{courtCode,caseNo,itemNo});
-  console.log(JSON.stringify({...list,...comparison}));
+  const evidence=extractStatusEvidence(rows,detail,{courtCode,caseNo,itemNo},comparison);
+  console.log(JSON.stringify({...list,...comparison,statusEvidence:evidence}));
  }catch(error){
   const code=String(error?.cause?.code||'');
   const reason=error?.name==='AbortError'?'timeout':

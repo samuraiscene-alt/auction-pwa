@@ -1,0 +1,27 @@
+name: Capital court three-page collection pilot
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/capital-court-pilot.cjs
+      - .github/workflows/capital-court-pilot.yml
+permissions:
+  contents: read
+jobs:
+  collect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Limited three-page collection (not full)
+        run: node scripts/capital-court-pilot.cjs
+      - name: Upload validated partial catalog
+        uses: actions/upload-artifact@v4
+        with:
+          name: metropolitan-limited-list
+          path: data/capital-court-pilot.json
+          retention-days: 7

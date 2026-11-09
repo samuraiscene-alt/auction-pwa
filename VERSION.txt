@@ -1,2 +1,2 @@
-0.7.2
-Reject snapshots without a passed validation marker and matching validated item count.
+0.7.3
+Persist a visible warning when court listing reload fails and the previous verified snapshot is shown.

@@ -18,7 +18,16 @@ async function main(){
   const paths=[...new Set([...raw.matchAll(/\/pgj\/[A-Za-z0-9]+\/[A-Za-z0-9]+\.on/g)].map(x=>x[0]).filter(x=>allowedPath.test(x)))].slice(0,20);
   console.log(JSON.stringify({schemaVersion:1,observed:true,screen:'PGJ158M01',
     saleResultSearchEndpointPresent:paths.includes('/pgj/pgjsearch/selectDspslSchdRsltSrch.on'),
-    officialApiPaths:paths,dataMapIds:safeIds(raw),rawDocumentSaved:false,legalStatusVerified:false}));
+    officialApiPaths:paths,dataMapIds:safeIds(raw),
+    screenReferences:[...new Set([...raw.matchAll(/PGJ158[A-Z0-9]{2,8}(?:\\.xml)?/g)].map(m=>m[0]))].slice(0,12),
+    markers:{
+      saleResultEndpointNameSeen:raw.includes('selectDspslSchdRsltSrch'),
+      searchControllerSeen:raw.includes('searchControllerMain'),
+      submissionTagSeen:raw.includes('submission'),
+      scriptTagSeen:raw.includes('<script'),
+      nestedFrameSeen:raw.includes('w2:iframe')||raw.includes('w2:frame')
+    },
+    rawDocumentSaved:false,legalStatusVerified:false}));
  }catch(e){
   const reason=e?.name==='AbortError'?'timeout':
    ['http_error','not_xml','oversize','unexpected_document'].includes(e?.message)?e.message:'network_error';

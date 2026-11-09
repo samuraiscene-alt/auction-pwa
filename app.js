@@ -1365,7 +1365,7 @@ function capital(){
    '<div class="status">⚠ 기존 시범 수집본입니다. 토지·건물 등 복합 구성요소가 일부 누락됐을 수 있으며, 안전검증 기록이 아직 없습니다.</div>')+
   (safetyVerified&&snapshot.validation.warnings?.length?
    '<div class="status">⚠ 이전 수집본과 차이 감지: '+escapeHtml(snapshot.validation.warnings.join(' / '))+'</div>':'')+
-  '<p class="helper">이 화면은 한정된 3페이지 자료만 제공합니다. 목록에 없다고 매각·취하된 것은 아닙니다.</p>':'';
+  '<p class="helper">각 지역 일부 페이지만 수집했습니다. 실제 조회: 서울 '+escapeHtml(String(snapshot?.regions?.서울?.processedPages||'?'))+'페이지, 경기 '+escapeHtml(String(snapshot?.regions?.경기?.processedPages||'?'))+'페이지, 인천 '+escapeHtml(String(snapshot?.regions?.인천?.processedPages||'?'))+'페이지. 목록에 없다고 매각·취하된 것은 아닙니다.</p>':'';
 
  return `<div class="card search-panel"><strong>서울·경기·인천 법원 경매물건</strong>
  <p class="helper">자동 수집 시범 목록입니다. 수도권 전체 사건 목록이 아니며, 매각기일·가격·진행 상태는 법원 원문에서 다시 확인해야 합니다.</p>

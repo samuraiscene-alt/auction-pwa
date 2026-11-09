@@ -28,6 +28,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Test court snapshot safety rules
+        run: node tests/capital-snapshot-safety.cjs
       - id: collection
         name: Collect and safety-check limited pages
         continue-on-error: true

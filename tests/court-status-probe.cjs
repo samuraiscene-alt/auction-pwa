@@ -42,4 +42,24 @@ assert.equal(realShape.responseCaseFormat,'display_case');
 assert.equal(realShape.statusDecisionAllowed,false);
 assert.equal(assessIdentity({data:{dma_csBasInf:{cortOfcCd:'B000210',csNo:'20080130025092'}}},{courtCode:'B000210',caseNo:'2008타경25092',itemNo:'1'}).responseCaseFormat,'digits_only');
 assert.equal(assessIdentity({data:{dma_csBasInf:{cortOfcCd:'B000210',csNo:'20080130025092'}}},{courtCode:'B000210',caseNo:'2008타경25092',itemNo:'1'}).caseIdentityMatched,false);
+const internalCase=assessIdentity({data:{
+ dma_csBasInf:{cortOfcCd:'B000210',csNo:'20080130025092'},
+ dlt_dspslGdsDspslObjctLst:[{cortOfcCd:'B000210',csNo:'20080130025092',dspslGdsSeq:'1'}],
+ dlt_rletReltCsLst:[{reltCsCortOfcCd:'B000210',userReltCsNo:'2008타경25092'}]
+}},{courtCode:'B000210',caseNo:'2008타경25092',itemNo:'1'});
+assert.equal(internalCase.caseIdentityMatched,false,'internal ID is not display number proof');
+assert.equal(internalCase.lotIdentityMatched,false);
+assert.equal(internalCase.baseCourtMatches,true);
+assert.equal(internalCase.responseCaseFormat,'digits_only');
+assert.equal(internalCase.internalCaseYearMatches,true);
+assert.equal(internalCase.internalCaseSerialSuffixMatches,true);
+assert.equal(internalCase.internalLotRowFound,true);
+assert.equal(internalCase.relatedDisplayAliasMatched,true);
+assert.equal(internalCase.statusDecisionAllowed,false);
+const wrongYear=assessIdentity({data:{
+ dma_csBasInf:{cortOfcCd:'B000210',csNo:'20070130025092'},
+ dlt_dspslGdsDspslObjctLst:[{cortOfcCd:'B000210',csNo:'20070130025092',dspslGdsSeq:'1'}]
+}},{courtCode:'B000210',caseNo:'2008타경25092',itemNo:'1'});
+assert.equal(wrongYear.internalCaseYearMatches,false);
+assert.equal(wrongYear.statusDecisionAllowed,false);
 console.log('PASS: structural-only status probe; block and redaction');

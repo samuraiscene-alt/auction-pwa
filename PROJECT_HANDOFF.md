@@ -2,12 +2,13 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.5.9 (법원 실서버 98개 분류코드 3단계 자동 선택)
+- 현재 버전: v0.6.0 (직접 등록 사건 수정 기능 완성)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.
 - iOS 한글 조합: 라이브 검색 DOM 갱신 금지. 검색 완료 키 또는 화면의 검색 버튼으로 결과 반영.
 - 형광펜 2탭: splitNoteUnits()는 Intl.Segmenter(단어/글자)로 렌더할 선택 범위를 만들고, 형광펜 읽기 화면에서 시작·끝 두 번 터치해 선택. 기본 iOS long-press 선택 미사용. 기존 마크를 누르면 포스트잇. annotations 데이터 포맷 그대로.
+- v0.6.0: 직접 등록 목록 data-edit-real 및 상세 id=editRealDetail → nav('official',{editRealId:id}), 등록 폼은 state.editRealId로 사전값 로드. 법원/사건번호/물건번호 readOnly. 기존 type legacy 분류는 선택 공란 시 보존; 새로운 대중소분류 선택 시 코드 변경. 변경 저장은 동일 id 항목을 map 교체, enteredAt/관심물건/일정 유지. editedAt 추가, SW v060. iPhone 실기기 테스트 필요.
 - v0.5.9: 법원 pgj.js getUsgMclLst/getUsgSclLst 실제 POST JSON 본문 {code:parent} 검증. 대 4/중 12/소 82개 실제 조회 성공. 전체 분류 snapshot court-usage-codes.json. 등록 화면 대/중/소 select로 부모 연동. 자동 채움은 명확한 공식 분류 계층 코드+이름만 반영. 기존 과거 기록은 그대로, SW v059. 법원 코드 추후 변경 가능; Cloudflare 소스 아직 따로 배포 필요.
 - v0.5.8: COURT_USAGE_CATALOG=[대분류 10000 토지,20000 건물,30000 차량및운송장비,40000 기타; 중분류 21100 단독주택/20000,21200 공동주택/20000; 소분류 21101 단독주택(소분류)/21100,21201 아파트/21200] 2026-05-08 PGJ151F00 capture. 중/소분류 자유입력 datalist 부모 필터, 정확히 이름/부모 코드가 일치하면 code 저장, 아니면 null. 원문 분류 이름 그대로 보존. 전체 목록 확보 전엔 '전체 공식 분류'라고 주장 금지. SW v058.
 - v0.5.7: COURT_USAGE_LARGE 4개 대분류코드 10000/20000/30000/40000. 신규 등록 폼 #officialUsageLarge, #officialUsageMedium, #officialType(소분류 실제 명칭) 도입. 저장 record.courtUsage={codes,names,source:'user-verified'}로 기존 type 필드 유지. 검색/관심/상세검색은 저장된 type을 필터에 추가. Worker가 courtUsage 원문 반환하도록 소스 준비(Cloudflare 미배포). 공식 전체 코드표 확보 전까지 중/소분류 코드는 null, 법원 원문 사용자가 직접 확인. SW v057. 기존 기록/백업 호환성 유지.

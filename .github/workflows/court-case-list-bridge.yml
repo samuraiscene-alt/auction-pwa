@@ -54,7 +54,13 @@ jobs:
             csNoFieldPresent:valid&&result.csNoFieldPresent===true,
             docidFieldPresent:valid&&result.docidFieldPresent===true,
             internalCaseFormatObserved:valid&&result.internalCaseFormatObserved==='digits_only'?'digits_only':'unavailable',
-            detailCaseCrossChecked:false,legalStatusVerified:false,
+            detailCaseCrossChecked:valid&&result.detailCaseCrossChecked===true,
+            detailInternalCaseConsistent:valid&&result.detailInternalCaseConsistent===true,
+            detailLotRowUnique:valid&&result.detailLotRowUnique===true,
+            docidFormat:valid&&['missing','digits_only','other'].includes(result.docidFormat)?result.docidFormat:'unavailable',
+            docidExactlyMatches:valid&&result.docidExactlyMatches===true,
+            listCsNoExactlyMatches:valid&&result.listCsNoExactlyMatches===true,
+            legalStatusVerified:false,
             rawResponseSaved:false
           };
           fs.writeFileSync('/tmp/case-list-summary.json',JSON.stringify(report,null,2)+'\n');

@@ -1,0 +1,55 @@
+name: Court sale-results screen definition diagnostic
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/probe-court-sale-result-screen.cjs
+      - .github/workflows/court-sale-result-screen-probe.yml
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read only official screen definition once
+        run: |
+          node scripts/probe-court-sale-result-screen.cjs > /tmp/court-sale-screen.json || true
+      - name: Redact and retain structured summary
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          let j={};
+          try{j=JSON.parse(fs.readFileSync('/tmp/court-sale-screen.json','utf8'));}catch{}
+          const paths=Array.isArray(j.officialApiPaths)?j.officialApiPaths.filter(s=>
+            typeof s==='string'&&/^\/pgj\/[A-Za-z0-9]+\/[A-Za-z0-9]+\.on$/.test(s)).slice(0,20):[];
+          const ids=Array.isArray(j.dataMapIds)?j.dataMapIds.filter(s=>
+            typeof s==='string'&&/^(dma|dlt)_[A-Za-z0-9_]{1,60}$/.test(s)).slice(0,50):[];
+          const result={schemaVersion:1,attemptedAt:new Date().toISOString(),
+            observed:j.observed===true,screen:'PGJ158M01',
+            reason:['timeout','http_error','not_xml','oversize','unexpected_document','network_error'].includes(j.reason)?j.reason:null,
+            saleResultSearchEndpointPresent:paths.includes('/pgj/pgjsearch/selectDspslSchdRsltSrch.on'),
+            officialApiPaths:paths,dataMapIds:ids,
+            rawDocumentSaved:false,legalStatusVerified:false};
+          fs.writeFileSync('/tmp/court-sale-screen-summary.json',JSON.stringify(result,null,2)+'\n');
+          NODE
+      - name: Publish diagnostic only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for n in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            cp /tmp/court-sale-screen-summary.json data/court-sale-screen-status.json
+            git add data/court-sale-screen-status.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "diagnostic: observe official sale-results screen structure"
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 2
+          done
+          exit 1

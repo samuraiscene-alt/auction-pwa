@@ -15,6 +15,44 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
+      - name: Probe court medium and small classification endpoints
+        run: |
+          node --input-type=module <<'NODE'
+          const probes=[
+            {level:'medium',name:'selectMclLst',key:'lclDspslGdsLstUsgCd',parent:'20000',arrays:['mclLst','usgMclLst']},
+            {level:'small',name:'selectSclLst',key:'mclDspslGdsLstUsgCd',parent:'21200',arrays:['sclLst','usgSclLst']}
+          ];
+          for(const p of probes){
+            const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+            try{
+              const response=await fetch('https://www.courtauction.go.kr/pgj/pgj002/'+p.name+'.on',{
+                method:'POST',
+                headers:{'Accept':'application/json','Content-Type':'application/json; charset=UTF-8',
+                  'Referer':'https://www.courtauction.go.kr/pgj/index.on'},
+                body:JSON.stringify({[p.key]:p.parent}),signal:controller.signal
+              });
+              console.log('Level:',p.level,'Parent:',p.parent,'HTTP:',response.status);
+              if(!response.ok)throw Error('HTTP '+response.status);
+              const result=await response.json();
+              console.log('API status:',result.status);
+              console.log('Data keys:',Object.keys(result.data||{}).slice(0,15).join(', '));
+              const key=p.arrays.find(k=>Array.isArray(result.data?.[k]));
+              const items=key?result.data[key]:[];
+              console.log('Array key:',key||'(unrecognized)','Count:',items.length);
+              if(items.length){
+                console.log('First entry field names:',Object.keys(items[0]).slice(0,20).join(', '));
+                // Classification names and codes are public. Print only known field names, no raw server payload.
+                console.log('Recognized rows:',JSON.stringify(items.slice(0,100).map(x=>({
+                  code:String(x.code??x.usgCd??'').slice(0,20),
+                  name:String(x.name??x.usgNm??'').slice(0,80)
+                }))));
+              }
+              if(!key||String(result.status)!=='200')process.exitCode=1;
+            }catch(error){console.error('Probe failed',p.level,error.name,error.cause?.code||error.message);process.exitCode=1}
+            finally{clearTimeout(timer)}
+          }
+          NODE
+
       - name: Query official large classification list once
         run: |
           node --input-type=module <<'NODE'

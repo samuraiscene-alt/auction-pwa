@@ -1,2 +1,2 @@
-0.6.0
-Manual auction record editing for existing cases; preserve identifiers, favorites, calendar and legacy classification.
+0.6.1
+Separate Seoul/Gyeonggi/Incheon official court limited-page auto-list viewer with freshness and partial-coverage label.

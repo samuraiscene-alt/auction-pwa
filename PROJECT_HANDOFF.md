@@ -2,12 +2,13 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.5.1 (법원 공식 검색·사용자 직접 사건 등록)
+- 현재 버전: v0.5.2 (등록 즉시 물건 상세로 이동·가격 미확인 처리)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.
 - iOS 한글 조합: 라이브 검색 DOM 갱신 금지. 검색 완료 키 또는 화면의 검색 버튼으로 결과 반영.
 - 형광펜 2탭: splitNoteUnits()는 Intl.Segmenter(단어/글자)로 렌더할 선택 범위를 만들고, 형광펜 읽기 화면에서 시작·끝 두 번 터치해 선택. 기본 iOS long-press 선택 미사용. 기존 마크를 누르면 포스트잇. annotations 데이터 포맷 그대로.
+- v0.5.2 직접 등록 UX: write() 직후 nav('detail',{detail:id,detailTab:'overview'}), showSavedCheck 유지. 감정가/최저가 빈 필드는 null, 과거 0도 상세/목록에서 미확인으로 표시. propertyPrice는 실제 가격 없으면 null 반환하며 필터/정렬 보정. 실시간 공식 사건 자동 채우기 아직 안 됨. SW v052, app v0.5.2.
 - v0.5.1 공식 경매: official 화면, 공식 사이트 링크, 사용자 직접 등록 saved.realProperties (id real-court|case|itemNo), allProperties()로 홈/검색/관심/일정/상세 연동. userRegistered 배지 및 미검증 원문 안내. JSON 백업 포함, 복원 검증. 자동 법원 API 수집·실시간 연동은 아직 없음. cache v051 APP_VERSION 0.5.1.
 - v0.5.0 홈 가로폭: 스크린샷에서 홈 전체 오른쪽 잘림(설정·빠른메뉴 4열·하단탭), CSS html/body/#app/#content max-width 및 min-width:0, 그리드 minmax(0,1fr), 탭 균등 정렬. v050/app 0.5.0. 실제 iPhone 재검증 필요.
 - v0.4.9 PDF 읽기 위치: 일반 첨부 파일 open(file) 시 fileId별 localStorage 키 auction_pdf_last_page_v1: 조회. source open(file,n)는 명시적 출처 페이지 우선. pageChange, pickerDone, 검색 결과 선택, 닫기에서 페이지 업데이트. 페이지 수 초과 시 범위 제한. 백업에는 미포함, 다른 앱/기기 동기화 없음. SW v049 APP_VERSION 0.4.9.

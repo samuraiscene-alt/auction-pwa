@@ -21,4 +21,36 @@ function assessSearchBridge(rows,{courtCode,caseNo,itemNo}){
   note:'목록 한 행에서의 일치 단서만 확인. 상세 응답의 내부 사건번호와 교차 대조하기 전 신원 및 매각상태 미확인.'
  };
 }
-module.exports={assessSearchBridge};
+
+// Cross-compare exact LIST display/court/lot row against DETAIL base/internal lot.
+// Never map a docid using suffix/prefix heuristics. All results are redacted.
+function assessCrossBridge(rows,detail,identity){
+ const list=assessSearchBridge(rows,identity);
+ const exact=rows.filter(r=>r&&typeof r==='object'&&!Array.isArray(r)&&
+  String(r.boCd??'')===identity.courtCode&&String(r.srnSaNo??'')===identity.caseNo&&
+  String(r.maemulSer??r.mokmulSer??'')===identity.itemNo);
+ const data=detail?.data&&typeof detail.data==='object'&&!Array.isArray(detail.data)?detail.data:{};
+ const base=data.dma_csBasInf;
+ const internal=typeof base?.csNo==='string'&&/^\d{8,20}$/.test(base.csNo)?base.csNo:null;
+ const lotRows=Array.isArray(data.dlt_dspslGdsDspslObjctLst)?data.dlt_dspslGdsDspslObjctLst:[];
+ const detailConsistent=!!internal&&String(base?.cortOfcCd??'')===identity.courtCode&&lotRows.length>0&&
+  lotRows.every(r=>r&&String(r.cortOfcCd??'')===identity.courtCode&&String(r.csNo??'')===internal);
+ const matchedLotRows=detailConsistent?lotRows.filter(r=>String(r.dspslGdsSeq??'')===identity.itemNo):[];
+ const row=exact.length===1?exact[0]:null;
+ const docid=typeof row?.docid==='string'?row.docid.trim():'';
+ const docidFormat=!docid?'missing':/^\d+$/.test(docid)?'digits_only':'other';
+ const docidExactlyMatches=!!internal&&!!row&&docid===internal;
+ const listCsNo=typeof row?.csNo==='string'?row.csNo.trim():'';
+ const listCsNoExactlyMatches=!!internal&&!!row&&listCsNo===internal;
+ const crossChecked=exact.length===1&&detailConsistent&&matchedLotRows.length===1&&
+   (docidExactlyMatches||listCsNoExactlyMatches);
+ return {
+  schemaVersion:1,exactDisplayLotRows:list.exactDisplayLotRows,
+  detailInternalCaseConsistent:detailConsistent,
+  detailLotRowUnique:matchedLotRows.length===1,
+  docidFormat,docidExactlyMatches,listCsNoExactlyMatches,
+  detailCaseCrossChecked:crossChecked,
+  legalStatusVerified:false,internalCaseValueSaved:false
+ };
+}
+module.exports={assessSearchBridge,assessCrossBridge};

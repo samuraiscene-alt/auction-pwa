@@ -78,8 +78,12 @@ function validateSnapshot(data,previous=null,{strict=true}={}){
    overlap++;
    const fields=['appraisalWon','minimumWon','saleDate','address','smallCode'];
    const differences=fields.filter(field=>{
-    if(field==='smallCode'&&data.schemaVersion===2&&old.schemaVersion===1&&item.components?.length>1)
-      return !item.components.some(c=>c.smallCode===prev.smallCode);
+    if(data.schemaVersion===2&&old.schemaVersion===1&&item.components?.length>1){
+     // Previous sample kept one arbitrary land/building/address row per lot.
+     // If that legacy address/type is still present, it is not a real change.
+     if(field==='smallCode')return !item.components.some(c=>c.smallCode===prev.smallCode);
+     if(field==='address')return !item.components.some(c=>c.address===prev.address);
+    }
     return prev[field]!==item[field];
    });
    if(differences.length){changed++;if(changeSamples.length<15)changeSamples.push({id:item.id,fields:differences});}

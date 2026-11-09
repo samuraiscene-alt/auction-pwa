@@ -98,6 +98,11 @@ async function createTestCase(page){
   await page.locator('[data-page="capital"]').first().click();
   await page.waitForFunction(()=>document.getElementById('capitalStatus')?.textContent.includes('수집 2026-'),{timeout:12000});
   assert.equal(await page.locator('.capital-record').count(),40,'initial page shows 40');
+  const grouped=page.locator('.capital-case-group').filter({hasText:'2008타경25092'}).first();
+  assert.equal(await grouped.count(),1,'2008 case rendered once');
+  assert.equal(await grouped.locator('.capital-property').count(),15,'15 individual items preserved');
+  await grouped.locator('summary').click();
+  assert(await grouped.evaluate(x=>x.open),'same-case details can be expanded');
   await page.locator('[data-capital-region="서울"]').click();
   assert((await page.locator('body').textContent()).includes('수집된 물건'),'Seoul filter renders');
   await page.locator('[data-capital-region="전체"]').click();

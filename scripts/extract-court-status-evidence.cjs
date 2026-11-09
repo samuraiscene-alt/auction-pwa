@@ -15,6 +15,11 @@ const safeDay=value=>{
 // infer a label from an unknown code. No addresses or free-form text can escape.
 const DISPLAY_LABELS=new Set(['진행','매각','유찰','취하','변경','연기','정지','취소','종국','미종국','신건']);
 const labelOf=value=>typeof value==='string'&&DISPLAY_LABELS.has(value.trim())?value.trim():null;
+// Log only narrowly named candidate field KEYS from the verified list row.
+const displayCandidateFieldNames=row=>Object.keys(row).filter(k=>
+ /^[A-Za-z][A-Za-z0-9_]{0,49}$/.test(k)&&
+ /(?:stat|rslt|result|jin|stprint|lstprint|progress|label|nm$)/i.test(k)
+).slice(0,30);
 const displayEvidence=row=>{
  const names=['userStPrint','userLstPrint','mulStatNm','maemulStatNm'];
  return names.map(field=>({
@@ -60,6 +65,7 @@ function extractStatusEvidence(rows,detail,identity,bridge){
   ...status,
   scheduleResultObservations:dates,
   listingDisplayEvidence:displayEvidence(listRow[0]),
+  listingDisplayCandidateFieldNames:displayCandidateFieldNames(listRow[0]),
   matchingScheduleRows:historyBounded?matched.length:null,
   historyBounded,
   legalStatusVerified:false,

@@ -54,15 +54,20 @@ function assessIdentity(json,{courtCode,caseNo,itemNo}){
  const displayAliasMatched=records.some(record=>
    String(get(record,['reltCortOfcCd','reltCsCortOfcCd','cortOfcCd'])??'')===courtCode&&
    String(get(record,['userReltCsNo'])??'')===caseNo);
- const internalLotRowFound=!!digits&&records.some(record=>
-   String(get(record,['cortOfcCd'])??'')===courtCode&&
-   String(get(record,['csNo'])??'')===digits&&
-   String(get(record,['dspslGdsSeq'])??'')===itemNo);
+ const lotRows=Array.isArray(data.dlt_dspslGdsDspslObjctLst)?data.dlt_dspslGdsDspslObjctLst.filter(record=>record&&typeof record==='object'&&!Array.isArray(record)):[];
+ const matchingInternalRows=digits?lotRows.filter(record=>
+   String(record.cortOfcCd??'')===courtCode&&String(record.csNo??'')===digits&&
+   String(record.dspslGdsSeq??'')===itemNo):[];
+ const internalLotRowFound=matchingInternalRows.length>0;
+ const internalCaseRowsConsistent=!!digits&&lotRows.length>0&&lotRows.every(record=>
+   String(record.cortOfcCd??'')===courtCode&&String(record.csNo??'')===digits);
+ const matchingLotRowUnique=matchingInternalRows.length===1;
  return {caseIdentityMatched:directCaseMatch,lotIdentityMatched:directLotMatch,
   responseCaseFormat,baseCourtMatches,
   internalCaseYearMatches:numberHints.yearMatches,
   internalCaseSerialSuffixMatches:numberHints.serialSuffixMatches,
   relatedDisplayAliasMatched:displayAliasMatched,internalLotRowFound,
+  internalCaseRowsConsistent,matchingLotRowUnique,
   statusDecisionAllowed:false,note:'내부 사건번호 형식/별도 연관사건 별칭은 확정 신원증거가 아님. 상태코드 판정 금지.'};
 }
 async function main(){
@@ -88,7 +93,7 @@ async function main(){
   if(!summary.plausibleResponse)throw Error('court response schema not verified; no status inference');
   const identity=assessIdentity(json,{courtCode,caseNo,itemNo});
   if(!identity.caseIdentityMatched){
-    console.log(JSON.stringify({caseIdentityMatched:false,lotIdentityMatched:false,statusDecisionAllowed:false,responseCaseFormat:identity.responseCaseFormat,identityHints:{baseCourtMatches:identity.baseCourtMatches,internalCaseYearMatches:identity.internalCaseYearMatches,internalCaseSerialSuffixMatches:identity.internalCaseSerialSuffixMatches,relatedDisplayAliasMatched:identity.relatedDisplayAliasMatched,internalLotRowFound:identity.internalLotRowFound},structuralSummary:summary},null,2));
+    console.log(JSON.stringify({caseIdentityMatched:false,lotIdentityMatched:false,statusDecisionAllowed:false,responseCaseFormat:identity.responseCaseFormat,identityHints:{baseCourtMatches:identity.baseCourtMatches,internalCaseYearMatches:identity.internalCaseYearMatches,internalCaseSerialSuffixMatches:identity.internalCaseSerialSuffixMatches,relatedDisplayAliasMatched:identity.relatedDisplayAliasMatched,internalLotRowFound:identity.internalLotRowFound,internalCaseRowsConsistent:identity.internalCaseRowsConsistent,matchingLotRowUnique:identity.matchingLotRowUnique},structuralSummary:summary},null,2));
     throw Error('case identity not matched; structural field names only reported');
   }
   console.log(JSON.stringify({requestedCase:caseNo,requestedCourt:courtCode,...identity,...summary},null,2));

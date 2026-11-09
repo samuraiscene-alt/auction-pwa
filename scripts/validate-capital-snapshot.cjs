@@ -19,7 +19,7 @@ function validateSnapshot(data,previous=null,{strict=true}={}){
  if(errors.length)return {ok:false,errors,warnings,changeSamples};
  check(data.scope==='서울·경기·인천'&&data.source==='courtauction.go.kr','수집 출처·지역 불일치');
  check(data.collectionMode==='limited-pages-pilot','시범 수집 유형 불일치');
- check(typeof data.fetchedAt==='string' && /^20\\d{2}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$/.test(data.fetchedAt) && Number.isFinite(Date.parse(data.fetchedAt)) && Date.parse(data.fetchedAt)<=Date.now()+10*60*1000,'수집 시각 형식 오류 또는 미래 시각');
+ check(typeof data.fetchedAt==='string' && /^20\d{2}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(data.fetchedAt) && Number.isFinite(Date.parse(data.fetchedAt)) && Date.parse(data.fetchedAt)<=Date.now()+10*60*1000,'수집 시각 형식 오류 또는 미래 시각');
  check(Array.isArray(data.items)&&data.items.length>0&&data.items.length<=5000,'물건 목록 개수 오류');
  for(const region of REGIONS){
   const r=data.regions?.[region];

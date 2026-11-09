@@ -6,6 +6,7 @@
  * Source: courtauction.go.kr PGJ151M01 searchControllerMain.on
  */
 const fs=require('node:fs');
+const {validateSnapshot}=require('./validate-capital-snapshot.cjs');
 const SCHEMA_KEYS=[
 'rletDspslSpcCondCd','bidDvsCd','mvprpRletDvsCd','cortAuctnSrchCondCd',
 'rprsAdongSdCd','rprsAdongSggCd','rprsAdongEmdCd',
@@ -59,6 +60,8 @@ async function search(region,pageNo){
  const page=json.data.dma_pageInfo||{};
  const total=Number(page.totalCnt||page.groupTotalCount||0);
  const items=rows.map(row=>itemFrom(row,region)).filter(Boolean);
+ const dropped=rows.length-items.length;
+ if(rows.length&&dropped/rows.length>0.03)throw Error('too many invalid records '+dropped+'/'+rows.length);
  console.log(region.label,'page',pageNo,'raw count:',rows.length,'usable:',items.length,'reported total:',total);
  if(rows.length&&!items.length)throw Error(region.label+' response fields did not pass validation');
  return {items,count:rows.length,total:Number.isSafeInteger(total)?total:null,signature:rows.map(x=>String(x.docid||'')+'|'+String(x.maemulSer||'')).join(',')};
@@ -84,12 +87,30 @@ async function search(region,pageNo){
   await new Promise(resolve=>setTimeout(resolve,700));
  }
  if(errors.length){console.error('Probe incomplete. No output JSON published:',errors.join(' / '));process.exitCode=1;return;}
- const unique=[...new Map(items.map(item=>[item.id,item])).values()];
+ const uniqueMap=new Map(),conflicts=[];
+ for(const item of items){
+  const previous=uniqueMap.get(item.id);
+  if(previous&&['address','appraisalWon','minimumWon','saleDate','smallCode'].some(k=>previous[k]!==item[k]))conflicts.push(item.id);
+  if(!previous)uniqueMap.set(item.id,item);
+ }
+ if(conflicts.length){console.error('Conflicting duplicate case/item records:',conflicts.slice(0,10));process.exitCode=1;return;}
+ const unique=[...uniqueMap.values()];
  const snapshot={schemaVersion:1,scope:'서울·경기·인천',collectionMode:'limited-pages-pilot',
   complete:false,source:'courtauction.go.kr',fetchedAt:new Date().toISOString(),
   regions,items:unique};
+ const target='data/capital-court-pilot.json';
+ let previous=null;
+ if(fs.existsSync(target)){
+  try{previous=JSON.parse(fs.readFileSync(target,'utf8'));}
+  catch(error){console.error('Previous snapshot corrupt; refuse to replace:',error.message);process.exitCode=1;return;}
+ }
+ const result=validateSnapshot(snapshot,previous,{strict:true});
+ if(!result.ok){console.error('Safety validation FAILED. Old published snapshot kept:',result.errors);process.exitCode=1;return;}
+ snapshot.validation={passed:true,checkedAt:new Date().toISOString(),...result.summary,
+  warnings:result.warnings,changeSamples:result.changeSamples};
  fs.mkdirSync('data',{recursive:true});
- fs.writeFileSync('data/capital-court-pilot.json',JSON.stringify(snapshot,null,2)+'\n');
+ fs.writeFileSync(target,JSON.stringify(snapshot,null,2)+'\n');
+ console.log('SAFETY PASS',JSON.stringify(result.summary),'warnings',JSON.stringify(result.warnings));
  console.log('Probe data saved:',unique.length,'records, NOT a complete regional catalogue.');
  console.log('Regional unique counts:',JSON.stringify(Object.fromEntries(REGIONS.map(r=>[r.label,new Set(items.filter(x=>x.region===r.label).map(x=>x.id)).size]))));
  console.log('Duplicate IDs count:',items.length-unique.length);

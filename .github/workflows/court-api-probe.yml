@@ -62,6 +62,12 @@ jobs:
               const root = data.data || data;
               const blocked = root.ipcheck === false || data.ipcheck === false || /비정상적인 접속|차단/.test(JSON.stringify(data).slice(0,3000));
               console.log('JSON top-level keys:', Object.keys(data).slice(0,15).join(', '));
+              console.log('API status:', typeof data.status === 'string' || typeof data.status === 'number' ? String(data.status).slice(0,60) : typeof data.status);
+              console.log('API message category:', typeof data.message === 'string' ? (/오류|실패|error|fail|인증|권한|차단/i.test(data.message) ? 'error-like' : data.message.length ? 'present' : 'empty') : typeof data.message);
+              console.log('API errors present:', Array.isArray(data.errors) ? data.errors.length > 0 : !!data.errors);
+              console.log('Data shape:', Array.isArray(data.data) ? 'array' : data.data === null ? 'null' : typeof data.data);
+              console.log('Data field names:', data.data && typeof data.data === 'object' ? Object.keys(data.data).slice(0,25).join(', ') : '(none)');
+              console.log('Likely business error:', !!data.errors && (Array.isArray(data.errors) ? data.errors.length > 0 : true) || /오류|실패|error|fail|인증|권한|차단/i.test(String(data.message || '')));
               console.log('Explicit IP block:', blocked);
               console.log('Non-empty response:', raw.length > 100);
               if (blocked || !response.ok) process.exitCode=1;

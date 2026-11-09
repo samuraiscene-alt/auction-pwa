@@ -1,2 +1,2 @@
-0.6.8
-Expand safe metropolitan limited-pages listing collection to five pages per region; preserve fail-closed publishing.
+0.6.9
+Five-page metro listing published; per-item read-only court recheck with explicit differences and uncertainties.

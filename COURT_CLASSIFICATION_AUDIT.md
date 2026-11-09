@@ -38,3 +38,17 @@
 - 각 대분류의 실제 자식 분류/부모관계 원문 응답 검증
 - Cloudflare Worker 원문 분류 반환 기능 운영 배포
 - iPhone 3단계 선택 화면 전체 회귀 검증
+
+## 2026-11-09 후속 조사: 중·소분류 조회 경로 발견
+공개 프로젝트 `Jaemnani/auction`의 `docs/api_recon.md`에 다음 조회 경로가 기록됨.
+- 대분류: `POST /pgj/pgj002/selectLclLst.on`
+- 중분류: `POST /pgj/pgj002/selectMclLst.on`, 상위코드 인자 `lclDspslGdsLstUsgCd`
+- 소분류: `POST /pgj/pgj002/selectSclLst.on`, 상위코드 인자 `mclDspslGdsLstUsgCd`
+
+원문: https://github.com/Jaemnani/auction/blob/main/docs/api_recon.md
+
+GitHub `backend/court-worker.js`에 `GET /taxonomy?level=large|medium|small&parentCode=...` 소스 추가. 부모 코드 없는 중·소분류 요청은 거부하며 법원 원본의 5자리 코드와 이름만 반환. 분류를 만들어내지 않고, 알 수 없는 응답 구조는 오류 처리한다.
+
+`.github/workflows/court-usage-audit.yml`에 중분류 `20000`, 소분류 `21200` 검증 요청을 각각 1회 추가함. **현재 실제 실행 결과 및 정확한 응답 키는 아직 미확인.** 이 코드도 아직 Cloudflare에 배포하지 않았으며 GitHub Pages 앱 화면 v0.5.8은 변경하지 않았다.
+
+조회가 성공하면 실제 응답 키에 맞춰 Worker를 보완한 뒤, 앱의 중·소분류 선택을 원격 연동한다. 다수 조회로 차단을 유도하거나 접근 제한을 우회하지 않는다.

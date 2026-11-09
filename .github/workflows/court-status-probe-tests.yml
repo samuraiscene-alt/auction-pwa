@@ -1,0 +1,22 @@
+name: Court status diagnostic offline tests
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/probe-court-case-status.cjs
+      - tests/court-status-probe.cjs
+      - .github/workflows/court-status-probe-tests.yml
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run offline, redacted schema tests
+        run: node tests/court-status-probe.cjs

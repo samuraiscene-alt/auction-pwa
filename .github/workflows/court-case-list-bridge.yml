@@ -60,6 +60,10 @@ jobs:
             docidFormat:valid&&['missing','digits_only','other'].includes(result.docidFormat)?result.docidFormat:'unavailable',
             docidExactlyMatches:valid&&result.docidExactlyMatches===true,
             listCsNoExactlyMatches:valid&&result.listCsNoExactlyMatches===true,
+            saNoFieldPresent:valid&&result.saNoFieldPresent===true,
+            printCsNoFieldPresent:valid&&result.printCsNoFieldPresent===true,
+            listSaNoExactlyMatches:valid&&result.listSaNoExactlyMatches===true,
+            printCsNoMatchesDisplay:valid&&result.printCsNoMatchesDisplay===true,
             legalStatusVerified:false,
             rawResponseSaved:false
           };

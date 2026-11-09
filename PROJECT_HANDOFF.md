@@ -11,6 +11,7 @@
 - 2026-11-10 실서버 responseShape 확보. dma_csBasInf.csNo/cortOfcCd, dlt_dspslGdsDspslObjctLst.dspslGdsSeq 및 사건·물건 상태필드 이름 확인. 진단 도구 dspslGdsSeq 인식 추가, 응답사건번호 형식 responseCaseFormat만 비식별 보고. 실제 identity_mismatch 지속; 코드 의미는 미확인. 앱 상태 자동판정 미적용.
 - 실서버 새 진단 결과 responseCaseFormat=digits_only 확인. 내부 숫자 사건번호를 임의 변환하지 않고 연도/일련번호 꼬리/관련사건 표시번호/내부물건 행 여부만 비식별 identityHints로 조사하도록 개선. 아직 실서버 identityHints 미확인, 법적 상태 매핑 금지.
 - 사건번호 연결 중요 진전(2026-11-10): data/court-case-list-bridge-status.json에서 실제 공식 검색 목록 saNo 와 상세 csNo 가 **정확히 일치**하고 대상 법원·사건·물건 행 유일성 확인(detailCaseCrossChecked=true, 2026-11-09T22:38:57.728Z). 이는 단 1건의 표본 성공으로 다른 법원/사건을 포괄하지 않음. printCsNo와 docid는 신원 연결 필수조건 아님. 실서버 교차검증 통과, 법적 상태 의미는 미검증(legalStatusVerified=false). 진단은 요청별 독립 12초 타임아웃과 실패 단계 식별로 변경. 앱 버전 및 기존 목록 불변.
+- 원시코드 채증(2026-11-10): 검증된 단일 물건의 법원 원시 상태코드를 data/court-case-list-bridge-status.json 내 statusEvidence에 추출, 코드/기일 결과만 최소 저장. 출처/법적 의미 공식 매핑 미확보 → legalStatusVerified=false, 자동 매각·취하·변경 판단 미적용. scripts/extract-court-status-evidence.cjs 및 tests/court-status-evidence.cjs 회귀 테스트 통과.
 - 현재 버전: v0.7.5 (물건 재조회 확인시각·수집 성공표시 신뢰성 보강)
 - v0.7.5: 물건 재조회 결과에 Asia/Seoul 확인시각 표시. 목록 수집시각보다 과거의 성공 status만 있으면 경고, 새 목록 V 성공 제스처는 status.outcome=success이고 status.attemptedAt>=snapshot.fetchedAt인 경우에만 표시. 매각·취하 상태 자동 확정은 미구현. 실제 Pages 배포 확인 및 iPhone 테스트 필요.
 - v0.7.4: 법원 물건 재조회 가격·날짜가 비정상·누락이면 차이/일치로 오판하지 않고 미확인으로 처리. 날짜가 다르면 기일 차이 감지로만 표시하고 '변경' 상태로 확정하지 않음. 매각·취하·변경 상태는 계속 공식 확인 필요. GitHub Pages 배포 및 아이폰 테스트 별도 확인.

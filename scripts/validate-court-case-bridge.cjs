@@ -46,8 +46,11 @@ function assessCrossBridge(rows,detail,identity){
  const printCsNoMatchesDisplay=!!row&&listPrintCsNo===identity.caseNo;
  const listCsNo=typeof row?.csNo==='string'?row.csNo.trim():'';
  const listCsNoExactlyMatches=!!internal&&!!row&&listCsNo===internal;
+ // The list row already ties srnSaNo to the exact court and lot.
+ // saNo must exactly equal the detail case ID; printCsNo is only diagnostic.
+ // docid is not an authoritative case identifier.
  const crossChecked=exact.length===1&&detailConsistent&&matchedLotRows.length===1&&
-   (docidExactlyMatches||listCsNoExactlyMatches||(listSaNoExactlyMatches&&printCsNoMatchesDisplay));
+   listSaNoExactlyMatches&&(!listCsNo||listCsNoExactlyMatches);
  return {
   schemaVersion:1,exactDisplayLotRows:list.exactDisplayLotRows,
   detailInternalCaseConsistent:detailConsistent,

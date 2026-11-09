@@ -64,3 +64,9 @@
 - GitHub에 저장된 최신 진단 코드 및 오프라인 검증을 재실행해 통과.
 - GitHub 연결의 커밋 상태 조회에 진단 실행 결과가 나타나지 않고 웹/컨테이너에서 공식 페이지 접근도 실패하여, 실제 GitHub Actions 실행 결과와 법원 서버 응답은 **확인되지 않음**.
 - 실서버 확인 전까지 앱 버전(v0.7.5), 수집 데이터, 자동 매각·취하 판정은 변경하지 않음.
+
+## 2026-11-10 실서버 진단 첫 결과 및 후속
+- `data/court-case-probe-status.json` 최초 실제 생성 확인: `outcome=unverified`, `reason=identity_mismatch`, caseIdentityMatched=false, lotIdentityMatched=false, legalStatusVerified=false (한국시간 약 05:07).
+- 진단 작업이 실제 기록 파일을 생성했다는 점은 확인되었지만, 법원 서버와의 HTTP 통신 자체/정확한 요청 스키마 성공 여부는 결과만으로 확정할 수 없음.
+- 신원 불일치 원인 조사용으로 `scripts/probe-court-case-status.cjs`가 실패 시에도 원본 값 없이 구조/필드명만 stdout JSON으로 내보내며, 워크플로우는 필드명·행수만 제한하여 `responseShape`에 기록하도록 수정.
+- 이 구조 진단용 후속 워크플로우의 실행 결과는 아직 미확인. 매각·취하 자동 판정·실사용 데이터 변경 없음.

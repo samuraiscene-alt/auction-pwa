@@ -1,15 +1,20 @@
 name: Court API connectivity probe
 
 on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/court-api-probe.yml']
   workflow_dispatch:
     inputs:
       court_code:
         description: 'Court office code (e.g. B000210)'
         required: true
+        default: 'B000210'
         type: string
       case_number:
         description: 'Public auction case number (e.g. 2024타경100001)'
         required: true
+        default: '2023타경4869'
         type: string
 
 permissions:
@@ -22,8 +27,8 @@ jobs:
     steps:
       - name: Probe one court case (read-only, no retry)
         env:
-          COURT_CODE: ${{ inputs.court_code }}
-          CASE_NUMBER: ${{ inputs.case_number }}
+          COURT_CODE: ${{ inputs.court_code || 'B000210' }}
+          CASE_NUMBER: ${{ inputs.case_number || '2023타경4869' }}
         run: |
           node --input-type=module <<'NODE'
           const court = (process.env.COURT_CODE || '').trim();

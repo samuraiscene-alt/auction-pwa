@@ -451,3 +451,12 @@
 - GitHub Pages v0.6.1 배포 성공: https://github.com/samuraiscene-alt/auction-pwa/actions/runs/42608242236
 - 완료 확인: 자동목록 40개 최초 표시·80개 더 보기·서울 지역 선택·사건번호 검색·직접 등록/관심물건 데이터 격리.
 - 미완료: 법원에서 보고한 수도권 전체 사건 자동 수집과 실시간 매각상태 갱신, 아이폰 홈 화면 PWA 실기기 검증. 274건을 전체 경매물건으로 광고하지 않음.
+
+## v0.7.0 8페이지 실제 검증·배포 완료 (2026-11-10 KST)
+- 각 지역 8페이지 × 페이지당 50행, 최대 원본 1,200행 조회. 고유 물건 805건: 서울 337, 경기 202, 인천 266.
+- 이전 479건과 모두 겹침, 가격·기일 변경 0건, 새 표본에서 보이지 않는 기존 물건 0건.
+- 데이터 `data/capital-court-pilot.json`: `schemaVersion:2`, `validation.passed:true`, `complete:false` (수도권 전체 아님).
+- GitHub Actions 확대 수집+안전 게시 성공: https://github.com/samuraiscene-alt/auction-pwa/actions/runs/42682855036
+- Pages 앱 배포 성공: https://github.com/samuraiscene-alt/auction-pwa/actions/runs/42682855084
+- 코드 `app.js` v0.7.0은 진행상태를 '미확인'으로 표시하며, 재조회로도 매각·취하 확정 판정을 하지 않음.
+- 같은 GitHub 브랜치에 소스/자동 수집이 동시에 반영돼 생긴 status.json 충돌을 방지하도록, 워크플로우가 최신 커밋 위에 검증된 데이터 파일만 갱신하도록 수정함.

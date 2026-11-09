@@ -2,12 +2,13 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.5.7 (법원 대/중/소분류 저장 구조 및 원문 명칭 보존)
+- 현재 버전: v0.5.8 (법원 일부 실측 분류표 연결, 부모 코드 검증 및 미확인 분류 원문 보존)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.
 - iOS 한글 조합: 라이브 검색 DOM 갱신 금지. 검색 완료 키 또는 화면의 검색 버튼으로 결과 반영.
 - 형광펜 2탭: splitNoteUnits()는 Intl.Segmenter(단어/글자)로 렌더할 선택 범위를 만들고, 형광펜 읽기 화면에서 시작·끝 두 번 터치해 선택. 기본 iOS long-press 선택 미사용. 기존 마크를 누르면 포스트잇. annotations 데이터 포맷 그대로.
+- v0.5.8: COURT_USAGE_CATALOG=[대분류 10000 토지,20000 건물,30000 차량및운송장비,40000 기타; 중분류 21100 단독주택/20000,21200 공동주택/20000; 소분류 21101 단독주택(소분류)/21100,21201 아파트/21200] 2026-05-08 PGJ151F00 capture. 중/소분류 자유입력 datalist 부모 필터, 정확히 이름/부모 코드가 일치하면 code 저장, 아니면 null. 원문 분류 이름 그대로 보존. 전체 목록 확보 전엔 '전체 공식 분류'라고 주장 금지. SW v058.
 - v0.5.7: COURT_USAGE_LARGE 4개 대분류코드 10000/20000/30000/40000. 신규 등록 폼 #officialUsageLarge, #officialUsageMedium, #officialType(소분류 실제 명칭) 도입. 저장 record.courtUsage={codes,names,source:'user-verified'}로 기존 type 필드 유지. 검색/관심/상세검색은 저장된 type을 필터에 추가. Worker가 courtUsage 원문 반환하도록 소스 준비(Cloudflare 미배포). 공식 전체 코드표 확보 전까지 중/소분류 코드는 null, 법원 원문 사용자가 직접 확인. SW v057. 기존 기록/백업 호환성 유지.
 - v0.5.6: detail 최저입찰가 compactAuctionPrice()로 천단위 8,000원→8천원 표시, CSS word-break keep-all 및 반응형 글자크기. 신규 공식 사건 폼 #officialType 기본 '아파트' 제거하고 필수 미선택 상태. Worker /item 응답에 propertyType 후보 생성(법원 목적물 명시적 단일 분류명만), 확인 후 빈칸만 입력, 혼합·미확인 분류는 수동 선택. Worker GitHub 소스는 별도 Cloudflare 배포가 필요하며 실제 타입 필드는 미검증. 기존 등록 및 저장 포맷 변경 없음. SW v056.
 - v0.5.5 물건정보: #fetchOfficialItem에서 Cloudflare /item?courtCode=B000210&caseNo=...&itemNo=... 조회. verified·courtCode·caseNo·courtName·itemNo 일치 검증 후 주소/감정가/최저가/매각기일 단일 명확한 값만 확인창 거쳐 빈 입력칸에 반영. 기존 입력은 절대 덮어쓰지 않음, 물건종류는 사용자 선택, 직접 사건 등록해야 저장. 아이폰 테스트 필요. APP_VERSION 0.5.5 SW v055.

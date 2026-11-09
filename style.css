@@ -711,3 +711,51 @@ body.attachment-viewing{overflow:hidden!important}
  .attachment-viewer-bar #attachmentSearchOpen,
  .attachment-viewer-bar #attachmentViewerClose{flex-basis:39px;width:39px!important;min-width:39px}
 }
+
+/* v0.5.0: keep entire dashboard inside the iPhone visual viewport */
+html,body{
+ width:100%;
+ max-width:100%;
+ margin-left:0;
+ margin-right:0;
+ overflow-x:clip;
+}
+#app{
+ width:100%;
+ max-width:520px;
+ min-width:0;
+ margin-left:auto;
+ margin-right:auto;
+ overflow-x:clip;
+}
+#app>.top,#app>#content{
+ width:100%;
+ max-width:100%;
+ min-width:0;
+ box-sizing:border-box;
+}
+.top>div,.top h1{min-width:0}
+.top>.iconBtn{flex:0 0 38px}
+#content>.dashboard,#content>.card,#content>.listItem,
+#content>.grid,#content>.search,#content>.section{
+ max-width:100%;
+ min-width:0;
+}
+#content .dash-heading>div{min-width:0;flex:1 1 auto}
+#content .dashboard .dash-stats{
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ min-width:0;
+}
+#content .dashboard .dash-stat{min-width:0}
+#content .grid{grid-template-columns:repeat(4,minmax(0,1fr));min-width:0}
+#content .quick{min-width:0;overflow-wrap:break-word}
+#content .section{min-width:0;gap:8px}
+#content .section>*{min-width:0}
+#content .section .muted{overflow-wrap:anywhere;text-align:right}
+#tabs{
+ width:min(100%,520px);
+ max-width:100vw;
+ grid-template-columns:repeat(5,minmax(0,1fr));
+ box-sizing:border-box;
+}
+#tabs button{min-width:0}

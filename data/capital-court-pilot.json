@@ -4,7 +4,7 @@
   "collectionMode": "limited-pages-pilot",
   "complete": false,
   "source": "courtauction.go.kr",
-  "fetchedAt": "2026-11-09T19:24:30.012Z",
+  "fetchedAt": "2026-11-09T19:34:38.510Z",
   "regions": {
     "서울": {
       "returned": 400,
@@ -20387,7 +20387,7 @@
   ],
   "validation": {
     "passed": true,
-    "checkedAt": "2026-11-09T19:24:30.022Z",
+    "checkedAt": "2026-11-09T19:34:38.522Z",
     "validatedItems": 805,
     "regions": {
       "서울": 337,
@@ -20395,7 +20395,7 @@
       "인천": 266
     },
     "comparedWithPrevious": true,
-    "overlap": 479,
+    "overlap": 805,
     "changed": 0,
     "notSeenInNewSample": 0,
     "note": "형식·표본 비교 검사이며 법원 원문 및 현재 매각 상태를 보증하지 않음",

@@ -140,3 +140,10 @@
 - `data/court-case-list-bridge-status.json` 2026-11-09T22:42:52.023Z 실서버 결과: `statusEvidence.identityVerified=true`, `caseProgressCode=0002100001`, `caseSuspensionCode=03`, `lotStatusCode=01`, `lotProgressFlag=Y`, `listStatusCode=01`, 기일 20261015 `resultCode=002`/`kindCode=01`. **각 코드의 법적 뜻은 확인되지 않았으므로 `legalStatusVerified=false`로 유지.**
 - 공개 웹 탐색에서 법원 내부 `auctnDxdyRsltCd`, `auctnGdsStatCd`에 대해 신뢰할 수 있는 공식 의미 대응표 확보 실패. 여러 민간 제공처가 진행상태 API를 제공하지만 당사 API 정의와 법원 코드표가 일치하는지 미확인(예: https://hyphen.im/product/view?seq=207, https://apick.app/dev_guide/court_auction). 민간 코드표를 공식 기준으로 대체하지 않음.
 - 해당 증거는 표본 단 한 물건에 대한 원시 데이터 채증이며, 매각/유찰/취하/정지/변경 상태를 나타낸다는 뜻이 아님. 현재 앱 `v0.7.5`, 자동 상태 확정 비활성화, 개인자료 및 목록 불변.
+
+## 2026-11-10 수도권 세 지역 실서버 표본 확장
+- 더 이상 2008년 사건 한 건에 의존하지 않고, 기존 `data/capital-court-pilot.json`에서 실제 확보한 **2025년 사건**을 각 지역 1건씩 선택하여 공식 목록 1회 + 상세 1회, 지역별 최대 2회만 조회하도록 `.github/workflows/court-three-region-probe.yml` 신설. 샘플: 서울 `court-B000210|2025타경663|1`, 경기 `court-B000214|2025타경2098|1`, 인천 `court-B000240|2025타경39|1`. 정기 실행/재시도 없음, 기존 앱 목록/사용자 데이터 불변.
+- 결과 `data/court-three-region-probe-status.json` (2026-11-09T22:59:14.501Z): `allIdentitiesLinked=true`로 **3/3건 목록·상세 신원 교차검증 통과**, 3건 모두 `statusEvidenceAvailable=true`.
+- 3건 모두 `lotStatusCode=01`, `caseProgressCode=0002100001`; `caseSuspensionCode`는 서울/인천 `00`, 경기 `04`. **코드 의미는 공식 검증 전이므로 정지·취하 등 법적 상태로 해석하지 않는다.**
+- 최근 기일 결과코드는 3건에서 `null`(검증된 기일 결과코드 없음)이며, 이는 매각/유찰/변경을 의미하지 않음. 기일 코드 반환 순서를 최신순으로 오인하지 않도록 날짜 기준 정렬 적용.
+- 지역마다 1건씩이므로 법원별 스키마의 다른 기일/상태 사례까지 대표하지 않음. `legalStatusVerified=false` 및 자동분류 차단 계속 유지.

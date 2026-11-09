@@ -67,3 +67,12 @@ GitHub `backend/court-worker.js`에 `GET /taxonomy?level=large|medium|small&pare
 - 따라서 확인한 두 요청 모양으로는 하위 코드표 전체 수집 불가. 해당 엔드포인트 존재 및 성공 메시지만으로 항목 조회 성공이라고 판단하지 않음.
 - 다음: 실제 법원 WebSquare UI에서 중·소분류를 선택하는 **정확한 요청 본문과 요청 헤더 및 응답 샘플**을 얻은 후 1회 재검증. 더 많은 페이로드 추측 호출을 하지 않는다.
 - 기존 v0.5.8 앱 및 운영 Cloudflare Worker는 변경되지 않았음. GitHub Worker `/taxonomy` 소스는 아직 운영 배포 전이며 배열이 비면 오류를 반환하도록 유지.
+
+## 2026-11-09 최종 해결: 실제 요청 본문 확인 및 전체 계층 수집
+- 법원 `/pgj/cm/js/pgj.js`의 `getUsgMclLst(usgLslCd)`와 `getUsgSclLst(usgMclCd)`는 둘 다 요청 JSON을 `{code:상위코드}`로 생성함을 실제 라이브 스크립트에서 확인.
+- 이전 시도에서 `lclDspslGdsLstUsgCd`, `mclDspslGdsLstUsgCd`를 요청 키로 사용한 것은 잘못됐음.
+- 라이브 검증 [42601860508](https://github.com/samuraiscene-alt/auction-pwa/actions/runs/42601860508), [42601956149](https://github.com/samuraiscene-alt/auction-pwa/actions/runs/42601956149), [42602041767](https://github.com/samuraiscene-alt/auction-pwa/actions/runs/42602041767).
+- 실서버 반환 항목: 대 4개, 중 12개, 소 82개 = 총 **98개**. 각 상위코드의 모든 자식 분류 목록을 순회 조회한 2026-11-09 스냅샷.
+- 정확한 원본 코드·이름·부모 관계는 저장소 `court-usage-codes.json`에 보존. 앱 UI는 이 스냅샷을 기반으로 동작.
+- 과거 `21100 단독주택`, `21200 공동주택`, `21201 아파트` 같은 샘플 코드 정보는 운영 법원 응답과 불일치, 폐기. 올바른 코드: `21100 상업용및업무용`, `20100 주거용건물`, `20104 아파트`.
+- 미완료: 운영 Cloudflare Worker 새 버전 배포 및 실제 3단계 UI 아이폰 검증. 분류표 변경 가능성은 추후 주기적 점검.

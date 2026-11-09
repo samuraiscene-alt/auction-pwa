@@ -117,3 +117,6 @@ PDF.js 텍스트 추출 결과와 검색어를 각각 NFKC 소문자·공백/줄
 
 ## v0.5.0 아이폰 화면 중앙/폭 안정성
 홈 화면 스크린샷에서 오른쪽 설정 버튼과 네 번째 빠른 메뉴 및 하단 탭이 가려지는 horizontal overflow 확인. html/body/#app과 #content를 viewport 폭 내로 제한, 카드 max-width, 그리드 repeat(4,minmax(0,1fr)) 및 요약 카드 2열 minmax 사용. 헤더 설정 버튼 폭을 38px 고정, 5개 하단 탭도 minmax(0,1fr). 기존 승인된 크기와 간격을 크게 변경하지 않고 넘침만 방지. 아이폰 홈 화면에서 실측 검증 필요.
+
+## v0.5.1 법원 공식 원문 조회와 사건 직접 등록
+공식 https://www.courtauction.go.kr/ 링크를 통해 실제 사건을 사용자 자신이 조회하고, 별도의 '법원경매 연결' 화면에서 사건/법원/물건번호/주소/종류/최저가/감정가/기일을 앱 로컬 기록으로 저장한다. 자동 수집 아님. saved.realProperties 배열에 userRegistered와 id='real-'+court+'|'+case+'|'+itemNo, enteredAt을 저장. 홈/검색/관심/일정/상세 UI에 직접 등록 배지를 표시하며 기존 가상 데이터와 혼동하지 않게 한다. JSON 백업/복원에 저장되며 데이터 검증 후 복원. 유료 API 인증키를 공개 프런트엔드에 넣지 않음. 실제 입찰 전에 원본 법원 자료 확인 필수.

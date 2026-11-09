@@ -15,7 +15,7 @@ const validPrice=n=>n===null||(Number.isSafeInteger(n)&&n>0&&n<=999999999999999)
 function validateSnapshot(data,previous=null,{strict=true}={}){
  const errors=[],warnings=[],changeSamples=[];
  const check=(c,msg)=>{if(!c)errors.push(msg)};
- check(data&&data.schemaVersion===1&&data.complete===false,'스키마/부분수집 표시 누락');
+ check(data&&[1,2].includes(data.schemaVersion)&&data.complete===false,'스키마/부분수집 표시 누락');
  if(errors.length)return {ok:false,errors,warnings,changeSamples};
  check(data.scope==='서울·경기·인천'&&data.source==='courtauction.go.kr','수집 출처·지역 불일치');
  check(data.collectionMode==='limited-pages-pilot','시범 수집 유형 불일치');
@@ -42,6 +42,25 @@ function validateSnapshot(data,previous=null,{strict=true}={}){
   for(const k of ['largeCode','mediumCode','smallCode']){
    if(item[k]!==null&&!/^\d{5}$/.test(String(item[k])))errors.push('분류코드 오류: '+id+' '+k);
   }
+  if(data.schemaVersion===2){
+   const components=item.components;
+   if(!Array.isArray(components)||components.length===0||components.length>100)
+    errors.push('구성요소 목록 개수 오류: '+id);
+   else{
+    const dedup=new Set();
+    for(const part of components){
+     if(!part||typeof part.address!=='string'||!PREFIX[item.region]?.test(part.address)||part.address.length>260)
+      errors.push('구성요소 주소·지역 오류: '+id);
+     for(const k of ['largeCode','mediumCode','smallCode']){
+      if(part?.[k]!==null&&!/^\d{5}$/.test(String(part?.[k])))errors.push('구성요소 분류코드 오류: '+id+' '+k);
+     }
+     const key=JSON.stringify([part.address,part.largeCode,part.mediumCode,part.smallCode]);
+     if(dedup.has(key))errors.push('구성요소 중복: '+id);
+     dedup.add(key);
+    }
+    if(components.length>1&&item.smallCode!==null)errors.push('복합물건을 단일 분류로 잘못 표시: '+id);
+   }
+  }
   if(seen.has(id))errors.push('중복 물건 고유번호: '+id);
   else seen.set(id,item);
  }
@@ -58,7 +77,11 @@ function validateSnapshot(data,previous=null,{strict=true}={}){
    const prev=prevMap.get(item.id);if(!prev)continue;
    overlap++;
    const fields=['appraisalWon','minimumWon','saleDate','address','smallCode'];
-   const differences=fields.filter(field=>prev[field]!==item[field]);
+   const differences=fields.filter(field=>{
+    if(field==='smallCode'&&data.schemaVersion===2&&old.schemaVersion===1&&item.components?.length>1)
+      return !item.components.some(c=>c.smallCode===prev.smallCode);
+    return prev[field]!==item[field];
+   });
    if(differences.length){changed++;if(changeSamples.length<15)changeSamples.push({id:item.id,fields:differences});}
   }
   missing=old.items.filter(x=>!seen.has(x.id)).length;

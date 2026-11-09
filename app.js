@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.5.5';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.5.6';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -225,6 +225,7 @@ const COURT_ITEM_URL='https://joon-auction-court.samuraiscene.workers.dev/item';
 function registeredProperties(){return Array.isArray(saved.realProperties)?saved.realProperties:[]}
 function allProperties(){return [...registeredProperties(),...properties]}
 function propertyPrice(p){return p&&p.userRegistered?(Number.isSafeInteger(p.minWon)&&p.minWon>0?p.minWon:null):DEMO_PRICES[p.id]}
+function compactAuctionPrice(text){return String(text).replace(/(\d{1,3}),000원$/,(_,n)=>n+'천원')}
 function knownAuctionPrice(p,value){return p.userRegistered?(Number.isSafeInteger(value)&&value>0?prettyPrice(value):'미확인'):prettyPrice(value)}
 
 function propertyDate(p){return String(p.date||'').replaceAll('.','-')}
@@ -504,7 +505,7 @@ function detail(){
  const navTabs=[['overview','개요'],['rights','권리'],['market','시세'],['docs','서류']].map(([v,name])=>`<button type="button" class="detail-tab ${tab===v?'selected':''}" data-detail-tab="${v}" aria-pressed="${tab===v}">${name}</button>`).join('');
  let panel='';
  if(tab==='overview'){
-  panel=`<div class="row"><div class="metric"><div class="smTitle">감정가</div><b>${p.userRegistered?knownAuctionPrice(p,p.valueWon):escapeHtml(p.value)}</b></div><div class="metric"><div class="smTitle">최저입찰가</div><b class="detail-price">${knownAuctionPrice(p,propertyPrice(p))}</b></div></div><div class="divider"></div><div class="line"><span class="muted">매각기일</span><strong>${escapeHtml(p.date||'미확인')}</strong></div><div class="divider"></div><div class="line"><span class="muted">물건 종류</span><strong>${escapeHtml(p.type)}</strong></div>${p.userRegistered?'<div class="court-detail-pdf"><label class="official-pdf-label" for="detailPdfInput">▤ 법원 PDF에서 개요 보완</label><input type="file" id="detailPdfInput" accept="application/pdf,.pdf" hidden><p class="helper" id="detailPdfStatus">기존 사건번호와 법원을 대조하고 미확인 항목만 추가해요.</p></div>':''}<div class="divider"></div><div class="status">⚠ 법원 서류와 점유관계는 아직 확인되지 않았어요.</div>`;
+  panel=`<div class="row"><div class="metric"><div class="smTitle">감정가</div><b>${p.userRegistered?knownAuctionPrice(p,p.valueWon):escapeHtml(p.value)}</b></div><div class="metric"><div class="smTitle">최저입찰가</div><b class="detail-price">${compactAuctionPrice(knownAuctionPrice(p,propertyPrice(p)))}</b></div></div><div class="divider"></div><div class="line"><span class="muted">매각기일</span><strong>${escapeHtml(p.date||'미확인')}</strong></div><div class="divider"></div><div class="line"><span class="muted">물건 종류</span><strong>${escapeHtml(p.type)}</strong></div>${p.userRegistered?'<div class="court-detail-pdf"><label class="official-pdf-label" for="detailPdfInput">▤ 법원 PDF에서 개요 보완</label><input type="file" id="detailPdfInput" accept="application/pdf,.pdf" hidden><p class="helper" id="detailPdfStatus">기존 사건번호와 법원을 대조하고 미확인 항목만 추가해요.</p></div>':''}<div class="divider"></div><div class="status">⚠ 법원 서류와 점유관계는 아직 확인되지 않았어요.</div>`;
  }else if(tab==='rights'){
   panel=`<div class="detail-panel-heading">권리분석</div><div class="status">⚠ 등기·임차인·점유 자료가 연결되지 않았어요.</div><div class="info-row"><span>말소기준권리</span><strong>확인 필요</strong></div><div class="info-row"><span>임차인 현황</span><strong>확인 필요</strong></div><div class="info-row"><span>인수 가능 권리</span><strong>확인 필요</strong></div><button class="secondary full-secondary" id="rightsBtn" type="button">권리분석 상세 보기 →</button>`;
  }else if(tab==='market'){
@@ -1284,7 +1285,7 @@ function official(){
  <label class="label" for="officialItemNo">물건번호</label><input class="search" id="officialItemNo" placeholder="예: 1 (선택)" inputmode="numeric" maxlength="4">
  <button type="button" class="secondary court-item-button" id="fetchOfficialItem">▤ 물건정보 자동 입력</button><p class="helper court-item-status" id="fetchOfficialItemStatus" role="status" aria-live="polite">물건번호를 먼저 입력하세요. 법원 자료가 확인되면 빈칸에만 적용합니다.</p>
  <label class="label" for="officialAddress">소재지 / 물건 이름</label><input class="search" id="officialAddress" required maxlength="300" placeholder="법원에 표시된 소재지">
- <label class="label" for="officialType">물건 종류</label><select id="officialType" class="select">${['아파트','빌라','단독주택','상가','토지','기타'].map(t=>'<option>'+t+'</option>').join('')}</select>
+ <label class="label" for="officialType">물건 종류</label><select id="officialType" class="select" required><option value="" selected disabled>물건 종류 선택</option>${['아파트','빌라','단독주택','상가','토지','기타'].map(t=>'<option>'+t+'</option>').join('')}</select>
  <label class="label" for="officialAppraisal">감정평가액 (원)</label><input class="search" id="officialAppraisal" type="number" inputmode="numeric" min="0" step="1" placeholder="원 단위">
  <label class="label" for="officialMin">최저매각가격 (원)</label><input class="search" id="officialMin" type="number" inputmode="numeric" min="0" step="1" placeholder="원 단위">
  <label class="label" for="officialSaleDate">매각기일 (선택)</label><input class="search" id="officialSaleDate" type="date">
@@ -1382,6 +1383,8 @@ if($('#fetchOfficialItem'))$('#fetchOfficialItem').onclick=async()=>{
     status.textContent='조회 중 사건번호 또는 물건번호가 변경됐어요. 다시 조회해 주세요.';return;
   }
   const fields=[
+   {key:'propertyType',id:'officialType',label:'물건 종류',validate:v=>['아파트','빌라','단독주택','상가','토지','기타'].includes(v),
+     format:v=>v},
    {key:'address',id:'officialAddress',label:'소재지',validate:v=>typeof v==='string'&&v.trim().length>=5&&v.length<=250,
      format:v=>v.trim()},
    {key:'appraisalWon',id:'officialAppraisal',label:'감정평가액',validate:v=>Number.isSafeInteger(v)&&v>0,
@@ -1395,8 +1398,8 @@ if($('#fetchOfficialItem'))$('#fetchOfficialItem').onclick=async()=>{
     const input=document.getElementById(f.id),value=result[f.key];
     return input&&!input.value.trim()&&f.validate(value)?[{...f,input,value:f.format(value)}]:[];
   });
-  if(!patch.length){status.textContent='추가 입력할 빈칸이 없거나, 해당 항목이 법원 자료에서 확인되지 않았어요.';return;}
-  const formatted=patch.map(f=>f.label+': '+(f.key==='saleDate'||f.key==='address'?f.value:Number(f.value).toLocaleString('ko-KR')+'원')).join('\n');
+  if(!patch.length){status.textContent='빈 입력칸이나 확실한 법원 정보가 없어요. 물건 종류는 직접 선택해 주세요.';return;}
+  const formatted=patch.map(f=>f.label+': '+(f.key==='saleDate'||f.key==='address'||f.key==='propertyType'?f.value:Number(f.value).toLocaleString('ko-KR')+'원')).join('\n');
   const warning=result.priceAmbiguous?'\n최저매각가격이 복수로 조회돼 자동 입력하지 않습니다.':'';
   if(!confirm('법원 조회 결과를 확인해 주세요.\n\n'+formatted+warning+
     '\n\n실제 원문과 대조한 후 비어 있는 칸에만 입력할까요?')){
@@ -1412,7 +1415,7 @@ if($('#fetchOfficialItem'))$('#fetchOfficialItem').onclick=async()=>{
    if(!field.input.isConnected||field.input.value.trim())continue;
    field.input.value=field.value;applied.push(field.label);
   }
-  status.textContent=applied.length?'✓ 입력 완료: '+applied.join(' · ')+'. 확인 후 사건 등록을 눌러주세요.':'변경된 입력칸이 있어 값을 덮어쓰지 않았어요.';
+  status.textContent=applied.length?'✓ 입력 완료: '+applied.join(' · ')+'. 물건 종류가 비어 있으면 직접 선택한 후 사건 등록을 눌러주세요.':'변경된 입력칸이 있어 값을 덮어쓰지 않았어요.';
  }catch(error){
   if(status.isConnected)status.textContent=error.name==='AbortError'?'조회 시간이 초과됐어요. 잠시 뒤 다시 시도해 주세요.':'물건정보 조회 실패: '+(error.message||'연결을 확인해 주세요.');
  }finally{clearTimeout(timeout);if(button.isConnected)button.disabled=false;}

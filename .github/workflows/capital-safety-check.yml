@@ -1,0 +1,26 @@
+name: Capital court snapshot safety unit tests
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/validate-capital-snapshot.cjs
+      - scripts/capital-court-pilot.cjs
+      - tests/capital-safety.test.cjs
+      - .github/workflows/capital-safety-check.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check collector and validator syntax
+        run: |
+          node --check scripts/capital-court-pilot.cjs
+          node --check scripts/validate-capital-snapshot.cjs
+      - name: Verify accepted baseline and rejected corrupt data
+        run: node tests/capital-safety.test.cjs

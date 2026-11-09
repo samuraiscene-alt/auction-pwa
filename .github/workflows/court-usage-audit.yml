@@ -35,6 +35,9 @@ jobs:
               if(!response.ok)throw Error('HTTP '+response.status);
               const result=await response.json();
               console.log('API status:',result.status);
+              console.log('API message:',String(result.message||'').slice(0,160));
+              console.log('IP check:',result.data?.ipcheck);
+              console.log('Data shape:',Object.fromEntries(Object.entries(result.data||{}).slice(0,12).map(([k,v])=>[k,Array.isArray(v)?'array:'+v.length:typeof v])));
               console.log('Data keys:',Object.keys(result.data||{}).slice(0,15).join(', '));
               const key=p.arrays.find(k=>Array.isArray(result.data?.[k]));
               const items=key?result.data[key]:[];

@@ -19,12 +19,13 @@ function validateSnapshot(data,previous=null,{strict=true}={}){
  if(errors.length)return {ok:false,errors,warnings,changeSamples};
  check(data.scope==='서울·경기·인천'&&data.source==='courtauction.go.kr','수집 출처·지역 불일치');
  check(data.collectionMode==='limited-pages-pilot','시범 수집 유형 불일치');
- check(Number.isFinite(Date.parse(data.fetchedAt)),'수집 시각 형식 오류');
+ check(typeof data.fetchedAt==='string' && /^20\\d{2}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$/.test(data.fetchedAt) && Number.isFinite(Date.parse(data.fetchedAt)) && Date.parse(data.fetchedAt)<=Date.now()+10*60*1000,'수집 시각 형식 오류 또는 미래 시각');
  check(Array.isArray(data.items)&&data.items.length>0&&data.items.length<=5000,'물건 목록 개수 오류');
  for(const region of REGIONS){
   const r=data.regions?.[region];
   check(r&&Number.isInteger(r.returned)&&r.returned>0&&r.returned<=400,'지역 조회 행 개수 오류: '+region);
   check(r&&Number.isInteger(r.processedPages)&&r.processedPages>=1&&r.processedPages<=8,'페이지 수 오류: '+region);
+  check(r&&Number.isInteger(r.returned)&&Number.isInteger(r.processedPages)&&r.returned<=r.processedPages*50,'조회 행수가 페이지 범위를 초과: '+region);
   check(r&&(r.total===null||Number.isSafeInteger(r.total)&&r.total>=r.returned),'총 검색건수 오류: '+region);
  }
  if(!Array.isArray(data.items))return {ok:false,errors,warnings,changeSamples};
@@ -89,6 +90,15 @@ function validateSnapshot(data,previous=null,{strict=true}={}){
    if(differences.length){changed++;if(changeSamples.length<15)changeSamples.push({id:item.id,fields:differences});}
   }
   missing=old.items.filter(x=>!seen.has(x.id)).length;
+  // Compare only regions with equal or wider page coverage: a shorter pilot cannot prove disappearance.
+  for(const region of REGIONS){
+   const before=old.items.filter(x=>x.region===region);
+   const after=counts[region];
+   const prevPages=old.regions?.[region]?.processedPages;
+   const nextPages=data.regions?.[region]?.processedPages;
+   if(before.length>=30&&Number.isInteger(prevPages)&&Number.isInteger(nextPages)&&nextPages>=prevPages&&after<Math.ceil(before.length*0.5))
+    errors.push('같은 수집 범위에서 지역별 물건이 50% 초과 급감: '+region+' '+before.length+'→'+after);
+  }
   if(changed)warnings.push('같은 물건에서 값 변경 감지 '+changed+'건 (가격·기일 등 법원 원문 재확인 권장)');
   if(missing)warnings.push('이전 시범 목록에서 보이지 않는 물건 '+missing+'건 (페이지 이동·수집 범위 차이 가능; 낙찰·취하로 단정 금지)');
   if(overlap>=15&&changed/overlap>0.3)errors.push('동일 물건 값 변경 비율 과다: '+changed+'/'+overlap);

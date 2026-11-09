@@ -1,2 +1,2 @@
-0.5.1
-Official court search entry and user-entered auction case management; no automatic live data API.
+0.5.2
+Open newly registered case detail immediately; show unknown amounts as unverified instead of ₩0.

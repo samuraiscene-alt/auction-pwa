@@ -84,3 +84,8 @@
 - `assessIdentity`에 `baseCourtMatches`, `internalCaseYearMatches`, `internalCaseSerialSuffixMatches`, `relatedDisplayAliasMatched`, `internalLotRowFound`를 추가. 모두 진단용 불리언 정보로, `caseIdentityMatched`/`lotIdentityMatched`를 조작하지 않음.
 - 워크플로우는 `identityHints`에 각 항목의 참/거짓만 기록하며 내부 사건번호 원문, 개인정보, 진행상태코드 값은 저장하지 않음.
 - 최근 보고서에는 아직 새 `identityHints` 항목이 없으므로 실제 일치 여부는 **미확인**. 오프라인 회귀 테스트 통과, 앱/법적 상태 자동판정/수집목록 변경 없음.
+
+## 2026-11-10 내부 사건 행 정합성 검사 추가
+- 실서버 identityHints 확인: baseCourtMatches=true, internalCaseYearMatches=true, internalCaseSerialSuffixMatches=true, internalLotRowFound=true, relatedDisplayAliasMatched=false. 내부 사건과 물건의 관계를 뒷받침하지만 화면용 사건번호의 직접 일치는 아직 미확인. statusDecisionAllowed=false 유지.
+- 진단 코드에서 모든 물건 행의 법원/내부사건번호 일치(internalCaseRowsConsistent) 및 목표 물건번호의 단일 행 여부(matchingLotRowUnique)를 구분. 중복/혼합 사건 오판 방지 오프라인 테스트 통과.
+- 두 신규 항목의 실서버 진단은 별도 확인이 필요. 매각·취하·기일변경 상태 자동판정은 활성화하지 않음.

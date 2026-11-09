@@ -2,7 +2,7 @@
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/
-- 현재 버전: v0.6.8 (서울·경기·인천 5페이지 시범 수집 확대, 검증 유지)
+- 현재 버전: v0.6.9 (수도권 479건 수집, 개별 물건 법원 재조회 기능)
 - 현재 GitHub 코드: index.html, style.css, app.js, sw.js, manifest.webmanifest, icon.svg, README.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt, workflow
 - 내비게이션: History API, 실시간 드래그 추종 5개 메인 탭 스와이프, 상세 화면 가장자리 스와이프, 상단 뒤로가기 버튼.
 - 한글 입력: 검색창은 조합(composition) 중 DOM 갱신을 하지 않고 조합 종료 후 필터링하며 NFC 정규화 적용. iPhone 실기기 재검증 필요.
@@ -83,3 +83,6 @@
 
 ## v0.6.8
 서울/경기/인천 각 3→5페이지(최대 250행씩) 시범 수집으로 단계 확대. 기존 병합, 충돌 차단, 검증 실패 시 마지막 정상본 보존 유지. 수집 성공 후 실제 고유 건수로 업데이트 필요. 현재 데이터 전체 수집 주장 금지.
+
+## v0.6.9
+수도권 자동목록 각 물건에서 기존 Worker /item GET으로 읽기 전용 재조회, 법원·사건·물건번호 identity 검증 후 금액/기일 비교. 오류·미확인/복수 가격은 성공 표시하지 않음. 로컬 저장 데이터 수정하지 않음. SW v069. 2026-11-10 현재 5페이지 범위 유일 479건 확인.

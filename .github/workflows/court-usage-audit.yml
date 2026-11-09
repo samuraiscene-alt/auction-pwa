@@ -50,6 +50,31 @@ jobs:
                   name:String(x.name??x.usgNm??'').slice(0,80)
                 }))));
               }
+              if(items.length===0&&String(result.status)==='200'){
+                // Hypothesis: child lists additionally require the same dsignUsgDvsCd
+                // field used by the official large-list request. One bounded call per level.
+                const retryController=new AbortController(),retryTimer=setTimeout(()=>retryController.abort(),12000);
+                try{
+                  const retryResponse=await fetch('https://www.courtauction.go.kr/pgj/pgj002/'+p.name+'.on',{
+                    method:'POST',
+                    headers:{'Accept':'application/json','Content-Type':'application/json; charset=UTF-8',
+                      'Referer':'https://www.courtauction.go.kr/pgj/index.on'},
+                    body:JSON.stringify({[p.key]:p.parent,dsignUsgDvsCd:''}),signal:retryController.signal
+                  });
+                  console.log('Additional-field hypothesis HTTP:',retryResponse.status);
+                  if(retryResponse.ok){
+                    const retry=await retryResponse.json();
+                    const arrayName=p.arrays.find(k=>Array.isArray(retry.data?.[k]));
+                    console.log('Additional-field hypothesis response:',JSON.stringify({
+                      status:retry.status,message:String(retry.message||'').slice(0,100),
+                      arrayName:arrayName||null,count:arrayName?retry.data[arrayName].length:null}));
+                    if(arrayName&&retry.data[arrayName].length>0){
+                      console.log('Additional-field hypothesis first row:',JSON.stringify(retry.data[arrayName][0]).slice(0,500));
+                    }
+                  }
+                }catch(error){console.log('Additional-field hypothesis error:',error.name,error.message)}
+                finally{clearTimeout(retryTimer)}
+              }
               if(!key||items.length===0||String(result.status)!=='200'){console.error('AUDIT FAILED: classification response is empty or unexpected');process.exitCode=1;}
             }catch(error){console.error('Probe failed',p.level,error.name,error.cause?.code||error.message);process.exitCode=1}
             finally{clearTimeout(timer)}

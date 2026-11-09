@@ -93,6 +93,22 @@ async function createTestCase(page){
   assert.equal(actual.minWon,1200000000,'legacy edited price');
   assert(updated.favorites.includes(legacy.id),'legacy favorite retained');
   assert.equal(actual.enteredAt,1700000000000);
+  // Separate static court pilot catalog must never alter user-registered records.
+  await page.locator('[data-page="home"]').first().click();
+  await page.locator('[data-page="capital"]').first().click();
+  await page.waitForFunction(()=>document.getElementById('capitalStatus')?.textContent.includes('수집 2026-'),{timeout:12000});
+  assert.equal(await page.locator('.capital-record').count(),40,'initial page shows 40');
+  await page.locator('[data-capital-region="서울"]').click();
+  assert((await page.locator('body').textContent()).includes('수집된 물건'),'Seoul filter renders');
+  await page.locator('[data-capital-region="전체"]').click();
+  await page.locator('#capitalMore').click();
+  assert.equal(await page.locator('.capital-record').count(),80,'show more 40');
+  await page.locator('#capitalSearch').fill('2026타경999991');
+  await page.locator('#capitalSearchForm button[type="submit"]').click();
+  assert.equal(await page.locator('.capital-record').count(),0,'search excludes local user record');
+  const postCatalog=await read(page);
+  assert(postCatalog.favorites.includes(legacy.id),'catalog browse did not alter saved favorite');
+  console.log('PASS metropolitan public catalog load, filters, paging and local isolation');
   assert.equal(errors.length,0,'no page JS errors: '+errors.join(';'));
   console.log('PASS legacy record -> modify price without category conversion');
   console.log('PASS no browser page errors');

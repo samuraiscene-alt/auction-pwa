@@ -59,4 +59,9 @@ assert(app.includes('auctionPriceAnalysis(x.appraisalWon,x.minimumWon'),'court l
 assert(app.includes('auctionPriceAnalysis(p.userRegistered?p.valueWon:null,propertyPrice(p)'),'manual price comparison missing');
 assert(app.includes("box.querySelector('[data-bid-compare]')"),'live bid comparison missing');
 assert(app.includes('시세 할인율·유찰 횟수·입찰 적정가를 의미하지 않습니다'),'unsafe inference disclosure missing');
+assert(css.includes('.capital-case-group > summary{'),'case-only selector must not affect nested checklist');
+assert(css.includes('.capital-case-group[open] > summary::after{'),'open arrow must target outer case');
+assert(!css.includes('.capital-case-group[open] summary::after{'),'nested checklist inherits open arrow');
+assert(css.includes('.capital-status-note'),'court status layout missing');
+assert(app.includes('capital-status-note'),'court status block not wired');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

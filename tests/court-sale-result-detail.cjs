@@ -23,6 +23,10 @@ for(const [s,d] of [
  [search,{...detail,data:{...detail.data,dlt_rletCsGdsDtsDxdyInf:[{...row,auctnDxdyRsltCd:'R2'}]}}],
  [{...search,data:{dlt_srchResult:[{...result,dxdyYmd:'20261111'}]}},detail],
  [{...search,data:{dlt_srchResult:[{...result,dxdyYmd:'20261399'}]}},detail],
+ [{...search,data:{dlt_srchResult:[{...result,mokmulSer:'2'}]}},detail],
+ [{...search,data:{dlt_srchResult:[{...result,cortOfcCd:'B000214'}]}},detail],
+ [{...search,data:{dlt_srchResult:[{...result,csNo:'2025타경9999'}]}},detail],
+ [{...search,data:{dlt_srchResult:[{...result,maeGiil:'20261111'}]}},detail],
  [{...search,data:{ipcheck:false,dlt_srchResult:[result]}},detail]
  ]){
  const outcome=compare(s,d,id);

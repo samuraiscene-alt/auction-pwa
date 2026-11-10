@@ -1,2 +1,2 @@
-0.7.15
-Safe address-only Kakao map search, KST auction D-day and detail information enhancements.
+0.7.16
+Make existing map and street-view search entry visible directly below auction property address.

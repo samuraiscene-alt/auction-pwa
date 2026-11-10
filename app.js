@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.27';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.28';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -314,7 +314,7 @@ const MAIN_TABS=['home','search','schedule','favorites','study'];
 let capitalPriceHistory=null,capitalSnapshot=null,capitalAttemptStatus=null,capitalLegalDiagnostic=null,capitalLoadStatus='unloaded',capitalLoadError='';
 let appDepth=0;
 const viewHistory=new Map();
-function snapshot(){return {page:state.page,filter:state.filter,selected:state.selected,viewMonth:state.viewMonth,calendarFavoritesOnly:state.calendarFavoritesOnly,detail:state.detail,note:state.note,search:state.search,region:state.region,minPrice:state.minPrice,maxPrice:state.maxPrice,priceUnit:state.priceUnit,detailTab:state.detailTab,favoriteSort:state.favoriteSort,favoriteType:state.favoriteType,capitalRegion:state.capitalRegion,capitalType:state.capitalType,capitalQuery:state.capitalQuery,capitalLimit:state.capitalLimit,capitalReviewDate:state.capitalReviewDate,capitalReviewStage:state.capitalReviewStage,editRealId:state.editRealId,noteQuery:state.noteQuery,noteSort:state.noteSort,studyCategory:state.studyCategory,noteTopicDraft:state.noteTopicDraft}}
+function snapshot(){return {page:state.page,filter:state.filter,selected:state.selected,viewMonth:state.viewMonth,calendarFavoritesOnly:state.calendarFavoritesOnly,detail:state.detail,note:state.note,search:state.search,region:state.region,minPrice:state.minPrice,maxPrice:state.maxPrice,priceUnit:state.priceUnit,detailTab:state.detailTab,favoriteSort:state.favoriteSort,favoriteType:state.favoriteType,capitalRegion:state.capitalRegion,capitalType:state.capitalType,capitalQuery:state.capitalQuery,capitalLimit:state.capitalLimit,capitalReviewDate:state.capitalReviewDate,capitalReviewStage:state.capitalReviewStage,capitalFocusId:state.capitalFocusId,editRealId:state.editRealId,noteQuery:state.noteQuery,noteSort:state.noteSort,studyCategory:state.studyCategory,noteTopicDraft:state.noteTopicDraft}}
 viewHistory.set(0,snapshot());
 history.replaceState({auctionApp:true,depth:0,view:snapshot()},'',location.pathname+location.search);
 function nav(page,extra={}){
@@ -1611,7 +1611,10 @@ function capital(){
   snapshot.fetchedAt===verificationPlan.sourceSnapshotAt&&snapshot.items.length===verificationPlan.snapshotItems&&
   verificationPlan.legalStatusVerified===false&&verificationPlan.automaticCourtRequests===0);
  const ids=aligned?new Set(report[state.capitalReviewStage]):new Set();
- const items=reviewing?(aligned?allItems.filter(x=>ids.has(x.id)):[]):allItems;
+ const focusId=typeof state.capitalFocusId==='string'&&/^court-B\d{6}\|20\d{2}타경\d{1,10}\|[1-9]\d{0,3}$/.test(state.capitalFocusId)?state.capitalFocusId:'';
+ const focusing=Boolean(focusId);
+ const sourceVerified=snapshot?.validation?.passed===true;
+ const items=focusing?(sourceVerified?allItems.filter(x=>x.id===focusId):[]):reviewing?(aligned?allItems.filter(x=>ids.has(x.id)):[]):allItems;
  const reviewLabel=reviewing?state.capitalReviewDate+' · '+({precheck:'입찰 전 확인',sale_day:'입찰 당일 점검',result_check:'결과조회 예정',result_recheck:'재검사 예정',final_followup:'최종 추적'}[state.capitalReviewStage]||'검증 예정'):'';
  const region=state.capitalRegion,query=state.capitalQuery.trim().normalize('NFC').toLocaleLowerCase('ko');
  const componentsFor=x=>Array.isArray(x.components)&&x.components.length?x.components:[{address:x.address,largeCode:x.largeCode,mediumCode:x.mediumCode,smallCode:x.smallCode}];
@@ -1641,7 +1644,7 @@ function capital(){
    const kind=COURT_USAGE_CATALOG.find(t=>t.level==='small'&&t.code===c.smallCode)?.name||'분류 미확인';
    return `<p class="helper">${escapeHtml(kind)} · ${escapeHtml(c.address)}</p>`;
   }).join('')}</details>`:'';
-  return `<div class="capital-property"><div class="auction-card-top"><span class="auction-type">${escapeHtml(category)}</span><span class="auction-demo user-record">법원 수집 · 시범</span></div>
+  return `<div class="capital-property">${focusing&&x.id===focusId?'<div class="capital-focus-found">✓ 관심 저장한 물건번호 '+escapeHtml(x.itemNo)+'번 · 수집본에서 정확히 일치</div>':''}<div class="auction-card-top"><span class="auction-type">${escapeHtml(category)}</span><span class="auction-demo user-record">법원 수집 · 시범</span></div>
    <strong>${escapeHtml(x.address)}${components.length>1?' 외 구성요소 있음':''}</strong><p class="helper">${escapeHtml(x.courtName||'법원 미확인')} · ${escapeHtml(x.caseNo)} · 물건 ${escapeHtml(x.itemNo)}번</p><p class="helper">입찰일까지 ${escapeHtml(auctionDday(x.saleDate))} · 법원 수집본 기준</p>${partList}
    <div class="line"><span class="muted">감정평가액</span><strong>${escapeHtml(formatAmount(x.appraisalWon))}</strong></div>
    <div class="line"><span class="muted">최저매각가</span><strong>${escapeHtml(formatAmount(x.minimumWon))}</strong></div>
@@ -1690,7 +1693,7 @@ function capital(){
    '<div class="status">⚠ 이전 수집본과 차이 감지: '+escapeHtml(snapshot.validation.warnings.join(' / '))+'</div>':'')+
   '<p class="helper">각 지역 일부 페이지만 수집했습니다. 실제 조회: 서울 '+escapeHtml(String(snapshot?.regions?.서울?.processedPages||'?'))+'페이지, 경기 '+escapeHtml(String(snapshot?.regions?.경기?.processedPages||'?'))+'페이지, 인천 '+escapeHtml(String(snapshot?.regions?.인천?.processedPages||'?'))+'페이지. 목록에 없다고 매각·취하된 것은 아닙니다.</p>':'';
 
- return `${reviewing?'<div class="card court-review-banner"><strong>'+escapeHtml(reviewLabel)+'</strong><p class="helper">검증 예정 물건만 표시합니다. 자동 결과조회가 아니라 기존 물건별 수동 재조회입니다.</p>'+(aligned?'<p class="helper">일정표와 수집본의 시각·건수가 일치합니다. '+items.length+'건</p>':'<div class="status">⚠ 일정표와 최신 수집본이 일치하지 않거나 일정이 만료됐습니다. 잘못된 물건 연결을 방지하기 위해 목록을 차단했습니다.</div>')+'<button type="button" class="secondary full-secondary" id="capitalReviewClear">전체 수집목록 보기</button></div>':''}<div class="card search-panel"><strong>서울·경기·인천 법원 경매물건</strong>
+ return `${focusing?'<div class="card capital-focus-banner"><strong>관심 저장한 물건번호만 찾기</strong>'+(items.length?'<p class="helper">같은 사건의 다른 물건번호는 제외했습니다. 해당 물건만 아래에서 펼쳐 확인하세요.</p>':'<div class="status">⚠ 현재 검증된 부분 수집목록에서 정확히 일치하는 물건을 찾지 못했습니다. 수집범위 밖이거나 정보가 변경됐을 수 있습니다. 낙찰·취하를 의미하지 않습니다.</div>')+'<button type="button" class="secondary full-secondary" id="capitalFocusClear">전체 수집목록 보기</button></div>':''}${reviewing?'<div class="card court-review-banner"><strong>'+escapeHtml(reviewLabel)+'</strong><p class="helper">검증 예정 물건만 표시합니다. 자동 결과조회가 아니라 기존 물건별 수동 재조회입니다.</p>'+(aligned?'<p class="helper">일정표와 수집본의 시각·건수가 일치합니다. '+items.length+'건</p>':'<div class="status">⚠ 일정표와 최신 수집본이 일치하지 않거나 일정이 만료됐습니다. 잘못된 물건 연결을 방지하기 위해 목록을 차단했습니다.</div>')+'<button type="button" class="secondary full-secondary" id="capitalReviewClear">전체 수집목록 보기</button></div>':''}<div class="card search-panel"><strong>서울·경기·인천 법원 경매물건</strong>
  <p class="helper">자동 수집 시범 목록입니다. 수도권 전체 사건 목록이 아니며, 매각기일·가격·진행 상태는 법원 원문에서 다시 확인해야 합니다.</p>
  <p class="helper" id="capitalStatus">${info}</p><div class="status">⚠ ${legalDiagnosticText} · 전체 ${items.length}건의 매각·취하 여부가 확인됐다는 뜻은 아닙니다.</div>${safetyNotice}
  <div class="filters">${['전체','서울','경기','인천'].map(r=>`<button type="button" class="chip ${region===r?'active':''}" data-capital-region="${r}">${r}</button>`).join('')}</div>
@@ -1704,7 +1707,7 @@ function capital(){
  ${capitalLoadStatus==='loading'?'<div class="empty">수도권 목록을 불러오는 중…</div>':capitalLoadStatus==='failed'?'<div class="empty">자동목록에 연결할 수 없습니다. 나중에 다시 확인해 주세요.</div>':matched.length===0?'<div class="empty">표시할 물건이 없습니다. 검색 조건을 변경해 주세요.</div>':
  grouped.slice(0,state.capitalLimit).map(group=>{
  const x=group[0];
- return '<details class="card capital-record capital-case-group"><summary><strong>'+escapeHtml(x.address)+'</strong><p class="helper">'+escapeHtml(x.courtName||'법원 미확인')+' · '+escapeHtml(x.caseNo)+'</p><span class="capital-case-count">'+group.length+'개 물건 · 펼쳐보기</span></summary>'+group.map(renderCapitalProperty).join('')+'</details>';
+ return '<details class="card capital-record capital-case-group"'+(focusing?' open':'')+'><summary><strong>'+escapeHtml(x.address)+'</strong><p class="helper">'+escapeHtml(x.courtName||'법원 미확인')+' · '+escapeHtml(x.caseNo)+'</p><span class="capital-case-count">'+group.length+'개 물건 · 펼쳐보기</span></summary>'+group.map(renderCapitalProperty).join('')+'</details>';
  }).join('')}
  ${grouped.length>state.capitalLimit?`<button class="secondary full-secondary" type="button" id="capitalMore">다음 40개 사건 더 보기 (${grouped.length-state.capitalLimit}건 남음)</button>`:''}
  <p class="helper">수집물건은 직접 등록 사건·일정에 자동 추가되지 않습니다. 관심물건 저장 버튼을 누른 물건만 기기에 별도로 저장됩니다.</p>`;
@@ -1920,7 +1923,7 @@ document.querySelectorAll('[data-court-favorite-date]').forEach(button=>button.o
 document.querySelectorAll('[data-court-favorite-open]').forEach(button=>button.onclick=()=>{
  const lot=courtFavorites().find(x=>x.id===button.dataset.courtFavoriteOpen);
  if(!lot)return;
- nav('capital',{capitalRegion:lot.region,capitalType:'전체',capitalQuery:lot.caseNo,capitalLimit:40,capitalReviewDate:'',capitalReviewStage:''});
+ nav('capital',{capitalFocusId:lot.id,capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:''});
 });
 document.querySelectorAll('[data-remove-favorite]').forEach(btn=>btn.onclick=()=>{
  const id=btn.dataset.removeFavorite;
@@ -1980,6 +1983,7 @@ if($('#cancelRealEdit'))$('#cancelRealEdit').onclick=()=>{
  const id=state.editRealId;state.editRealId=null;nav('detail',{detail:id,detailTab:'overview'});
 };
 if($('#capitalReload'))$('#capitalReload').onclick=()=>loadCapital(true);
+if($('#capitalFocusClear'))$('#capitalFocusClear').onclick=()=>{state.capitalFocusId='';state.capitalQuery='';state.capitalRegion='전체';state.capitalType='전체';state.capitalLimit=40;render();};
 if($('#capitalReviewClear'))$('#capitalReviewClear').onclick=()=>{
  state.capitalReviewDate='';state.capitalReviewStage='';state.capitalQuery='';state.capitalLimit=40;render();
 };
@@ -1990,16 +1994,16 @@ document.querySelectorAll('[data-plan-stage]').forEach(button=>button.onclick=()
   toast('해당 날짜의 검증 대상이 없습니다.');return;
  }
  nav('capital',{capitalReviewDate:day,capitalReviewStage:stage,
-  capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40});
+  capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalFocusId:'',capitalLimit:40});
 });
 document.querySelectorAll('[data-capital-region]').forEach(button=>button.onclick=()=>{
- state.capitalRegion=button.dataset.capitalRegion;state.capitalType='전체';state.capitalLimit=40;render();
+ state.capitalFocusId='';state.capitalRegion=button.dataset.capitalRegion;state.capitalType='전체';state.capitalLimit=40;render();
 });
 if($('#capitalTypeFilter'))$('#capitalTypeFilter').onchange=event=>{
- state.capitalType=event.target.value;state.capitalLimit=40;render();
+ state.capitalFocusId='';state.capitalType=event.target.value;state.capitalLimit=40;render();
 };
 if($('#capitalSearchForm'))$('#capitalSearchForm').onsubmit=event=>{
- event.preventDefault();state.capitalQuery=$('#capitalSearch').value.trim();state.capitalLimit=40;render();
+ event.preventDefault();state.capitalFocusId='';state.capitalQuery=$('#capitalSearch').value.trim();state.capitalLimit=40;render();
 };
 if($('#capitalMore'))$('#capitalMore').onclick=()=>{state.capitalLimit+=40;render();};
 document.querySelectorAll('[data-auction-calc]').forEach(box=>{

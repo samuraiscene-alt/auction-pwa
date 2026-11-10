@@ -1,2 +1,2 @@
-0.7.30
-Split court and case number into separate mobile detail rows; move fake cases out of regular search/home into settings-only test gallery.
+0.7.31
+Transfer the general search term and supported capital region to the separate validated partial court list, clearly distinguishing sources and unsupported filters.

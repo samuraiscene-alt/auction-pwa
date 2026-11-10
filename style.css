@@ -956,3 +956,11 @@ html,body{
 #content .court-favorite-item .favorite-amount{font-variant-numeric:tabular-nums}
 #content .court-favorite-info{margin:9px 2px 12px;padding:9px 10px;border-radius:10px;background:#f4f8ff;line-height:1.55}
 #content .court-favorite-item .favorite-date{overflow-wrap:anywhere}
+
+/* v0.7.24: separately labeled court favorite dates in the calendar */
+#content .court-calendar-group{margin:12px 0 16px;padding:13px;border:1px solid #e2eaf5;border-radius:13px;background:#f7faff}
+#content .court-calendar-group>strong{display:block;font-size:14px;margin-bottom:5px}
+#content .court-calendar-entry{padding:12px 0;border-top:1px solid #e4ebf5}
+#content .court-calendar-entry>strong{display:block;font-size:13px;overflow-wrap:anywhere}
+#content .court-calendar-entry .helper{margin:6px 0}
+#content .court-calendar-entry button{min-height:40px;max-width:100%}

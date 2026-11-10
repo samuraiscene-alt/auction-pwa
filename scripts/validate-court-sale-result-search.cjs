@@ -33,7 +33,7 @@ const exactIdentity=(r,identity)=>r&&typeof r==='object'&&!Array.isArray(r)&&
  sameIfPresent(r,'boCd','cortOfcCd')&&
  // csNo may be numeric internal or a display number: compare only when it
  // actually carries the display-format case, never accept a contradiction.
- (!/^20\\d{2}타경\\d{1,10}$/.test(String(r.csNo??''))||
+ (!/^20\d{2}타경\d{1,10}$/.test(String(r.csNo??''))||
   String(r.csNo)===identity.caseNo);
 function analyzeSaleResultSearch(response,identity){
  const root=response?.data;

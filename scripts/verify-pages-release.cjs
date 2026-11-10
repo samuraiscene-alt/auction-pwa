@@ -17,7 +17,8 @@ function verifyRelease(){
  assert(html.includes('href="style.css"'),'index does not load stylesheet');
  for(const path of ['index.html','app.js','style.css','sw.js','manifest.webmanifest',
   'data/capital-court-pilot.json','data/capital-court-status.json','data/court-sale-result-status.json',
-  'auction-ios-icon-v077.png','assets/auction-menu-v077.webp','assets/auction-nav-v078.webp'])
+  'auction-ios-icon-v077.png','assets/auction-menu-v077.webp','assets/auction-nav-v078.webp',
+  'assets/auction-search-actions-v079.webp'])
   assert(fs.existsSync(path),'required deployment asset missing: '+path);
  for(const path of ['app.js','sw.js'])execFileSync(process.execPath,['--check',path],{stdio:'pipe'});
  const homeIcon=fs.readFileSync('auction-ios-icon-v077.png');
@@ -32,6 +33,11 @@ function verifyRelease(){
  assert(app.includes('nav-icon nav-${p}')&&['nav-home','nav-search','nav-schedule','nav-favorites','nav-study'].every(x=>read('style.css').includes('.'+x)),'five navigation icons not wired');
  assert(html.includes('auction-ios-icon-v077.png')&&read('manifest.webmanifest').includes('auction-ios-icon-v077.png'),'home icon metadata mismatch');
  assert(app.includes('quick-icon quick-court')&&app.includes('quick-icon quick-study'),'generated quick-menu icon references missing');
+ const searchIcons=fs.readFileSync('assets/auction-search-actions-v079.webp');
+ assert(searchIcons.toString('ascii',0,4)==='RIFF'&&searchIcons.toString('ascii',8,12)==='WEBP','search shortcuts sprite is not WebP');
+ assert(sw.includes('assets/auction-search-actions-v079.webp'),'search shortcut sprite not offline cached');
+ assert(app.includes('search-action-detail')&&app.includes('search-action-special')&&read('style.css').includes('auction-search-actions-v079.webp'),'search shortcut icons not connected');
+ assert(app.includes('id="detailFilters"')&&app.includes('id="specialFilters"')&&app.includes("$('#detailFilters').onclick=()=>nav('advanced')")&&app.includes("$('#specialFilters').onclick=()=>nav('special')"),'search shortcut functionality changed');
  const snapshot=JSON.parse(read('data/capital-court-pilot.json'));
  assert(snapshot?.complete===false,'partial snapshot incorrectly marked complete');
  assert([1,2].includes(snapshot.schemaVersion),'snapshot schema mismatch');

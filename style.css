@@ -825,3 +825,12 @@ html,body{
 #tabs button.active{color:#1769ed;font-weight:750}
 #tabs button:nth-child(n).active{color:#1769ed}
 #tabs button:focus-visible{outline:2px solid #3477ed;outline-offset:-3px;border-radius:10px}
+
+/* v0.7.9: replace search-only shortcut emoji with the two user-supplied icons */
+#content .search-action-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#content .search-action-row .search-action-button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;min-width:0;padding:7px 8px;white-space:nowrap;font-weight:750;line-height:1.25;touch-action:manipulation}
+#content .search-action-icon{display:block;flex:0 0 42px;width:42px;height:42px;background-image:url('./assets/auction-search-actions-v079.webp');background-size:200% 100%;background-repeat:no-repeat}
+#content .search-action-detail{background-position:0% 0%}
+#content .search-action-special{background-position:100% 0%}
+#content .search-action-row .search-action-button:focus-visible{outline:2px solid #3477ed;outline-offset:2px}
+@media(max-width:360px){#content .search-action-row .search-action-button{gap:5px;font-size:13px;padding-inline:4px}#content .search-action-icon{flex-basis:36px;width:36px;height:36px}}

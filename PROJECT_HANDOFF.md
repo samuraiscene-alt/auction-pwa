@@ -1,4 +1,11 @@
 # 부동산 경매 PWA — 다음 채팅 인수인계
+
+## 최신 반영 (2026-11-10)
+- 앱 소스 버전 **v0.7.6**: 수도권 수집 목록에 `data/court-sale-result-status.json`의 **단일 사건용 법적상태 진단시각/미확인 사유**를 별도 표시. 수집 성공·형식검사와 법적 상태 확정을 혼동하지 않음. 보고서가 없으면 미확인 표시. 원래 수집 목록 805건과 개인 저장 데이터 불변.
+- 매각결과 단발 조사: `.github/workflows/court-sale-result-search.yml`, 예정 시간 **2026-11-11 09:30 KST** (GitHub 일정 지연/누락 가능). `scripts/validate-court-sale-preflight.cjs`가 사건 상세의 최신 기일을 확인한 뒤, 결과검색과 상세의 동일 법원·사건·물건·기일·원시코드를 교차 대조. 공식 코드 이름 미확보: `legalStatusVerified:false` 유지. 단일 표본 `court-B000210|2025타경953|1`의 기존 수집 기일은 2026-11-10으로 표시되나 법원 현재 변경 가능.
+- GitHub에 소스 변경 반영은 확인; **GitHub Pages 배포 성공 여부는 따로 확인**. 결과조회 다음 작업은 `data/court-sale-result-status.json` 및 Actions 실행 기록 확인. 실서버 결과 검증 이전에 자동 낙찰/취하 표시 금지.
+
+
 - GitHub 저장소: https://github.com/samuraiscene-alt/auction-pwa
 - 메인 브랜치: main
 - 앱 예정 주소: https://samuraiscene-alt.github.io/auction-pwa/

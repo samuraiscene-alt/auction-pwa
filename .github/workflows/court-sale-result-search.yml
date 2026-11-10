@@ -1,0 +1,70 @@
+name: Official court sale result search - bounded diagnostic
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/probe-court-sale-result-search.cjs
+      - scripts/validate-court-sale-result-search.cjs
+      - tests/court-sale-result-search.cjs
+      - .github/workflows/court-sale-result-search.yml
+permissions:
+  contents: write
+jobs:
+  sale-result:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    concurrency:
+      group: court-sale-result-readonly-report
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check strict report safeguards
+        run: node tests/court-sale-result-search.cjs
+      - name: Single official sale-results search
+        run: |
+          node scripts/probe-court-sale-result-search.cjs > /tmp/court-sale-result.json || true
+      - name: Redact output summary
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          let d={};
+          try{d=JSON.parse(fs.readFileSync('/tmp/court-sale-result.json','utf8'));}catch{}
+          const exact=d.observed===true&&d.identityMatched===true&&d.exactDisplayLotRows===1;
+          const safeCode=v=>typeof v==='string'&&/^[A-Za-z0-9_-]{1,24}$/.test(v)?v:null;
+          const codeKeys=['auctnDxdyRsltCd','dspslGdsStatCd','mulStatcd','jinstatCd','mulJinYn'];
+          const labelKeys=['auctnDxdyRsltNm','maeGiilRsltNm','dspslRsltNm'];
+          const labels=['매각','유찰','취하','변경','연기','정지','취소','진행','불허가'];
+          const result={
+            schemaVersion:1,attemptedAt:new Date().toISOString(),
+            observed:d.observed===true,
+            reason:typeof d.reason==='string'&&/^[a-z_]{1,40}$/.test(d.reason)?d.reason:'unknown',
+            identityMatched:exact,exactDisplayLotRows:Number.isInteger(d.exactDisplayLotRows)?Math.min(d.exactDisplayLotRows,50):0,
+            rowCount:Number.isInteger(d.rowCount)?Math.min(d.rowCount,50):null,
+            fieldNames:exact&&Array.isArray(d.fieldNames)?d.fieldNames.filter(x=>[
+              'auctnDxdyRsltCd','auctnDxdyRsltNm','dspslGdsStatCd','mulStatcd','jinstatCd','mulJinYn','maemulSer','mokmulSer','dxdyYmd','maeGiil','maegyuljGiil','yuchalCnt','maeGiilRsltNm','dspslRsltNm'
+            ].includes(x)).slice(0,14):[],
+            rawCodes:exact?Object.fromEntries(codeKeys.map(k=>[k,safeCode(d.rawCodes?.[k])])):{},
+            exactDisplayLabels:exact?Object.fromEntries(labelKeys.map(k=>[k,labels.includes(d.exactDisplayLabels?.[k])?d.exactDisplayLabels[k]:null])):{},
+            legalStatusVerified:false,rawResponseSaved:false
+          };
+          fs.writeFileSync('/tmp/court-sale-result-summary.json',JSON.stringify(result,null,2)+'\n');
+          NODE
+      - name: Commit redacted diagnostic only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for retry in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            cp /tmp/court-sale-result-summary.json data/court-sale-result-status.json
+            git add data/court-sale-result-status.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "diagnostic: record official sale result search summary"
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 2
+          done
+          exit 1

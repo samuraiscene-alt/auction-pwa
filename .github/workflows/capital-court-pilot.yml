@@ -9,6 +9,7 @@ on:
       - scripts/capital-court-pilot.cjs
       - scripts/validate-capital-snapshot.cjs
       - scripts/merge-capital-components.cjs
+      - scripts/record-capital-price-history.cjs
       - .github/workflows/capital-court-pilot.yml
 permissions:
   contents: write
@@ -30,6 +31,8 @@ jobs:
           node-version: '22'
       - name: Test court snapshot safety rules
         run: node tests/capital-snapshot-safety.cjs
+      - name: Test observed price history safety
+        run: node tests/capital-price-history.cjs
       - id: collection
         name: Collect and safety-check limited pages
         continue-on-error: true

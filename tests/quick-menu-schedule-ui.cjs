@@ -32,4 +32,8 @@ assert(app.includes('기존 물건별 수동 재조회입니다'),'must not clai
 const releaseGate=fs.readFileSync('scripts/verify-pages-release.cjs','utf8');
 assert(releaseGate.includes("app.includes('quick-icon quick-')"),'predeploy release gate must allow dynamic shortcut icon classes');
 assert(!releaseGate.includes("app.includes('quick-icon quick-court')"),'obsolete fixed shortcut assertion would block deployment');
+assert(app.includes('function newerAppVersion(remote,installed)'),'version comparator missing');
+assert(app.includes("url.searchParams.set('app_update',updateState.latest)"),'stale navigation bypass missing');
+assert(app.includes('서버 버전 확인 필요'),'unchecked version must not be called latest');
+assert(!app.includes('if(updateState.available)location.reload()'),'old reload-only update path not allowed');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

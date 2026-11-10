@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.18';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.19';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -1541,7 +1541,7 @@ function capital(){
    <div class="line"><span class="muted">감정평가액</span><strong>${escapeHtml(formatAmount(x.appraisalWon))}</strong></div>
    <div class="line"><span class="muted">최저매각가</span><strong>${escapeHtml(formatAmount(x.minimumWon))}</strong></div>
    <div class="line"><span class="muted">매각기일</span><strong>${escapeHtml(x.saleDate||'미확인')} · ${escapeHtml(auctionDday(x.saleDate))}</strong></div>
-   <div class="line"><span class="muted">진행상태</span><strong>미확인 · 취하·변경·매각 여부는 법원 원문 확인</strong></div>
+   <div class="capital-status-note"><strong>진행상태 · 미확인</strong><span>취하·기일변경·매각 여부는 법원 원문 확인 필요</span></div>
    ${auctionPriceAnalysis(x.appraisalWon,x.minimumWon,'법원 시범 부분수집본 · 원문 대조 필요')}${auctionBidCalculator(x.minimumWon,'법원 부분수집본 · 최신 가격 및 공고 확인 필요')}${auctionPrebidChecklist()}
    <button type="button" class="secondary full-secondary" data-capital-check="${escapeHtml(x.id)}">법원 서버에서 이 물건 재조회</button>
    <p class="helper" data-capital-result="${escapeHtml(x.id)}" aria-live="polite">재조회 전 · 법원 원문 확인 필요</p>

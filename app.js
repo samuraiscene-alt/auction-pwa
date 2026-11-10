@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.25';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.26';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -646,7 +646,7 @@ function courtFavoriteCalendarMarkup(items){
 }
 
 function calendarItems(date){
-  return allProperties().filter(p=>propertyDate(p)===date
+  return registeredProperties().filter(p=>propertyDate(p)===date
     &&(!state.calendarFavoritesOnly||saved.favorites.includes(p.id)));
 }
 function schedule(){
@@ -658,21 +658,26 @@ function schedule(){
   const week=['일','월','화','수','목','금','토'];
   const dates=Array.from({length:daysInMonth},(_,i)=>{
     const day=i+1,date=state.viewMonth+'-'+String(day).padStart(2,'0');
-    const count=allProperties().filter(p=>propertyDate(p)===date).length;
+    const registeredCount=registeredProperties().filter(p=>propertyDate(p)===date).length;
     const courtCount=courtFavoriteCalendarItems(date).length;
-    const personalFavCount=allProperties().filter(p=>propertyDate(p)===date&&saved.favorites.includes(p.id)).length;
-    const visible=state.calendarFavoritesOnly?personalFavCount+courtCount:count+courtCount;
-    const ordinaryVisible=state.calendarFavoritesOnly?personalFavCount>0:count>0;
-    const dots=visible?'<span class="calendar-dots" aria-hidden="true">'+
-      (ordinaryVisible?'<span class="calendar-dot '+(personalFavCount?'favorite-dot':'')+'"></span>':'')+
-      (courtCount?'<span class="calendar-dot court-favorite-dot"></span>':'')+'</span>':'';
-    return `<button type="button" class="day calendar-day ${state.selected===date?'selected':''} ${date===today?'today':''}" data-day="${date}" aria-label="${month}월 ${day}일, 일정 ${visible}건${courtCount?', 법원 수집 관심 '+courtCount+'건 (저장 당시 기일)':''}"><span>${day}</span>${dots}</button>`;
+    const personalFavCount=registeredProperties().filter(p=>propertyDate(p)===date&&saved.favorites.includes(p.id)).length;
+    const ordinaryCount=state.calendarFavoritesOnly?personalFavCount:registeredCount;
+    const visible=ordinaryCount+courtCount;
+    const nonFavoriteCount=registeredCount-personalFavCount;
+    const showBlue=!state.calendarFavoritesOnly&&nonFavoriteCount>0;
+    const showPink=personalFavCount>0;
+    const showPurple=courtCount>0;
+    const bars=visible?'<span class="calendar-bars" aria-hidden="true">'+
+      (showBlue?'<span class="calendar-bar calendar-bar-registered"></span>':'')+
+      (showPink?'<span class="calendar-bar calendar-bar-personal"></span>':'')+
+      (showPurple?'<span class="calendar-bar calendar-bar-court"></span>':'')+'</span>':'';
+    return `<button type="button" class="day calendar-day ${state.selected===date?'selected':''} ${date===today?'today':''}" data-day="${date}" aria-label="${month}월 ${day}일, 일정 ${visible}건${courtCount?', 법원 수집 관심 '+courtCount+'건 (저장 당시 기일)':''}"><span class="calendar-date-number">${day}</span>${bars}</button>`;
   });
   const chosen=state.selected;
   const items=calendarItems(chosen);
   const courtItems=courtFavoriteCalendarItems(chosen);
-  const actualCount=allProperties().filter(p=>propertyDate(p)===chosen).length+courtItems.length;
-  return `<div class="card calendar-shell"><div class="calendar-toolbar"><button type="button" class="calendar-arrow" id="prevMonth" aria-label="이전 달">‹</button><strong>${label}</strong><button type="button" class="calendar-arrow" id="nextMonth" aria-label="다음 달">›</button><button type="button" class="calendar-today" id="todayMonth">오늘</button></div><div class="calendar-caption"><span>● 등록·예시</span><span class="favorite-key">● 개인 관심</span><span class="court-key">◆ 법원 수집 관심</span></div><div class="calendar">${week.map((d,i)=>`<div class="weekday ${i===0?'sun':''}">${d}</div>`).join('')}${Array(offset).fill('<div class="calendar-blank"></div>').join('')}${dates.join('')}</div><div class="calendar-filter"><label><input type="checkbox" id="favCalendarOnly" ${state.calendarFavoritesOnly?'checked':''}> 관심물건 일정만 표시</label><span>기일 변경 자동 알림 없음</span></div></div><div class="section"><h2>${Number(chosen.slice(5,7))}월 ${Number(chosen.slice(-2))}일 일정</h2><span class="muted">${items.length+courtItems.length}건${courtItems.length?' · 법원 수집 '+courtItems.length+'건 (저장 당시)':''}</span></div>${items.map(card).join('')}${courtFavoriteCalendarMarkup(courtItems)}${!items.length&&!courtItems.length?(state.calendarFavoritesOnly&&actualCount?'<div class="empty">선택한 날짜에 관심물건 일정이 없어요.</div>':'<div class="empty">선택한 날짜에 기록된 입찰일정이 없어요.</div>'):''}${!courtItems.length?'<p class="helper">직접 등록·예시 일정과 법원 수집 일정은 출처가 다릅니다. 입찰 전 법원 원문을 확인하세요.</p>':''}${verificationPlanMarkup(chosen)}`;
+  const actualCount=registeredProperties().filter(p=>propertyDate(p)===chosen).length+courtItems.length;
+  return `<div class="card calendar-shell"><div class="calendar-toolbar"><button type="button" class="calendar-arrow" id="prevMonth" aria-label="이전 달">‹</button><strong>${label}</strong><button type="button" class="calendar-arrow" id="nextMonth" aria-label="다음 달">›</button><button type="button" class="calendar-today" id="todayMonth">오늘</button></div><div class="calendar-caption"><span>━ 직접 등록</span><span class="favorite-key">━ 개인 관심</span><span class="court-key">━ 법원 수집 관심</span></div><div class="calendar">${week.map((d,i)=>`<div class="weekday ${i===0?'sun':''}">${d}</div>`).join('')}${Array(offset).fill('<div class="calendar-blank"></div>').join('')}${dates.join('')}</div><div class="calendar-filter"><label><input type="checkbox" id="favCalendarOnly" ${state.calendarFavoritesOnly?'checked':''}> 관심물건 일정만 표시</label><span>기일 변경 자동 알림 없음</span></div></div><div class="section"><h2>${Number(chosen.slice(5,7))}월 ${Number(chosen.slice(-2))}일 일정</h2><span class="muted">${items.length+courtItems.length}건${courtItems.length?' · 법원 수집 '+courtItems.length+'건 (저장 당시)':''}</span></div>${items.map(card).join('')}${courtFavoriteCalendarMarkup(courtItems)}${!items.length&&!courtItems.length?(state.calendarFavoritesOnly&&actualCount?'<div class="empty">선택한 날짜에 관심물건 일정이 없어요.</div>':'<div class="empty">선택한 날짜에 기록된 입찰일정이 없어요.</div>'):''}${!courtItems.length?'<p class="helper">직접 등록 일정과 법원 수집 일정은 출처가 다릅니다. 입찰 전 법원 원문을 확인하세요.</p>':''}${verificationPlanMarkup(chosen)}`;
 }
 
 const COURT_FAVORITES_LIMIT=200;

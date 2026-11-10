@@ -9,7 +9,7 @@ const lot={cortOfcCd:id.courtCode,csNo:'20250130000953',dspslGdsSeq:'1'};
 const row={...lot,dxdyYmd:'20261110',auctnDxdyRsltCd:'R1'};
 const detail={status:200,data:{dma_csBasInf:{cortOfcCd:id.courtCode,csNo:'20250130000953'},
  dlt_dspslGdsDspslObjctLst:[lot],dlt_rletCsGdsDtsDxdyInf:[row]}};
-const good=compare(search,detail,id);
+const good=compare(search,detail,id,'2026-11-10');
 assert.equal(good.crossChecked,true);
 assert.equal(good.legalStatusVerified,false);
 assert.equal(good.legalStatus,null);
@@ -29,10 +29,15 @@ for(const [s,d] of [
  [{...search,data:{dlt_srchResult:[{...result,maeGiil:'20261111'}]}},detail],
  [{...search,data:{ipcheck:false,dlt_srchResult:[result]}},detail]
  ]){
- const outcome=compare(s,d,id);
+ const outcome=compare(s,d,id,'2026-11-10');
  assert.equal(outcome.crossChecked,false);
  assert.equal(outcome.legalStatusVerified,false);
  assert.equal(outcome.legalStatus,null);
  assert(!JSON.stringify(outcome).includes('PRIVATE'));
 }
+// The older result is a valid row for this case, but not the target day's result.
+assert.equal(compare(search,detail,id,'2026-11-11').crossChecked,false);
+assert.equal(compare(search,detail,id,'2026-11-11').reason,'result_schedule_not_target_date');
+assert.equal(compare(search,detail,id,'2026-02-29').crossChecked,false);
+assert.equal(compare(search,detail,id).crossChecked,false);
 console.log('PASS: strict sale result to detail identity/lot/date/code cross-check remains nonlegal');

@@ -51,6 +51,7 @@ jobs:
           let d={};
           try{d=JSON.parse(fs.readFileSync('/tmp/court-sale-result.json','utf8'));}catch{}
           const exact=d.observed===true&&d.identityMatched===true&&d.exactDisplayLotRows===1;
+          const jointlyVerified=exact&&d.detailCrossChecked===true&&d.rawResultCodeMatched===true&&d.scheduleDayMatched===true;
           const safeCode=v=>typeof v==='string'&&/^[A-Za-z0-9_-]{1,24}$/.test(v)?v:null;
           const codeKeys=['auctnDxdyRsltCd','dspslGdsStatCd','mulStatcd','jinstatCd','mulJinYn'];
           const labelKeys=['auctnDxdyRsltNm','maeGiilRsltNm','dspslRsltNm'];
@@ -84,8 +85,8 @@ jobs:
             fieldNames:exact&&Array.isArray(d.fieldNames)?d.fieldNames.filter(x=>[
               'auctnDxdyRsltCd','auctnDxdyRsltNm','dspslGdsStatCd','mulStatcd','jinstatCd','mulJinYn','maemulSer','mokmulSer','dxdyYmd','maeGiil','maegyuljGiil','yuchalCnt','maeGiilRsltNm','dspslRsltNm'
             ].includes(x)).slice(0,14):[],
-            rawCodes:exact?Object.fromEntries(codeKeys.map(k=>[k,safeCode(d.rawCodes?.[k])])):{},
-            exactDisplayLabels:exact?Object.fromEntries(labelKeys.map(k=>[k,labels.includes(d.exactDisplayLabels?.[k])?d.exactDisplayLabels[k]:null])):{},
+            rawCodes:jointlyVerified?Object.fromEntries(codeKeys.map(k=>[k,safeCode(d.rawCodes?.[k])])):{},
+            exactDisplayLabels:jointlyVerified?Object.fromEntries(labelKeys.map(k=>[k,labels.includes(d.exactDisplayLabels?.[k])?d.exactDisplayLabels[k]:null])):{},
             legalStatusVerified:false,rawResponseSaved:false
           };
           fs.writeFileSync('/tmp/court-sale-result-summary.json',JSON.stringify(result,null,2)+'\n');

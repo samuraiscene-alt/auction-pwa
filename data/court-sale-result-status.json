@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-10T00:45:01.682Z",
+  "attemptedAt": "2026-11-10T00:48:23.247Z",
+  "probeExecutionSucceeded": true,
   "observed": false,
   "daysSinceSale": 0,
   "windowPolicy": "conservative_diagnostic_1_to_7_days",

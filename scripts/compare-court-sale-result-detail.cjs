@@ -9,7 +9,7 @@ const safeDay=x=>{
  return m>=1&&m<=12&&d>=1&&d<=new Date(Date.UTC(y,m,0)).getUTCDate()?s:null;
 };
 const fail=reason=>({crossChecked:false,reason,legalStatusVerified:false,legalStatus:null});
-function compareSaleSearchWithDetail(search,detail,id){
+function compareSaleSearchWithDetail(search,detail,id,expectedDate){
  if(String(search?.status)!=='200'||String(detail?.status)!=='200'||
     search?.data?.ipcheck===false||detail?.data?.ipcheck===false)
   return fail('unverified_response');
@@ -42,6 +42,10 @@ function compareSaleSearchWithDetail(search,detail,id){
   return fail('contradictory_result_dates');
  const day=primary??secondary;
  if(!day)return fail('result_schedule_day_missing');
+ // An older session of the same case may be returned by sale-result search.
+ // Never accept it as the targeted snapshot day's result.
+ const expected=safeDay(typeof expectedDate==='string'?expectedDate.replaceAll('-',''):null);
+ if(!expected||day!==expected)return fail('result_schedule_not_target_date');
  const schedules=history.filter(r=>r&&String(r.cortOfcCd??'')===id.courtCode&&
   String(r.csNo??'')===internal&&String(r.dspslGdsSeq??'')===id.itemNo&&
   safeDay(r.dxdyYmd)===day);

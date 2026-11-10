@@ -17,6 +17,24 @@ function responseShape(rows){
   candidateFieldNames:DIAGNOSTIC_FIELDS.filter(k=>first.some(r=>Object.hasOwn(r,k)))
  };
 }
+// If official response carries two identifiers for the same dimension, both
+// must agree. Null/empty is not treated as a second identifier.
+const sameIfPresent=(row,a,b)=>{
+ const x=row[a],y=row[b];
+ return (x===null||x===undefined||String(x)===''||
+  y===null||y===undefined||String(y)===''||
+  String(x)===String(y));
+};
+const exactIdentity=(r,identity)=>r&&typeof r==='object'&&!Array.isArray(r)&&
+ String(r.boCd??'')===identity.courtCode&&
+ String(r.srnSaNo??'')===identity.caseNo&&
+ String(r.maemulSer??r.mokmulSer??'')===identity.itemNo&&
+ sameIfPresent(r,'maemulSer','mokmulSer')&&
+ sameIfPresent(r,'boCd','cortOfcCd')&&
+ // csNo may be numeric internal or a display number: compare only when it
+ // actually carries the display-format case, never accept a contradiction.
+ (!/^20\\d{2}타경\\d{1,10}$/.test(String(r.csNo??''))||
+  String(r.csNo)===identity.caseNo);
 function analyzeSaleResultSearch(response,identity){
  const root=response?.data;
  if(String(response?.status)!=='200'||!root||root.ipcheck===false||
@@ -24,9 +42,7 @@ function analyzeSaleResultSearch(response,identity){
   return {observed:false,reason:'invalid_response',identityMatched:false,legalStatusVerified:false};
  const rows=root.dlt_srchResult;
  const shape=responseShape(rows);
- const exact=rows.filter(r=>r&&String(r.boCd??'')===identity.courtCode&&
-  String(r.srnSaNo??'')===identity.caseNo&&
-  String(r.maemulSer??r.mokmulSer??'')===identity.itemNo);
+ const exact=rows.filter(r=>exactIdentity(r,identity));
  const row=exact.length===1?exact[0]:null;
  const statusNames=row?CANDIDATES.filter(k=>Object.hasOwn(row,k)):[];
  const rawCodes=row?Object.fromEntries(['auctnDxdyRsltCd','dspslGdsStatCd','mulStatcd','jinstatCd','mulJinYn']

@@ -1,3 +1,8 @@
+### v0.7.6 배포 후 공개 사이트 실제 확인 추가
+- `scripts/verify-pages-published.cjs`와 `tests/pages-published.cjs` 추가. Pages 배포 완료 후 실제 공개된 `VERSION.txt`, `app.js`, `sw.js`를 조회해 버전·서비스워커 캐시·법적 상태 미확인 경고 유지 여부 검사. 캐시 우회 요청, 최대 5회 확인, 실패 시 배포 작업 검사 실패로 표기.
+- `.github/workflows/pages.yml`에 배포 전 검사 테스트 및 배포 후 실사이트 확인 단계를 연결. 이번 변경은 GitHub 소스와 배포 워크플로우에 반영되었고 **실제 공개 사이트의 응답 확인은 GitHub Actions 결과로 검증해야 함**.
+- 수집된 805건·개인 데이터·기존 UI·앱 버전(v0.7.6) 변경 없음.
+
 ### v0.7.6 배포 안전검사 추가
 - GitHub Pages 배포 전에 `scripts/verify-pages-release.cjs`를 실행하도록 `.github/workflows/pages.yml` 변경. 앱 소스·버전 텍스트·서비스워커 캐시의 버전 일치, 필수 정적 파일, 수도권 부분 수집 목록 검증기록·중복 식별, 법적 상태 미확인 경고를 점검. 검증 실패 시 Pages 업로드·배포 차단.
 - 저장소 최신 파일 조합으로 검사 로직을 실행하여 통과. 실제 GitHub Actions 배포 성공 및 원격 Pages 제공 상태는 별도 확인 필요. 805건 스냅샷·개인 저장자료·화면 디자인 변경 없음.

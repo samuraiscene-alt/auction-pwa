@@ -64,7 +64,7 @@ jobs:
             observed:d.observed===true,
             daysSinceSale:Number.isInteger(d.daysSinceSale)?d.daysSinceSale:null,
             windowPolicy:'conservative_diagnostic_1_to_7_days',
-            failedStage:['connect','response','json','evaluate'].includes(d.failedStage)?d.failedStage:'none',
+            failedStage:['connect','response','json','evaluate','detail_preflight','sale_search'].includes(d.failedStage)?d.failedStage:'none',
             reason:typeof d.reason==='string'&&/^[a-z_]{1,40}$/.test(d.reason)?d.reason:'unknown',
             schedulePreflightConfirmed:d.schedulePreflightConfirmed===true,
             detailCrossChecked:exact&&d.detailCrossChecked===true,

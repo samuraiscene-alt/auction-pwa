@@ -996,3 +996,8 @@ html,body{
 #content .capital-focus-banner>strong{display:block;font-size:14px;margin-bottom:5px}
 #content .capital-focus-banner .status{margin:8px 0 10px;line-height:1.6}
 #content .capital-focus-found{padding:10px 12px;margin:0 0 13px;border-radius:10px;background:#eef5ff;color:#185db2;font-weight:750;font-size:12px;line-height:1.5}
+
+/* v0.7.29: compact per-lot identity; parent case heading owns shared address and court number. */
+#content .capital-property .capital-lot-label{margin:8px 0 6px;font-size:13px;line-height:1.5;color:#263b5a}
+#content .capital-property .capital-lot-label strong{font-size:14px;font-weight:750}
+#content .capital-property .capital-lot-address{margin:4px 0 9px;font-size:12px;line-height:1.5;color:#546987;overflow-wrap:anywhere}

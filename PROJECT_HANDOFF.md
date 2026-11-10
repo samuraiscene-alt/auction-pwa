@@ -1,3 +1,9 @@
+## 2026-11-10 v0.7.20 최신 인수인계
+- 가격 이력 파일: data/capital-price-history.json. scripts/record-capital-price-history.cjs의 updateHistory(previous,current,existing)가 검증된 수도권 부분수집본 사이의 동일한 물건번호 최저가 변경만 관측 기록. 유찰 또는 낙찰 결과 판단 아님.
+- .github/workflows/capital-court-pilot.yml에서 새 검증 수집본을 이전 수집본과 비교한 다음 기록을 함께 commit/push. 테스트 tests/capital-price-history.cjs는 수집과 Pages 배포 단계 모두에서 실행하도록 연결.
+- 앱 capitalPriceHistoryMarkup 및 loadCapital에 안전한 기록 조회 추가. 기록 0건은 '변경 없음' 확증이 아니며 수집범위의 한계 안내. 기존 기록/아이콘/지도 유지.
+- VERSION 0.7.20 / SW auction-shell-v0720. 동적 테스트 변경 1건, 중복 차단, 신규 변경 없음, 오래된 이력/미검증 자료 차단 통과. 실제 공개 배포 및 iPhone 점검은 별도 필요.
+
 ## 2026-11-10 v0.7.19 최신 인수인계
 - capital-case-group의 summary / pseudo-element CSS는 반드시 직계 자식 선택자(>) 사용. 중첩 details의 화살표가 부모 열린 상태를 잘못 상속받지 않게 함.
 - 수도권 물건의 진행상태 라인은 capital-status-note 블록으로 교체. 법적 상태 자동 확정 없음.

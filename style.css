@@ -864,3 +864,6 @@ html,body{
 #content .court-plan-row{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #edf0f4;padding:11px 2px;font-size:13px}
 #content .court-plan-row strong{color:#1266ef;font-variant-numeric:tabular-nums}
 @media(max-width:350px){#content .quick-extra-icon{width:50px;height:50px}#content .quick-edit-row{gap:4px}#content .quick-edit-row button{padding:4px 7px}}
+
+#content .quick-edit-row .quick-drag-handle{touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;color:#1266ef;font-size:20px;min-width:36px}
+#content .quick-edit-row.dragging{background:#edf3ff;border-radius:10px}

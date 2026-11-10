@@ -1,0 +1,17 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {analyzeSaleResultSearch}=require('../scripts/validate-court-sale-result-search.cjs');
+const id={courtCode:'B000210',caseNo:'2008타경25092',itemNo:'1'};
+const row={boCd:id.courtCode,srnSaNo:id.caseNo,maemulSer:'1',mulStatcd:'01',auctnDxdyRsltNm:'유찰',privateName:'PRIVATE_PERSON'};
+const good=analyzeSaleResultSearch({status:200,data:{dlt_srchResult:[row]}},id);
+assert.equal(good.identityMatched,true);
+assert.equal(good.exactDisplayLabels.auctnDxdyRsltNm,'유찰');
+assert.equal(good.rawCodes.mulStatcd,'01');
+assert.equal(good.legalStatusVerified,false);
+assert(!JSON.stringify(good).includes('PRIVATE'));
+assert.equal(analyzeSaleResultSearch({status:200,data:{dlt_srchResult:[row,row]}},id).identityMatched,false);
+assert.equal(analyzeSaleResultSearch({status:200,data:{dlt_srchResult:[{...row,maemulSer:'2'}]}},id).identityMatched,false);
+assert.equal(analyzeSaleResultSearch({status:200,data:{ipcheck:false,dlt_srchResult:[row]}},id).observed,false);
+assert.equal(analyzeSaleResultSearch({status:200,data:{dlt_srchResult:[{...row,auctnDxdyRsltNm:'유찰 주소 PRIVATE_PERSON'}]}},id).exactDisplayLabels.auctnDxdyRsltNm,null);
+assert.equal(analyzeSaleResultSearch({status:200,data:{dlt_srchResult:[{...row,mulStatcd:'PRIVATE_PERSON_RECORD_LONG'}]}},id).rawCodes.mulStatcd,null);
+console.log('PASS: sale-result search diagnostic is identity-gated, redacted and never decides legal status');

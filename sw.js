@@ -1,5 +1,5 @@
-const CACHE='auction-shell-v076';
-const ASSETS=['./','./index.html','./style.css','./app.js','./VERSION.txt','./manifest.webmanifest','./icon.svg','./auction-ios-icon-v034.png'];
+const CACHE='auction-shell-v077';
+const ASSETS=['./','./index.html','./style.css','./app.js','./VERSION.txt','./manifest.webmanifest','./icon.svg','./auction-ios-icon-v077.png','./assets/auction-menu-v077.webp'];
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });

@@ -16,9 +16,18 @@ function verifyRelease(){
  assert(html.includes('src="app.js"'),'index does not load app.js');
  assert(html.includes('href="style.css"'),'index does not load stylesheet');
  for(const path of ['index.html','app.js','style.css','sw.js','manifest.webmanifest',
-  'data/capital-court-pilot.json','data/capital-court-status.json','data/court-sale-result-status.json'])
+  'data/capital-court-pilot.json','data/capital-court-status.json','data/court-sale-result-status.json',
+  'auction-ios-icon-v077.png','assets/auction-menu-v077.webp'])
   assert(fs.existsSync(path),'required deployment asset missing: '+path);
  for(const path of ['app.js','sw.js'])execFileSync(process.execPath,['--check',path],{stdio:'pipe'});
+ const homeIcon=fs.readFileSync('auction-ios-icon-v077.png');
+ assert(homeIcon.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])),'Apple icon is not PNG');
+ assert(homeIcon.readUInt32BE(16)===180&&homeIcon.readUInt32BE(20)===180,'Apple icon must be 180x180');
+ const menuIcon=fs.readFileSync('assets/auction-menu-v077.webp');
+ assert(menuIcon.toString('ascii',0,4)==='RIFF'&&menuIcon.toString('ascii',8,12)==='WEBP','menu sprite is not WebP');
+ assert(sw.includes('assets/auction-menu-v077.webp')&&sw.includes('auction-ios-icon-v077.png'),'new icon assets not pre-cached');
+ assert(html.includes('auction-ios-icon-v077.png')&&read('manifest.webmanifest').includes('auction-ios-icon-v077.png'),'home icon metadata mismatch');
+ assert(app.includes('quick-icon quick-court')&&app.includes('quick-icon quick-study'),'generated quick-menu icon references missing');
  const snapshot=JSON.parse(read('data/capital-court-pilot.json'));
  assert(snapshot?.complete===false,'partial snapshot incorrectly marked complete');
  assert([1,2].includes(snapshot.schemaVersion),'snapshot schema mismatch');

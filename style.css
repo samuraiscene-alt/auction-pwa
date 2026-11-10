@@ -799,3 +799,15 @@ html,body{
 .capital-case-count{display:inline-block;margin-top:8px;font-size:.82rem;font-weight:650;color:#2563eb}
 .capital-property{padding:14px 0 6px;border-top:1px solid #e5e7eb;margin-top:12px}
 .capital-property .line{padding:3px 0}
+
+/* v0.7.7: approved generated icon sprites and stable two-line quick-menu labels */
+#content .quick-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+#content .quick-grid .quick{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:112px;padding:8px 2px;line-height:1.2;word-break:keep-all;overflow-wrap:normal}
+#content .quick-grid .quick-label{display:block;font-size:12px;font-weight:750;line-height:1.25;white-space:nowrap}
+#content .quick-grid .quick-icon{display:block;flex:0 0 58px;width:58px;height:58px;max-width:100%;background-image:url('./assets/auction-menu-v077.webp');background-size:300% 200%;background-repeat:no-repeat;border-radius:12px}
+#content .quick-grid .quick-court{background-position:0% 0%}
+#content .quick-grid .quick-capital{background-position:50% 0%}
+#content .quick-grid .quick-address{background-position:100% 0%}
+#content .quick-grid .quick-case{background-position:0% 100%}
+#content .quick-grid .quick-study{background-position:50% 100%}
+@media(max-width:350px){#content .quick-grid .quick-icon{flex-basis:50px;width:50px;height:50px}#content .quick-grid .quick-label{font-size:11px}}

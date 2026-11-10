@@ -123,3 +123,5 @@
 - Pages 앱 배포 성공: https://github.com/samuraiscene-alt/auction-pwa/actions/runs/42682855084
 - 코드 `app.js` v0.7.0은 진행상태를 '미확인'으로 표시하며, 재조회로도 매각·취하 확정 판정을 하지 않음.
 - 같은 GitHub 브랜치에 소스/자동 수집이 동시에 반영돼 생긴 status.json 충돌을 방지하도록, 워크플로우가 최신 커밋 위에 검증된 데이터 파일만 갱신하도록 수정함.
+
+- 2026-11-10 UI v0.7.7: 사용자 승인으로 새로 생성한 5개 빠른 메뉴 그림을 `assets/auction-menu-v077.webp`에 묶고, 마지막 경매 망치·집 그림을 `auction-ios-icon-v077.png` 아이폰 홈 아이콘으로 적용. 홈 빠른 메뉴 `수도권 자동등록` 2줄 고정, 주소검색/사건번호 검색 진입 시 각각 입력 예시 구분. 앱/서비스워커/매니페스트 버전 0.7.7 일치; 기존 `auction_skeleton_v1` 로컬 저장 키·805건 경매자료 불변. `scripts/verify-pages-release.cjs`에서 이미지 파일 형식, 크기, 참조를 검사.

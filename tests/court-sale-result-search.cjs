@@ -31,4 +31,12 @@ const alternate=analyzeSaleResultSearch({status:200,data:{dlt_srchResult:[
 assert.equal(alternate.identityMatched,false);
 assert.deepEqual(alternate.responseIdentityFieldNames,['cortOfcCd','csNo','dspslGdsSeq']);
 assert.deepEqual(alternate.rawCodes,{});
+for(const contradiction of [
+ {mokmulSer:'2'},{cortOfcCd:'B000214'},{csNo:'2025타경9999'}
+]){
+ const conflict=analyzeSaleResultSearch({status:200,data:{dlt_srchResult:[{...row,...contradiction}]}},id);
+ assert.equal(conflict.identityMatched,false);
+ assert.deepEqual(conflict.rawCodes,{});
+ assert.deepEqual(conflict.exactDisplayLabels,{});
+}
 console.log('PASS: sale-result search diagnostic is identity-gated, redacted and never decides legal status');

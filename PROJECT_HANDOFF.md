@@ -1,3 +1,7 @@
+## 2026-11-10 v0.7.27 최신 수정
+- 달력에서 색상바 존재 날짜 숫자만 상향되는 문제 수정: style.css의 calendar-date-number를 전 날짜 top:2px, position:absolute로 통일. 기존 :has(.calendar-bars) 숫자 상단 별도 규칙은 삭제.
+- 날짜 글자 17px, 기존 날짜 셀 46px 및 3색 누적 막대 유지. v0.7.27 / SW auction-shell-v0727, 정적 회귀 115개 통과. 실제 배포·아이폰 테스트 확인 전.
+
 ## 2026-11-10 v0.7.26 최신 변경
 - 일정 달력: 날짜 글자 17px, 세로 누적 색상바 26x5px 최대 3줄. CSS의 calendar-date-number, calendar-bars, calendar-bar-* 및 :has(.calendar-bars)로 숫자와 막대 겹침 방지.
 - 달력은 registeredProperties() 및 courtFavoriteCalendarItems()의 실제 기록만 표시. 예시 물건은 기존 앱에 남기되 달력에는 표시하지 않음.

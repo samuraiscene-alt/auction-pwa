@@ -1,3 +1,11 @@
+## 2026-11-10 v0.7.23 최신 인수인계
+- app.js: COURT_FAVORITES_LIMIT=200; validCourtFavorite, courtFavorites, courtFavoriteFromLot, setCourtFavorite, courtFavoriteCards.
+- 수도권 법원 부분수집 물건 카드에 data-court-favorite-toggle 버튼 연결; 관심 탭에서 data-court-favorite-open / data-court-favorite-remove 이벤트. 저장 즉시 기기 localStorage의 기존 saved JSON 아래 courtFavorites에 별도 보관. 구형 favorites·notes 배열 유지.
+- 관심 카드에는 수집 당시 가격/기일과 법원 원문 확인 경고 표시; '해당 사건 찾기'는 수도권 수집목록의 사건번호 검색으로 이동. 8페이지 부분수집이므로 물건이 검색되지 않아도 낙찰/취하 의미 아님.
+- 기존 백업 JSON v3의 data.courtFavorites 필드로 함께 백업. 복원 시 필드 없으면 구형 백업으로 허용, 있으면 최대 200건/중복ID/형식 검사 통과만 허용.
+- 테스트 tests/court-favorites.cjs는 .github/workflows/pages.yml 배포 전 검사에 연결. 정적 UI 92조건 및 관심물건 새 테스트 22조건 통과(커넥터 소스 기반). 배포 실결과와 iPhone 테스트는 별도 확인 필요.
+- v0.7.23 / cache auction-shell-v0723 / VERSION.txt 일치. 아이콘·데이터 수집과 서버 조회 정책은 변경 없음.
+
 ## 2026-11-10 v0.7.21 최신 변경
 - app.js auctionFold(title,html,extraClass) 함수로 보조 영역을 독립형 details로 감쌈. 수도권 물건 카드는 지도/가격 분석/변동 이력/입찰보증금 계산기 각각 닫힘 기본. 주소·가격·기일·진행상태는 항상 표시.
 - 직접 등록 물건 상세 개요는 지도/가격 분석/보증금 계산기를 아코디언으로 묶음. 기존 PDF 정보보완 및 관심 기능 유지.

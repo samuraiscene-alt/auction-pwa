@@ -494,7 +494,9 @@ function quickMenuMarkup(){
   '<span class="quick-label">'+escapeHtml(x.name)+'</span></button>';
  const editor=QUICK_MENU_ITEMS.map(x=>{
   const enabled=quickMenuIds.includes(x.id),at=quickMenuIds.indexOf(x.id);
-  return '<div class="quick-edit-row"><strong>'+escapeHtml(x.name)+'</strong>'+
+  return '<div class="quick-edit-row" data-quick-row="'+x.id+'">'+
+   (enabled?'<button type="button" class="quick-drag-handle" data-quick-drag="'+x.id+'" aria-label="'+escapeHtml(x.name)+' 길게 눌러 순서 이동">↕</button>':'')+
+   '<strong>'+escapeHtml(x.name)+'</strong>'+
    '<button type="button" data-quick-toggle="'+x.id+'">'+(enabled?'숨기기':'추가')+'</button>'+
    (enabled?'<button type="button" data-quick-move="'+x.id+'" data-step="-1" '+(at===0?'disabled':'')+' aria-label="'+escapeHtml(x.name)+' 위로 이동">↑</button>'+
    '<button type="button" data-quick-move="'+x.id+'" data-step="1" '+(at===quickMenuIds.length-1?'disabled':'')+' aria-label="'+escapeHtml(x.name)+' 아래로 이동">↓</button>':'')+
@@ -1630,6 +1632,29 @@ document.querySelectorAll('[data-quick-move]').forEach(button=>button.onclick=()
  const next=quickMenuIds.slice();[next[from],next[to]]=[next[to],next[from]];
  try{persistQuickMenu(next);render();showSavedCheck('순서 저장 완료');}
  catch{toast('순서를 저장할 수 없습니다.');}
+});
+// iOS touch drag is attached only to the reorder handle, not entire cards.
+document.querySelectorAll('[data-quick-drag]').forEach(handle=>{
+ let startY=0,dragging=false;
+ handle.addEventListener('pointerdown',event=>{
+  if(event.pointerType==='mouse'&&event.button!==0)return;
+  startY=event.clientY;dragging=true;handle.setPointerCapture?.(event.pointerId);
+  handle.closest('.quick-edit-row')?.classList.add('dragging');
+ });
+ handle.addEventListener('pointercancel',()=>{dragging=false;handle.closest('.quick-edit-row')?.classList.remove('dragging');});
+ handle.addEventListener('pointerup',event=>{
+  if(!dragging)return;dragging=false;
+  handle.closest('.quick-edit-row')?.classList.remove('dragging');
+  if(Math.abs(event.clientY-startY)<16)return;
+  const rows=[...document.querySelectorAll('[data-quick-row]')].filter(row=>quickMenuIds.includes(row.dataset.quickRow));
+  const target=rows.find(row=>{const r=row.getBoundingClientRect();return event.clientY>=r.top&&event.clientY<=r.bottom;});
+  const from=quickMenuIds.indexOf(handle.dataset.quickDrag),to=target?quickMenuIds.indexOf(target.dataset.quickRow):-1;
+  if(from<0||to<0||from===to)return;
+  // Correct insertion: rebuild from original order, removing the source only once.
+  const reordered=quickMenuIds.slice(),moved=reordered.splice(from,1)[0];reordered.splice(to,0,moved);
+  try{persistQuickMenu(reordered);render();showSavedCheck('순서 저장 완료');}
+  catch{toast('순서를 저장할 수 없습니다.');}
+ });
 });
 if($('#quickReset'))$('#quickReset').onclick=()=>{
  if(!confirm('빠른 메뉴를 처음 구성으로 복원할까요?'))return;

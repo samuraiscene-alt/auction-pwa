@@ -1,2 +1,2 @@
-0.7.28
-Find the exact saved court lot by case and lot identity, with safe missing-item fallback.
+0.7.29
+Remove duplicate case address/court number from lot details, preserving exact lot identity and differing addresses.

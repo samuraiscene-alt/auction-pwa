@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.12';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.13';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -302,7 +302,7 @@ const MAIN_TABS=['home','search','schedule','favorites','study'];
 let capitalSnapshot=null,capitalAttemptStatus=null,capitalLegalDiagnostic=null,capitalLoadStatus='unloaded',capitalLoadError='';
 let appDepth=0;
 const viewHistory=new Map();
-function snapshot(){return {page:state.page,filter:state.filter,selected:state.selected,viewMonth:state.viewMonth,calendarFavoritesOnly:state.calendarFavoritesOnly,detail:state.detail,note:state.note,search:state.search,region:state.region,minPrice:state.minPrice,maxPrice:state.maxPrice,priceUnit:state.priceUnit,detailTab:state.detailTab,favoriteSort:state.favoriteSort,favoriteType:state.favoriteType,capitalRegion:state.capitalRegion,capitalType:state.capitalType,capitalQuery:state.capitalQuery,capitalLimit:state.capitalLimit,editRealId:state.editRealId,noteQuery:state.noteQuery,noteSort:state.noteSort,studyCategory:state.studyCategory,noteTopicDraft:state.noteTopicDraft}}
+function snapshot(){return {page:state.page,filter:state.filter,selected:state.selected,viewMonth:state.viewMonth,calendarFavoritesOnly:state.calendarFavoritesOnly,detail:state.detail,note:state.note,search:state.search,region:state.region,minPrice:state.minPrice,maxPrice:state.maxPrice,priceUnit:state.priceUnit,detailTab:state.detailTab,favoriteSort:state.favoriteSort,favoriteType:state.favoriteType,capitalRegion:state.capitalRegion,capitalType:state.capitalType,capitalQuery:state.capitalQuery,capitalLimit:state.capitalLimit,capitalReviewDate:state.capitalReviewDate,capitalReviewStage:state.capitalReviewStage,editRealId:state.editRealId,noteQuery:state.noteQuery,noteSort:state.noteSort,studyCategory:state.studyCategory,noteTopicDraft:state.noteTopicDraft}}
 viewHistory.set(0,snapshot());
 history.replaceState({auctionApp:true,depth:0,view:snapshot()},'',location.pathname+location.search);
 function nav(page,extra={}){
@@ -542,7 +542,7 @@ function verificationPlanMarkup(day){
  return '<div class="card court-plan"><strong>법원 수집물건 검증 예정</strong>'+
   '<p class="helper">수집본 '+escapeHtml(verificationPlan.snapshotItems)+'건 기준 · 일부 페이지만 수집 · '+escapeHtml(verificationPlan.generatedForDay)+' 생성'+
   (stale?' · 수집본 30시간 경과':'')+'</p>'+
-  (report?stages.map(([key,label])=>'<div class="court-plan-row"><span>'+label+'</span><strong>'+report[key].length+'건</strong></div>').join(''):
+  (report?stages.map(([key,label])=>'<div class="court-plan-row"><span>'+label+'</span><button type="button" class="court-plan-open" data-plan-stage="'+key+'" data-plan-date="'+day+'" '+(!report[key].length?'disabled':'')+' aria-label="'+label+' '+report[key].length+'건 대상 보기">'+report[key].length+'건 ›</button></div>').join(''):
     '<p class="helper">선택한 날짜는 현재 생성된 8일 일정 범위 밖입니다.</p>')+
   '<p class="helper">표시된 수치는 재조회 예정 건수이며 실제 법원 조회·낙찰·유찰·취하 확인 결과가 아닙니다. 입찰 전 법원 원문을 확인하세요.</p></div>';
 }
@@ -1400,7 +1400,16 @@ function initNoteEditor(){
 
 function capital(){
  const snapshot=capitalSnapshot;
- const items=Array.isArray(snapshot?.items)?snapshot.items:[];
+ const allItems=Array.isArray(snapshot?.items)?snapshot.items:[];
+ const reviewing=Boolean(state.capitalReviewDate&&state.capitalReviewStage);
+ const report=reviewing&&verificationPlanStatus==='ready'?verificationPlan.days.find(x=>x.date===state.capitalReviewDate):null;
+ const validStages=['precheck','sale_day','result_check','result_recheck','final_followup'];
+ const aligned=Boolean(report&&validStages.includes(state.capitalReviewStage)&&snapshot?.validation?.passed===true&&
+  snapshot.fetchedAt===verificationPlan.sourceSnapshotAt&&snapshot.items.length===verificationPlan.snapshotItems&&
+  verificationPlan.legalStatusVerified===false&&verificationPlan.automaticCourtRequests===0);
+ const ids=aligned?new Set(report[state.capitalReviewStage]):new Set();
+ const items=reviewing?(aligned?allItems.filter(x=>ids.has(x.id)):[]):allItems;
+ const reviewLabel=reviewing?state.capitalReviewDate+' · '+({precheck:'입찰 전 확인',sale_day:'입찰 당일 점검',result_check:'결과조회 예정',result_recheck:'재검사 예정',final_followup:'최종 추적'}[state.capitalReviewStage]||'검증 예정'):'';
  const region=state.capitalRegion,query=state.capitalQuery.trim().normalize('NFC').toLocaleLowerCase('ko');
  const componentsFor=x=>Array.isArray(x.components)&&x.components.length?x.components:[{address:x.address,largeCode:x.largeCode,mediumCode:x.mediumCode,smallCode:x.smallCode}];
  const presentCodes=new Set(items.filter(x=>region==='전체'||x.region===region).flatMap(x=>componentsFor(x).map(c=>c.smallCode)).filter(Boolean));
@@ -1472,7 +1481,7 @@ function capital(){
    '<div class="status">⚠ 이전 수집본과 차이 감지: '+escapeHtml(snapshot.validation.warnings.join(' / '))+'</div>':'')+
   '<p class="helper">각 지역 일부 페이지만 수집했습니다. 실제 조회: 서울 '+escapeHtml(String(snapshot?.regions?.서울?.processedPages||'?'))+'페이지, 경기 '+escapeHtml(String(snapshot?.regions?.경기?.processedPages||'?'))+'페이지, 인천 '+escapeHtml(String(snapshot?.regions?.인천?.processedPages||'?'))+'페이지. 목록에 없다고 매각·취하된 것은 아닙니다.</p>':'';
 
- return `<div class="card search-panel"><strong>서울·경기·인천 법원 경매물건</strong>
+ return `${reviewing?'<div class="card court-review-banner"><strong>'+escapeHtml(reviewLabel)+'</strong><p class="helper">검증 예정 물건만 표시합니다. 자동 결과조회가 아니라 기존 물건별 수동 재조회입니다.</p>'+(aligned?'<p class="helper">일정표와 수집본의 시각·건수가 일치합니다. '+items.length+'건</p>':'<div class="status">⚠ 일정표와 최신 수집본이 일치하지 않거나 일정이 만료됐습니다. 잘못된 물건 연결을 방지하기 위해 목록을 차단했습니다.</div>')+'<button type="button" class="secondary full-secondary" id="capitalReviewClear">전체 수집목록 보기</button></div>':''}<div class="card search-panel"><strong>서울·경기·인천 법원 경매물건</strong>
  <p class="helper">자동 수집 시범 목록입니다. 수도권 전체 사건 목록이 아니며, 매각기일·가격·진행 상태는 법원 원문에서 다시 확인해야 합니다.</p>
  <p class="helper" id="capitalStatus">${info}</p><div class="status">⚠ ${legalDiagnosticText} · 전체 ${items.length}건의 매각·취하 여부가 확인됐다는 뜻은 아닙니다.</div>${safetyNotice}
  <div class="filters">${['전체','서울','경기','인천'].map(r=>`<button type="button" class="chip ${region===r?'active':''}" data-capital-region="${r}">${r}</button>`).join('')}</div>
@@ -1723,6 +1732,18 @@ if($('#cancelRealEdit'))$('#cancelRealEdit').onclick=()=>{
  const id=state.editRealId;state.editRealId=null;nav('detail',{detail:id,detailTab:'overview'});
 };
 if($('#capitalReload'))$('#capitalReload').onclick=()=>loadCapital(true);
+if($('#capitalReviewClear'))$('#capitalReviewClear').onclick=()=>{
+ state.capitalReviewDate='';state.capitalReviewStage='';state.capitalQuery='';state.capitalLimit=40;render();
+};
+document.querySelectorAll('[data-plan-stage]').forEach(button=>button.onclick=()=>{
+ const day=button.dataset.planDate,stage=button.dataset.planStage;
+ const report=verificationPlan?.days?.find(x=>x.date===day);
+ if(verificationPlanStatus!=='ready'||!report||!Array.isArray(report[stage])||!report[stage].length){
+  toast('해당 날짜의 검증 대상이 없습니다.');return;
+ }
+ nav('capital',{capitalReviewDate:day,capitalReviewStage:stage,
+  capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40});
+});
 document.querySelectorAll('[data-capital-region]').forEach(button=>button.onclick=()=>{
  state.capitalRegion=button.dataset.capitalRegion;state.capitalType='전체';state.capitalLimit=40;render();
 });

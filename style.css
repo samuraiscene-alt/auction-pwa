@@ -950,3 +950,9 @@ html,body{
 #content .auction-prebid ul{padding:3px 13px 0 33px}
 #content .auction-prebid .helper{padding:0 13px 12px;margin-bottom:0}
 #content .auction-prebid>summary:focus-visible{outline:2px solid #1769ed;outline-offset:2px}
+
+/* v0.7.23: saved pilot court lots use the existing favorites cards */
+#content .court-favorite-toggle{margin:10px 0 12px;min-height:44px}
+#content .court-favorite-item .favorite-amount{font-variant-numeric:tabular-nums}
+#content .court-favorite-info{margin:9px 2px 12px;padding:9px 10px;border-radius:10px;background:#f4f8ff;line-height:1.55}
+#content .court-favorite-item .favorite-date{overflow-wrap:anywhere}

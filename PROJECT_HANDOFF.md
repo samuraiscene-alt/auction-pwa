@@ -1,3 +1,9 @@
+## 2026-11-10 v0.7.24 최신 인수인계
+- app.js의 courtFavoriteCalendarItems(date), courtFavoriteCalendarMarkup(items)는 saved.courtFavorites의 저장 당시 입찰기일을 독립된 달력 항목으로 연결. 기존 직접 등록·예시 일정 유지.
+- 법원 수집 카드의 data-court-favorite-date 버튼으로 날짜 이동. 달력 관심물건 전용 필터에도 포함.
+- 법원 수집일정은 수집 당시 참고자료이며 기일 변경·취하·낙찰 공식 확인이 아님. 기일 미확인 물건은 달력 미표시.
+- 버전 0.7.24 / 서비스워커 auction-shell-v0724. 정적 검사 99개, 관심물건 검사 32개 통과. 공개 Pages 배포 및 아이폰 테스트 미확인.
+
 ## 2026-11-10 v0.7.23 최신 인수인계
 - app.js: COURT_FAVORITES_LIMIT=200; validCourtFavorite, courtFavorites, courtFavoriteFromLot, setCourtFavorite, courtFavoriteCards.
 - 수도권 법원 부분수집 물건 카드에 data-court-favorite-toggle 버튼 연결; 관심 탭에서 data-court-favorite-open / data-court-favorite-remove 이벤트. 저장 즉시 기기 localStorage의 기존 saved JSON 아래 courtFavorites에 별도 보관. 구형 favorites·notes 배열 유지.

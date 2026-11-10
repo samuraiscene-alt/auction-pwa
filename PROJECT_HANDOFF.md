@@ -1,3 +1,9 @@
+## 2026-11-10 v0.7.26 최신 변경
+- 일정 달력: 날짜 글자 17px, 세로 누적 색상바 26x5px 최대 3줄. CSS의 calendar-date-number, calendar-bars, calendar-bar-* 및 :has(.calendar-bars)로 숫자와 막대 겹침 방지.
+- 달력은 registeredProperties() 및 courtFavoriteCalendarItems()의 실제 기록만 표시. 예시 물건은 기존 앱에 남기되 달력에는 표시하지 않음.
+- 파랑=직접 등록 비관심, 분홍=직접 등록 관심, 보라=법원 수집 관심. 선택 및 관심 전용 필터 유지.
+- v0.7.26 / SW cache auction-shell-v0726 / VERSION.txt 일치. JS 문법, UI 113조건, 법원 관심 기록 32조건 점검 통과. Pages 배포 및 아이폰 실기기 결과 확인 전.
+
 ## 2026-11-10 v0.7.25 최신 변경
 - 일정 화면: courtFavoriteCalendarMarkup의 법원 수집 관심 카드 상단 '법원 수집 · 저장 당시 기일' 배지, 한 줄 경고문. 기존 달력 데이터는 유지.
 - calendar-day에서 ordinary/favorite와 court-source 일정 마커를 별도 생성. 법원 수집 관심은 CSS court-favorite-dot 보라 마름모, legend court-key. 여러 일정이 겹치면 복수 점 표시.

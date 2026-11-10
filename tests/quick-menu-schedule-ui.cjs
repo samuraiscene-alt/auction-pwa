@@ -114,4 +114,10 @@ assert(app.includes('현재 검증된 부분 수집목록에서 정확히 일치
 assert(app.includes("capitalLoadStatus==='loading'||capitalLoadStatus==='unloaded'"),'loading state must not claim item is missing');
 assert(app.includes('id="capitalFocusClear"'),'user must be able to clear exact filter');
 assert(css.includes('.capital-focus-found'),'focus styling missing');
+assert(app.includes('const renderCapitalProperty=(x,caseHeader)=>{'),'lot renderer must receive parent-case context');
+assert(app.includes('group.map(item=>renderCapitalProperty(item,x))'),'lot rendering must pass case header item');
+assert(app.includes('x.address!==caseHeader.address'),'show distinct lot addresses, omit only exact duplicates');
+assert(app.includes('capital-lot-label'),'lot number must remain visible');
+assert(app.includes('물건 ${escapeHtml(x.itemNo)}번'),'each item must retain its own number');
+assert(css.includes('.capital-lot-address'),'distinct item address style missing');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

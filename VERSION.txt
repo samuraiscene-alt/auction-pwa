@@ -1,2 +1,2 @@
-0.7.12
-Quick menu preferences included in backup and legacy-safe restore.
+0.7.13
+Date-specific planned checks linked to guarded per-lot court rechecks; legal status remains unverified.

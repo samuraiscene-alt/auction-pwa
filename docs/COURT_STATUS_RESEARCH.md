@@ -242,3 +242,10 @@
 - `scripts/compare-court-sale-result-detail.cjs`에도 동일한 신원 필드 불일치 거부 적용. 특히 `dxdyYmd`와 `maeGiil`이 모두 존재할 때 서로 다른 날짜이거나 한쪽이 실제 달력상 불가능한 날짜라면 `contradictory_result_dates`로 차단. 임의로 한 값을 선택해 결론 내리지 않음.
 - `tests/court-sale-result-search.cjs`, `tests/court-sale-result-detail.cjs`에 다른 법원·사건·물건번호와 충돌 날짜 회귀 사례 추가. 기존 기간 테스트 포함 **3종 전부 통과**.
 - 결과 표본이 실제로 존재하거나 매각/유찰/취하가 확정됐다는 뜻은 아님. 예약된 2026-11-11 KST 결과검색 조회 전에 검증 조건만 강화. `legalStatusVerified:false` 및 앱 v0.7.5, 기존 805건, 개인자료 불변.
+
+## 2026-11-10 예약 검증 전 요청 시간제한 분리
+- `scripts/probe-court-sale-result-search.cjs`에서 매각결과검색 POST와 사건 상세검증 POST가 하나의 `AbortController` / **12초 공동 시간제한**을 공유하던 문제를 발견. 첫 요청이 느리면 두 번째 상세검증 요청이 정상적이어도 중도 취소될 수 있었음.
+- `timedPost`로 각 요청의 네트워크 응답 대기 시점에 **별도 12초 제한**을 적용. 기존 최대 검색 1회+상세 1회, 무재시도 방침 유지. 네트워크 응답 본문 JSON 파싱까지 이 타이머가 보장하지는 않으며 workflow `timeout-minutes: 3`이 전체 실행 상한.
+- 진단 스크립트 최신 소스 문법 검사 및 `tests/court-sale-result-search.cjs`, `tests/court-sale-result-detail.cjs`, `tests/court-result-window.cjs` 3종 회귀검증 통과.
+- 표본 `court-B000210|2025타경953|1`이 기존 `data/capital-court-pilot.json`에 있고 `saleDate=2026-11-10`으로 수록됐음을 재확인. 이 기록은 수집 당시 스냅샷으로 실제 현재 기일 보장이 아님. 2026-11-11 예약실행 성공 여부도 아직 미확인.
+- 운영 앱 v0.7.5, 805건 시범 물건, 개인 저장자료 및 매각/유찰/취하 자동분류 기능 불변.

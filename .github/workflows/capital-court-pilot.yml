@@ -104,7 +104,7 @@ jobs:
           try {
             const remote=JSON.parse(fs.readFileSync('data/capital-court-pilot.json','utf8'));
             const candidate=JSON.parse(fs.readFileSync('/tmp/court-validated-snapshot.json','utf8'));
-            if(Date.parse(remote.fetchedAt)>Date.parse(candidate.fetchedAt)){
+            if(Date.parse(remote.fetchedAt)>=Date.parse(candidate.fetchedAt)){
               console.log('Newer validated data already published; keep it.');
               process.exit(3);
             }

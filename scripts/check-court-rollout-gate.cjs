@@ -15,6 +15,8 @@ function checkCourtRolloutGate(report,nowIso=new Date().toISOString()){
  if(!Number.isFinite(when)||!Number.isFinite(now)||when<Date.parse(MINIMUM_ATTEMPT)||
     when>now||now-when>MAX_ELAPSED_DAYS*86400000)
   return deny('missing_or_stale_post_auction_probe');
+ if(report.triggerEvent!=='schedule')
+  return deny('scheduled_run_not_confirmed');
  if(report.legalStatusVerified!==false||report.rawResponseSaved!==false)
   return deny('unsafe_diagnostic');
  if(report.observed!==true||report.exactDisplayLotRows!==1)

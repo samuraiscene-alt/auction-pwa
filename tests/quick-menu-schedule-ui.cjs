@@ -44,8 +44,8 @@ assert(app.includes('function auctionMapControls(value,sourceLabel)'),'map entry
 assert(app.includes("auctionMapControls(x.address,'법원 수집 주소 기준"),'court list map link missing');
 assert(app.includes("auctionMapControls(p.name,'사용자 입력 주소 기준"),'manual detail map link missing');
 assert(app.includes('실제 경매물건 위치·촬영 시점은 다를 수 있습니다'),'map accuracy notice missing');
-assert(app.includes('detail-map-top')&&app.includes("auctionMapControls(x.address,'법원 수집 주소 기준"),'court location shortcut must be placed by the address');
-assert(app.includes("p.userRegistered?'<div class=\"detail-map-top\""),'registered item map must be prominent');
+assert(app.includes("auctionFold('지도·로드뷰 확인',auctionMapControls(x.address"),'court map must be in compact disclosure');
+assert(app.includes("p.userRegistered?auctionFold('지도·로드뷰 확인'"),'registered item map must be in compact disclosure');
 assert(app.includes('function auctionBidDepositWon(bidManwon,ratePercent)'),'deposit math helper missing');
 assert(app.includes('![10,20].includes(Number(ratePercent))'),'deposit rate must be explicitly selected');
 assert(app.includes('가정 입찰보증금: '),'estimated deposit warning missing');
@@ -69,4 +69,9 @@ assert(app.includes('capitalPriceHistoryMarkup(x)'),'court lot history not displ
 assert(app.includes("fetch('./data/capital-price-history.json'"),'observation history fetch missing');
 assert(app.includes('유찰·낙찰·취하나 법적 상태를 확인한 결과가 아닙니다'),'history legal warning absent');
 assert(sw.includes('./data/capital-price-history.json'),'history data not precached');
+assert(app.includes('function auctionFold(title,html,extraClass='),'collapsible helper missing');
+for(const label of ['지도·로드뷰 확인','감정가 대비 가격 분석','최저매각가 변경 이력','입찰보증금 계산기'])
+ assert(app.includes("auctionFold('"+label+"'"),'missing disclosure: '+label);
+assert(css.includes('.auction-fold>summary')&&css.includes('.auction-fold[open]>summary::after'),'collapse arrow styles missing');
+assert(css.includes('.capital-case-group>.capital-property .auction-fold>summary'),'nested accordion styling not isolated');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

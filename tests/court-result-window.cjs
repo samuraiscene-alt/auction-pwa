@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {resultWindow}=require('../scripts/court-result-window.cjs');
+assert.equal(resultWindow('2026-11-10','2026-11-10').eligible,false);
+assert.equal(resultWindow('2026-11-10','2026-11-11').eligible,true);
+assert.equal(resultWindow('2026-11-10','2026-11-17').eligible,true);
+assert.equal(resultWindow('2026-11-10','2026-11-18').eligible,false);
+assert.equal(resultWindow('2026-10-15','2026-11-10').daysSinceSale,26);
+assert.equal(resultWindow('2026-10-15','2026-11-10').eligible,false);
+assert.equal(resultWindow('2026-02-29','2026-03-01').reason,'invalid_calendar_date');
+assert.equal(resultWindow('2024-02-29','2024-03-01').daysSinceSale,1);
+assert.equal(resultWindow('2026-11-10','2026-11-11').legalStatusVerified,false);
+console.log('PASS: conservative date window makes no legal-status inference');

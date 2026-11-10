@@ -1001,3 +1001,9 @@ html,body{
 #content .capital-property .capital-lot-label{margin:8px 0 6px;font-size:13px;line-height:1.5;color:#263b5a}
 #content .capital-property .capital-lot-label strong{font-size:14px;font-weight:750}
 #content .capital-property .capital-lot-address{margin:4px 0 9px;font-size:12px;line-height:1.5;color:#546987;overflow-wrap:anywhere}
+
+/* v0.7.30: separate court and case number without breaking characters on iPhone */
+#content .auction-detail .auction-detail-ident{display:grid;grid-template-columns:minmax(78px,32%) minmax(0,1fr);align-items:start;gap:12px;padding:9px 0}
+#content .auction-detail .auction-detail-ident>.muted{white-space:nowrap;font-size:13px}
+#content .auction-detail .auction-detail-ident>strong{min-width:0;max-width:100%;text-align:right;overflow-wrap:normal;word-break:keep-all;font-size:14px;line-height:1.55}
+#content .demo-catalog{margin-bottom:12px}

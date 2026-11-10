@@ -974,3 +974,18 @@ html,body{
 #content .court-calendar-group{border-color:#e7dcf5;background:#fbf8ff}
 #content .court-calendar-tag{display:inline-block;color:#754baa;background:#f0e8fa;border-radius:7px;padding:4px 7px;font-size:11px;margin:0 6px 5px 0}
 #content .court-calendar-caution{margin:6px 0 9px;font-size:12px;line-height:1.5}
+
+/* v0.7.26: larger dates and stacked, high-visibility source bars; calendar cell size unchanged. */
+#content .calendar-day{height:auto;min-height:46px;gap:0;justify-content:center;position:relative}
+#content .calendar-day .calendar-date-number{display:block;font-size:17px;line-height:22px;font-weight:750;letter-spacing:-.35px;font-variant-numeric:tabular-nums;position:relative;z-index:1;transform:translateY(-2px)}
+#content .calendar-day .calendar-bars{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:26px;height:19px;pointer-events:none}
+#content .calendar-day .calendar-bar{display:block;width:26px;height:5px;min-height:5px;border-radius:999px;flex:0 0 5px}
+#content .calendar-day .calendar-bar-registered{background:#4777ed}
+#content .calendar-day .calendar-bar-personal{background:#df7899}
+#content .calendar-day .calendar-bar-court{background:#9161be}
+#content .calendar-day.selected .calendar-bar{box-shadow:0 0 0 1px rgba(255,255,255,.55)}
+#content .calendar-day.selected .calendar-bar-registered{background:#b1caff}
+#content .calendar-day.selected .calendar-bar-personal{background:#ffc0d0}
+#content .calendar-day.selected .calendar-bar-court{background:#e4bcff}
+#content .calendar-day .calendar-dots{display:none}
+@media(max-width:360px){#content .calendar-day .calendar-date-number{font-size:16px}#content .calendar-day .calendar-bars,#content .calendar-day .calendar-bar{width:23px}}

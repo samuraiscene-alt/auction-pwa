@@ -194,3 +194,10 @@
 - 법원 공식 `/pgj/ui/pgj100/PGJ158M01.xml`에서 하위 화면 `PGJ158M02` 참조 확인. 해당 하위 화면 `/pgj/ui/pgj100/PGJ158M02.xml`도 실제 조회 성공.
 - `data/court-sale-screen-status.json` (2026-11-09T23:55:21.524Z) 실서버 결과: `observed=true`, `saleResultSearchEndpointPresent=true`, `officialApiPaths=['/pgj/pgjsearch/selectDspslSchdRsltSrch.on']`, `dataMapIds=['dma_srchGdsDtlSrchInfo','dma_pageInfo','dlt_srchResult']`. 이 세 필드명과 API 호출 **경로의 존재**는 공식 화면 정의에서 직접 검증됨.
 - API의 **요청 필드 실제 값, 응답 결과, 기일 결과 코드↔표시명 대응표는 아직 미검증**. 운영 앱에 매각/유찰/취하를 적용할 단계가 아님. 읽기 전용 화면 XML 진단 결과만 저장. 앱 v0.7.5/805건 기존 목록/개인자료 모두 불변.
+
+## 2026-11-10 매각결과검색 API 직접 조회 1차
+- 법원 공식 `PGJ158M02.xml`에서 확인된 `POST /pgj/pgjsearch/selectDspslSchdRsltSrch.on`에 대해 고정 표본 `court-B000210|2008타경25092|1`을 대상으로 **단발, 읽기 전용** 조회 진단 추가: `scripts/probe-court-sale-result-search.cjs`, `scripts/validate-court-sale-result-search.cjs`, `tests/court-sale-result-search.cjs`, `.github/workflows/court-sale-result-search.yml`.
+- 응답에서 법원코드(`boCd`), 표시사건번호(`srnSaNo`), 물건번호(`maemulSer`/`mokmulSer`)가 **동일한 단일 행**에서 모두 일치해야만 해당 행의 제한된 코드/표시문구를 기록. 개인정보·원문 응답·주소 저장 금지. 상태확정은 언제나 false.
+- 로컬 저장소 소스 기반 테스트 및 진단 스크립트 문법 확인 통과. 초기 실서버 결과 `network_error`가 발생해 단계별 네트워크 실패 분류 보강. 이어서 실서버 `data/court-sale-result-status.json` 2026-11-10T00:02:41.228Z에서는 `observed=true`, `reason=processed`, `rowCount=0`, `identityMatched=false`. **공식 검색 API 응답을 받았지만 대상 사건 결과가 반환됐다는 뜻은 아님.**
+- 현재 요청은 기존 물건검색의 필드 집합을 결과검색 API에 적용한 첫 진단용 구성. 결과검색 화면의 검색조건/기간 필터가 다를 수 있으므로 `0건`을 매각·취하 등으로 해석하지 않음. `002`의 공식 의미 및 결과명 확인도 아직 실패.
+- 앱 v0.7.5, 기존 805건 목록, 사용자 저장자료, 자동 법적상태 표시 전부 불변.

@@ -1,2 +1,2 @@
-0.7.22
-Align the pre-bid checklist accordion appearance with other auction detail sections on iPhone.
+0.7.23
+Save validated capital court pilot lots as separate backup-safe favorites with source-age warnings.

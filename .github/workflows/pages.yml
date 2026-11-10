@@ -33,6 +33,7 @@ jobs:
           node tests/quick-menu-schedule-ui.cjs
           node tests/court-verification-plan.cjs
           node tests/auction-price-analysis.cjs
+          node tests/capital-price-history.cjs
       - uses: actions/configure-pages@v5
         with:
           enablement: true

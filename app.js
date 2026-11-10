@@ -698,7 +698,7 @@ function courtFavoriteCards(){
   '<span class="favorite-amount">'+escapeHtml(Number.isSafeInteger(x.minimumWon)?prettyPrice(x.minimumWon):'최저가 미확인')+'</span>'+
   '<span class="favorite-date">저장 당시 입찰기일: '+escapeHtml(x.saleDate||'미확인')+'</span>'+
   '</span><span class="arrow">›</span></button>'+
-  '<div class="favorite-actions"><button type="button" data-court-favorite-open="'+escapeHtml(x.id)+'">수집목록에서 찾기</button>'+
+  '<div class="favorite-actions"><button type="button" data-court-favorite-open="'+escapeHtml(x.id)+'">해당 사건 찾기</button>'+
   '<button type="button" class="favorite-remove" data-court-favorite-remove="'+escapeHtml(x.id)+'"><span class="favorite-heart">♥</span> 관심 해제</button></div>'+
   '</article>').join('');
 }
@@ -1679,7 +1679,7 @@ function capital(){
  return '<details class="card capital-record capital-case-group"><summary><strong>'+escapeHtml(x.address)+'</strong><p class="helper">'+escapeHtml(x.courtName||'법원 미확인')+' · '+escapeHtml(x.caseNo)+'</p><span class="capital-case-count">'+group.length+'개 물건 · 펼쳐보기</span></summary>'+group.map(renderCapitalProperty).join('')+'</details>';
  }).join('')}
  ${grouped.length>state.capitalLimit?`<button class="secondary full-secondary" type="button" id="capitalMore">다음 40개 사건 더 보기 (${grouped.length-state.capitalLimit}건 남음)</button>`:''}
- <p class="helper">이 목록은 기기 내 직접 등록 기록과 별도이며 관심물건·일정에는 자동 추가되지 않습니다.</p>`;
+ <p class="helper">수집물건은 직접 등록 사건·일정에 자동 추가되지 않습니다. 관심물건 저장 버튼을 누른 물건만 기기에 별도로 저장됩니다.</p>`;
 }
 async function verifyCapitalItem(id,button){
  const snapshot=capitalSnapshot,item=snapshot?.items?.find(x=>x.id===id);

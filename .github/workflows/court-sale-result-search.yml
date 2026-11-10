@@ -11,6 +11,8 @@ on:
       - scripts/probe-court-sale-result-search.cjs
       - scripts/validate-court-sale-result-search.cjs
       - tests/court-sale-result-search.cjs
+      - scripts/compare-court-sale-result-detail.cjs
+      - tests/court-sale-result-detail.cjs
       - scripts/court-result-window.cjs
       - tests/court-result-window.cjs
       - .github/workflows/court-sale-result-search.yml
@@ -31,6 +33,7 @@ jobs:
       - name: Check strict report safeguards
         run: |
           node tests/court-sale-result-search.cjs
+          node tests/court-sale-result-detail.cjs
           node tests/court-result-window.cjs
       - name: Single official sale-results search
         env:
@@ -59,6 +62,15 @@ jobs:
             windowPolicy:'conservative_diagnostic_1_to_7_days',
             failedStage:['connect','response','json','evaluate'].includes(d.failedStage)?d.failedStage:'none',
             reason:typeof d.reason==='string'&&/^[a-z_]{1,40}$/.test(d.reason)?d.reason:'unknown',
+            detailCrossChecked:exact&&d.detailCrossChecked===true,
+            rawResultCodeMatched:exact&&d.detailCrossChecked===true&&d.rawResultCodeMatched===true,
+            scheduleDayMatched:exact&&d.detailCrossChecked===true&&d.scheduleDayMatched===true,
+            detailCrossCheckReason:typeof d.detailCrossCheckReason==='string'&&[
+              'raw_code_cross_checked','sale_result_identity_not_matched','unverified_response',
+              'invalid_structure','result_identity_not_unique','internal_case_not_linked',
+              'inconsistent_detail_lots','detail_lot_not_unique','result_schedule_day_missing',
+              'schedule_not_unique','result_code_not_confirmed'
+            ].includes(d.detailCrossCheckReason)?d.detailCrossCheckReason:'not_checked',
             identityMatched:exact,exactDisplayLotRows:Number.isInteger(d.exactDisplayLotRows)?Math.min(d.exactDisplayLotRows,50):0,
             rowCount:Number.isInteger(d.rowCount)?Math.min(d.rowCount,50):null,
             responseIdentityFieldNames:d.observed===true&&Array.isArray(d.responseIdentityFieldNames)?d.responseIdentityFieldNames.filter(x=>[

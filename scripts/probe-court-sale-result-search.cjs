@@ -5,6 +5,7 @@
 const {analyzeSaleResultSearch}=require('./validate-court-sale-result-search.cjs');
 const {resultWindow}=require('./court-result-window.cjs');
 const {compareSaleSearchWithDetail}=require('./compare-court-sale-result-detail.cjs');
+const {assessCourtSchedulePreflight}=require('./validate-court-sale-preflight.cjs');
 // Known existing court snapshot lot; court sale date may change before the auction.
 const id={courtCode:'B000210',caseNo:'2025타경953',itemNo:'1'};
 const snapshotSaleDate='2026-11-10';
@@ -36,6 +37,25 @@ async function main(){
  }
  let stage='connect';
  try{
+  // Fresh case-detail preflight. If the dated snapshot is stale, do not query
+  // sale results. Two read-only requests at most, one detail + one search.
+  stage='detail_preflight';
+  const detailResponse=await timedPost('https://www.courtauction.go.kr/pgj/pgj15A/selectAuctnCsSrchRslt.on',{
+   method:'POST',headers:{'Content-Type':'application/json; charset=UTF-8',
+    Accept:'application/json',Referer:'https://www.courtauction.go.kr/pgj/index.on'},
+   body:JSON.stringify({dma_srchCsDtlInf:{cortOfcCd:id.courtCode,csNo:id.caseNo}})});
+  if(!detailResponse.ok)throw Error('detail_http_error');
+  if(!(detailResponse.headers.get('content-type')||'').includes('json'))throw Error('detail_non_json');
+  const detail=await detailResponse.json();
+  if(detail?.data?.ipcheck===false||detail?.ipcheck===false)throw Error('access_rejected');
+  const preflight=assessCourtSchedulePreflight(detail,id,snapshotSaleDate);
+  if(!preflight.confirmed){
+   console.log(JSON.stringify({schemaVersion:1,observed:false,reason:preflight.reason,
+    schedulePreflightConfirmed:false,identityMatched:false,
+    legalStatusVerified:false,rawResponseSaved:false}));
+   return;
+  }
+  stage='sale_search';
   const info=Object.fromEntries(KEYS.map(x=>[x,'']));
   Object.assign(info,{pgmId:'PGJ158M02',cortOfcCd:id.courtCode,csNo:id.caseNo});
   const page={pageNo:'1',pageSize:'50',bfPageNo:'',startRowNo:'1',
@@ -53,23 +73,13 @@ async function main(){
   stage='evaluate';
   const evidence=analyzeSaleResultSearch(body,id);
   if(evidence.identityMatched!==true){
-   console.log(JSON.stringify({schemaVersion:1,...evidence,detailCrossChecked:false,
-    detailCrossCheckReason:'sale_result_identity_not_matched'}));
+   console.log(JSON.stringify({schemaVersion:1,...evidence,schedulePreflightConfirmed:true,
+    detailCrossChecked:false,detailCrossCheckReason:'sale_result_identity_not_matched'}));
    return;
   }
-  // Only one additional READ-ONLY official detail query after exactly one
-  // case + lot row matched. No retries, no persistence of source response.
-  stage='detail';
-  const detailResponse=await timedPost('https://www.courtauction.go.kr/pgj/pgj15A/selectAuctnCsSrchRslt.on',{
-   method:'POST',headers:{'Content-Type':'application/json; charset=UTF-8',
-    Accept:'application/json',Referer:'https://www.courtauction.go.kr/pgj/index.on'},
-   body:JSON.stringify({dma_srchCsDtlInf:{cortOfcCd:id.courtCode,csNo:id.caseNo}})});
-  if(!detailResponse.ok)throw Error('detail_http_error');
-  if(!(detailResponse.headers.get('content-type')||'').includes('json'))throw Error('detail_non_json');
-  const detail=await detailResponse.json();
-  if(detail?.data?.ipcheck===false||detail?.ipcheck===false)throw Error('access_rejected');
   const compared=compareSaleSearchWithDetail(body,detail,id);
   console.log(JSON.stringify({schemaVersion:1,...evidence,
+   schedulePreflightConfirmed:true,
    detailCrossChecked:compared.crossChecked===true,
    detailCrossCheckReason:compared.reason,
    rawResultCodeMatched:compared.rawResultCodeMatched===true,

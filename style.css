@@ -964,3 +964,13 @@ html,body{
 #content .court-calendar-entry>strong{display:block;font-size:13px;overflow-wrap:anywhere}
 #content .court-calendar-entry .helper{margin:6px 0}
 #content .court-calendar-entry button{min-height:40px;max-width:100%}
+
+/* v0.7.25: show a separate purple diamond for saved court-source dates. */
+#content .calendar-caption{flex-wrap:wrap;row-gap:5px;column-gap:12px}
+#content .calendar-caption .court-key{color:#8a64bb}
+#content .calendar-day .calendar-dots{display:flex;align-items:center;justify-content:center;gap:4px;min-height:5px}
+#content .calendar-day .calendar-dot.court-favorite-dot{background:#9060bf;width:6px;height:6px;border-radius:2px;transform:rotate(45deg)}
+#content .calendar-day.selected .calendar-dot.court-favorite-dot{background:#fff}
+#content .court-calendar-group{border-color:#e7dcf5;background:#fbf8ff}
+#content .court-calendar-tag{display:inline-block;color:#754baa;background:#f0e8fa;border-radius:7px;padding:4px 7px;font-size:11px;margin:0 6px 5px 0}
+#content .court-calendar-caution{margin:6px 0 9px;font-size:12px;line-height:1.5}

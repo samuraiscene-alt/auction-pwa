@@ -1,2 +1,2 @@
-0.7.11
-Editable home quick menu and auction-date verification schedule preview.
+0.7.12
+Quick menu preferences included in backup and legacy-safe restore.

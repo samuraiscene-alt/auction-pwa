@@ -23,6 +23,8 @@ jobs:
           node-version: '22'
       - name: Check court app release safety before deploying
         run: node scripts/verify-pages-release.cjs
+      - name: Test published-site safety checks
+        run: node tests/pages-published.cjs
       - uses: actions/configure-pages@v5
         with:
           enablement: true
@@ -31,3 +33,8 @@ jobs:
           path: .
       - id: deployment
         uses: actions/deploy-pages@v4
+      - name: Confirm actual public Pages assets
+        timeout-minutes: 3
+        env:
+          DEPLOYED_URL: ${{ steps.deployment.outputs.page_url }}
+        run: node scripts/verify-pages-published.cjs "$DEPLOYED_URL"

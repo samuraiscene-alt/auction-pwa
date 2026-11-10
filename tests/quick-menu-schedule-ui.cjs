@@ -53,4 +53,10 @@ assert(app.includes('function auctionPrebidChecklist()'),'pre-bid checklist miss
 assert(app.includes("auctionBidCalculator(x.minimumWon,'법원 부분수집본"),'court preview calculator missing');
 assert(app.includes('auctionBidCalculator(propertyPrice(p),p.userRegistered'),'detail calculator missing');
 assert(app.includes("box.querySelector('[data-bid-rate]')"),'calculator interaction missing');
+assert(app.includes('function auctionPriceAnalysis(appraisalWon,minimumWon,source)'),'appraisal comparison function missing');
+assert(app.includes('function auctionBidCompare(bidManwon,minWon)'),'bid versus minimum comparison missing');
+assert(app.includes('auctionPriceAnalysis(x.appraisalWon,x.minimumWon'),'court listing price comparison missing');
+assert(app.includes('auctionPriceAnalysis(p.userRegistered?p.valueWon:null,propertyPrice(p)'),'manual price comparison missing');
+assert(app.includes("box.querySelector('[data-bid-compare]')"),'live bid comparison missing');
+assert(app.includes('시세 할인율·유찰 횟수·입찰 적정가를 의미하지 않습니다'),'unsafe inference disclosure missing');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

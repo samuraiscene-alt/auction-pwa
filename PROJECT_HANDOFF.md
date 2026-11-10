@@ -1,4 +1,10 @@
 ## 2026-11-10 v0.7.29 최신 인수인계
+- 수도권 부분수집 사건별 카드: app.js renderCapitalProperty(x,caseHeader)로 사건 대표 항목을 전달. 사건카드의 주소/법원/사건번호는 유지하고, 펼친 물건 본문에서는 물건번호만 기본 표시.
+- 개별 x.address가 caseHeader.address와 다르면 해당 물건의 상세 주소 표시. 15개 이상 물건도 고유 물건번호·구성정보 유지.
+- 관련 CSS: capital-lot-label, capital-lot-address. v0.7.29 / SW auction-shell-v0729 / VERSION.txt 정합.
+- 소스 JavaScript 구문, UI 회귀 128개 및 관심 관련 32개 검사 통과. 공개 Pages 배포 및 iPhone 실기기 점검은 별도 확인 필요.
+
+## 2026-11-10 v0.7.29 최신 인수인계
 - app.js capital()의 renderCapitalProperty(x,caseHeader)는 그룹 대표 물건을 전달받아 중복 사건 주소·법원·사건번호 표시를 생략. 모든 물건은 물건번호를 유지하고 x.address와 caseHeader.address가 다른 경우 독립 주소 출력.
 - 사건 제목은 원래대로 유지하며 집중검색·관심물건·지도·가격·기일·재조회 기능 변경 없음. 세로 길이 축소 목적의 표시 정리만 수행.
 - v0.7.29, SW cache auction-shell-v0729. JS 문법, UI 128조건, 법원 관심 32조건 통과. GitHub Pages 배포 및 아이폰 실기기 확인 필요.

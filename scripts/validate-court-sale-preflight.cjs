@@ -1,0 +1,39 @@
+'use strict';
+// A fresh official case detail must confirm the snapshot's scheduled day before
+// asking the separate sale-result API. Never infer cancellation from a mismatch.
+const calendarDay=value=>{
+ const s=String(value??'').trim();
+ if(!/^20\d{6}$/.test(s))return null;
+ const y=Number(s.slice(0,4)),m=Number(s.slice(4,6)),d=Number(s.slice(6,8));
+ return m>=1&&m<=12&&d>=1&&d<=new Date(Date.UTC(y,m,0)).getUTCDate()?s:null;
+};
+const fail=reason=>({confirmed:false,reason,legalStatusVerified:false});
+function assessCourtSchedulePreflight(response,identity,snapshotDate){
+ if(String(response?.status)!=='200'||response?.data?.ipcheck===false||response?.ipcheck===false)
+  return fail('detail_response_unverified');
+ const data=response?.data,base=data?.dma_csBasInf;
+ const lots=data?.dlt_dspslGdsDspslObjctLst,history=data?.dlt_rletCsGdsDtsDxdyInf;
+ const internal=String(base?.csNo??'');
+ if(!/^\d{8,20}$/.test(internal)||String(base?.cortOfcCd??'')!==identity.courtCode)
+  return fail('detail_identity_unverified');
+ if(!Array.isArray(lots)||lots.length<1||lots.length>300||
+    !lots.every(r=>r&&String(r.cortOfcCd??'')===identity.courtCode&&String(r.csNo??'')===internal)||
+    lots.filter(r=>String(r.dspslGdsSeq??'')===identity.itemNo).length!==1)
+  return fail('detail_lot_unverified');
+ if(!Array.isArray(history)||history.length>500)
+  return fail('detail_schedule_unavailable');
+ const expected=calendarDay(snapshotDate.replaceAll('-',''));
+ if(!expected)return fail('snapshot_date_invalid');
+ const rows=history.filter(r=>r&&String(r.cortOfcCd??'')===identity.courtCode&&
+  String(r.csNo??'')===internal&&String(r.dspslGdsSeq??'')===identity.itemNo);
+ if(rows.length===0||rows.length>100)return fail('detail_schedule_unavailable');
+ const days=rows.map(r=>calendarDay(r.dxdyYmd));
+ if(days.some(d=>!d))return fail('detail_schedule_unavailable');
+ const latest=days.sort().at(-1);
+ if(latest!==expected)return fail('snapshot_schedule_changed_or_unconfirmed');
+ // Identical day repeated can mean multiple sale sessions: not yet verified.
+ if(days.filter(d=>d===expected).length!==1)return fail('schedule_day_not_unique');
+ return {confirmed:true,reason:'snapshot_schedule_corresponds_to_official_detail',
+  legalStatusVerified:false};
+}
+module.exports={assessCourtSchedulePreflight};

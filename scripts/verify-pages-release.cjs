@@ -17,7 +17,7 @@ function verifyRelease(){
  assert(html.includes('href="style.css"'),'index does not load stylesheet');
  for(const path of ['index.html','app.js','style.css','sw.js','manifest.webmanifest',
   'data/capital-court-pilot.json','data/capital-court-status.json','data/court-sale-result-status.json',
-  'auction-ios-icon-v077.png','assets/auction-menu-v077.webp'])
+  'auction-ios-icon-v077.png','assets/auction-menu-v077.webp','assets/auction-nav-v078.webp'])
   assert(fs.existsSync(path),'required deployment asset missing: '+path);
  for(const path of ['app.js','sw.js'])execFileSync(process.execPath,['--check',path],{stdio:'pipe'});
  const homeIcon=fs.readFileSync('auction-ios-icon-v077.png');
@@ -26,6 +26,10 @@ function verifyRelease(){
  const menuIcon=fs.readFileSync('assets/auction-menu-v077.webp');
  assert(menuIcon.toString('ascii',0,4)==='RIFF'&&menuIcon.toString('ascii',8,12)==='WEBP','menu sprite is not WebP');
  assert(sw.includes('assets/auction-menu-v077.webp')&&sw.includes('auction-ios-icon-v077.png'),'new icon assets not pre-cached');
+ const navIcon=fs.readFileSync('assets/auction-nav-v078.webp');
+ assert(navIcon.toString('ascii',0,4)==='RIFF'&&navIcon.toString('ascii',8,12)==='WEBP','bottom navigation sprite not valid WebP');
+ assert(sw.includes('assets/auction-nav-v078.webp'),'bottom navigation sprite not pre-cached');
+ assert(['nav-home','nav-search','nav-schedule','nav-favorites','nav-study'].every(x=>app.includes(x)&&read('style.css').includes('.'+x)),'five navigation icons not wired');
  assert(html.includes('auction-ios-icon-v077.png')&&read('manifest.webmanifest').includes('auction-ios-icon-v077.png'),'home icon metadata mismatch');
  assert(app.includes('quick-icon quick-court')&&app.includes('quick-icon quick-study'),'generated quick-menu icon references missing');
  const snapshot=JSON.parse(read('data/capital-court-pilot.json'));

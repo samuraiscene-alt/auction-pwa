@@ -811,3 +811,17 @@ html,body{
 #content .quick-grid .quick-case{background-position:0% 100%}
 #content .quick-grid .quick-study{background-position:50% 100%}
 @media(max-width:350px){#content .quick-grid .quick-icon{flex-basis:50px;width:50px;height:50px}#content .quick-grid .quick-label{font-size:11px}}
+
+/* v0.7.8: approved five-image bottom navigation, original navigation behavior preserved */
+#tabs button{min-height:44px;min-width:44px;gap:3px;touch-action:manipulation}
+#tabs button .nav-icon{display:block;flex:0 0 32px;width:32px;height:32px;max-width:100%;background-image:url('./assets/auction-nav-v078.webp');background-size:500% 100%;background-repeat:no-repeat;filter:grayscale(1) opacity(.48);transition:filter .12s ease}
+#tabs button .nav-home{background-position:0% 0%}
+#tabs button .nav-search{background-position:25% 0%}
+#tabs button .nav-schedule{background-position:50% 0%}
+#tabs button .nav-favorites{background-position:75% 0%}
+#tabs button .nav-study{background-position:100% 0%}
+#tabs button .nav-label{display:block;font-size:11px;line-height:1.25;white-space:nowrap}
+#tabs button.active .nav-icon{filter:none}
+#tabs button.active{color:#1769ed;font-weight:750}
+#tabs button:nth-child(n).active{color:#1769ed}
+#tabs button:focus-visible{outline:2px solid #3477ed;outline-offset:-3px;border-radius:10px}

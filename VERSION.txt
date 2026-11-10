@@ -1,2 +1,2 @@
-0.7.21
-Compact auction property detail sections with independently collapsible map, price analysis, history and deposit calculator.
+0.7.22
+Align the pre-bid checklist accordion appearance with other auction detail sections on iPhone.

@@ -1,3 +1,9 @@
+## 2026-11-10 v0.7.18 최신 인수인계
+- auctionPriceAnalysis(appraisalWon,minimumWon,source): 유효 가격 2개로만 최저가 비율과 차액 표시. 시세 할인율·유찰 증거 아님.
+- auctionBidCompare(bidManwon,minWon): 기존 보증금 계산기의 입찰가 입력을 재사용하는 최저가 대비 차액 안내. 입찰 적격 확정 기능 아님.
+- 직접 등록 상세 개요 및 수도권 시범 수집 카드 연결. 기존 개인자료 변경 없음.
+- v0.7.18, auction-shell-v0718. tests/auction-price-analysis.cjs를 배포 검사에 연결. 코드 문법·계산 예시 검사 수행. Pages 실배포 및 아이폰 작동 별도 확인 필요.
+
 ## 2026-11-10 v0.7.17 최신 개발 기록
 - app.js: auctionBidDepositWon, auctionBidCalculator, auctionPrebidChecklist 추가. 직접 등록된 사건 상세 '개요'와 수도권 수집사건의 상세 카드에 표시. 가정 입찰가(만원)×선택한 비율(10/20%)로 예상 보증금 산출. 비율 초기값 없음; 법원 공고 확인 필요.
 - 입찰 전 확인사항은 안내용 목록이며 완료 여부를 저장하거나 법적 권리 검증을 수행하지 않음.

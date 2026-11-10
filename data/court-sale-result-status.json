@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-10T01:41:19.610Z",
+  "attemptedAt": "2026-11-10T01:49:42.802Z",
+  "triggerEvent": "push",
   "probeExecutionSucceeded": true,
   "observed": false,
   "daysSinceSale": 0,

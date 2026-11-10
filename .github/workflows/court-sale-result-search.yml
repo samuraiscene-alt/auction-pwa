@@ -7,6 +7,8 @@ on:
       - scripts/probe-court-sale-result-search.cjs
       - scripts/validate-court-sale-result-search.cjs
       - tests/court-sale-result-search.cjs
+      - scripts/court-result-window.cjs
+      - tests/court-result-window.cjs
       - .github/workflows/court-sale-result-search.yml
 permissions:
   contents: write
@@ -23,7 +25,9 @@ jobs:
         with:
           node-version: '22'
       - name: Check strict report safeguards
-        run: node tests/court-sale-result-search.cjs
+        run: |
+          node tests/court-sale-result-search.cjs
+          node tests/court-result-window.cjs
       - name: Single official sale-results search
         run: |
           node scripts/probe-court-sale-result-search.cjs > /tmp/court-sale-result.json || true
@@ -41,6 +45,8 @@ jobs:
           const result={
             schemaVersion:1,attemptedAt:new Date().toISOString(),
             observed:d.observed===true,
+            daysSinceSale:Number.isInteger(d.daysSinceSale)?d.daysSinceSale:null,
+            windowPolicy:'conservative_diagnostic_1_to_7_days',
             failedStage:['connect','response','json','evaluate'].includes(d.failedStage)?d.failedStage:'none',
             reason:typeof d.reason==='string'&&/^[a-z_]{1,40}$/.test(d.reason)?d.reason:'unknown',
             identityMatched:exact,exactDisplayLotRows:Number.isInteger(d.exactDisplayLotRows)?Math.min(d.exactDisplayLotRows,50):0,

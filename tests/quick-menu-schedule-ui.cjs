@@ -107,4 +107,11 @@ assert(app.includes("return registeredProperties().filter(p=>propertyDate(p)===d
 assert(!app.includes('<span>● 등록·예시</span>'),'outdated demo legend remains');
 assert(css.includes('.calendar-date-number{display:block;font-size:17px;line-height:22px;font-weight:750;letter-spacing:-.35px;font-variant-numeric:tabular-nums;position:absolute;top:2px;left:0;right:0;text-align:center;z-index:1;transform:none}'),'date numbers must share fixed vertical baseline');
 assert(!css.includes('.calendar-day:has(.calendar-bars) .calendar-date-number'),'bar-specific date shift must not return');
+assert(app.includes('capitalFocusId:lot.id'),'favorite must open exact item');
+assert(app.includes("allItems.filter(x=>x.id===focusId)"),'court focus must match exact item ID');
+assert(app.includes("focusing?' open':''"),'focused court case must expand');
+assert(app.includes('현재 검증된 부분 수집목록에서 정확히 일치하는 물건을 찾지 못했습니다'),'missing lot must fail closed');
+assert(app.includes("capitalLoadStatus==='loading'||capitalLoadStatus==='unloaded'"),'loading state must not claim item is missing');
+assert(app.includes('id="capitalFocusClear"'),'user must be able to clear exact filter');
+assert(css.includes('.capital-focus-found'),'focus styling missing');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

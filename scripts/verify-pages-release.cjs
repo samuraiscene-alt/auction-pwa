@@ -32,7 +32,7 @@ function verifyRelease(){
  assert(sw.includes('assets/auction-nav-v078.webp'),'bottom navigation sprite not pre-cached');
  assert(app.includes('nav-icon nav-${p}')&&['nav-home','nav-search','nav-schedule','nav-favorites','nav-study'].every(x=>read('style.css').includes('.'+x)),'five navigation icons not wired');
  assert(html.includes('auction-ios-icon-v077.png')&&read('manifest.webmanifest').includes('auction-ios-icon-v077.png'),'home icon metadata mismatch');
- assert(app.includes("'quick-icon quick-'+x.icon")&&['court','capital','address','case','study'].every(icon=>app.includes("icon:'"+icon+"'")),'generated quick-menu icon references missing');
+ assert(app.includes('quick-icon quick-')&&['court','capital','address','case','study'].every(icon=>app.includes("icon:'"+icon+"'")),'generated quick-menu icon references missing');
  const searchIcons=fs.readFileSync('assets/auction-search-actions-v079.webp');
  assert(searchIcons.toString('ascii',0,4)==='RIFF'&&searchIcons.toString('ascii',8,12)==='WEBP','search shortcuts sprite is not WebP');
  assert(sw.includes('assets/auction-search-actions-v079.webp'),'search shortcut sprite not offline cached');

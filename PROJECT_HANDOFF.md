@@ -1,3 +1,9 @@
+## 2026-11-10 v0.7.13 최신 인수인계
+- '일정'의 법원 수집물건 검증 예정 카드: 날짜별 5단계 수치가 버튼으로 바뀜. 해당 물건 ID 집합을 수도권 목록에서 조회하고 기존 물건별 단건 수동 재조회로 연결.
+- state: capitalReviewDate, capitalReviewStage. 부분수집 스냅샷 수집시각 및 건수 동시 검증; 불일치 시 검증 예정 항목 차단하고 '전체 수집목록 보기' 제공.
+- 법원 자동 조회 추가 0회, 법적 결과판정 미개시. 아이콘·기존 개인저장 항목 유지.
+- APP_VERSION 0.7.13 / service worker auction-shell-v0713 / VERSION.txt 일치. 2026-11-11 검증예정 96 ID 모두 기준 수집본에서 검색 가능. GitHub Pages 원격 배포와 iPhone 테스트는 별도 확인 필요.
+
 ## 2026-11-10 v0.7.12 후속 작업
 - v0.7.11에서 분리된 localStorage 빠른 메뉴 설정(auction_quick_menu_v1)을 v0.7.12 새 백업 v3의 preferences.quickMenu에 포함.
 - v1/v2 구형 백업은 기존 빠른 메뉴 설정을 보존하며 정상 복원 가능. 신규 백업은 유효한 메뉴 ID 배열만 수용.

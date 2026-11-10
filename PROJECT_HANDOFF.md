@@ -1,3 +1,9 @@
+## 2026-11-10 v0.7.30 최신 변경
+- 일반 검색 matchingProperties()는 allProperties()가 아닌 registeredProperties()만 필터. 검색·상세검색 안내 문구도 직접 등록 물건 기준. 홈의 테스트 예시 카드 자동 출력 중단.
+- settings()에서 data-page="demo" 버튼 제공; demo() 전용 페이지의 예시 3건을 통해 개발 테스트 가능. 원래 예시 properties 데이터는 그대로 보존; 기존 저장/복원 기록 삭제 없음.
+- detail() '담당 법원' 및 '사건번호'를 별개 auction-detail-ident 행으로 출력. 스타일은 2열 격자, 번호/법원명 불필요한 단어 중간 줄바꿈 억제.
+- v0.7.30 / SW auction-shell-v0730 / VERSION.txt. JS 문법·UI 137개·법원 관심 32개 검증 통과. GitHub Pages 실제 배포 및 iPhone 실기기 확인 전.
+
 ## 2026-11-10 v0.7.29 최신 인수인계
 - 수도권 부분수집 사건별 카드: app.js renderCapitalProperty(x,caseHeader)로 사건 대표 항목을 전달. 사건카드의 주소/법원/사건번호는 유지하고, 펼친 물건 본문에서는 물건번호만 기본 표시.
 - 개별 x.address가 caseHeader.address와 다르면 해당 물건의 상세 주소 표시. 15개 이상 물건도 고유 물건번호·구성정보 유지.

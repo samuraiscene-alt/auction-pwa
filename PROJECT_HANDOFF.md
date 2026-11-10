@@ -1,3 +1,7 @@
+## 2026-11-10 v0.7.19 최신 인수인계
+- capital-case-group의 summary / pseudo-element CSS는 반드시 직계 자식 선택자(>) 사용. 중첩 details의 화살표가 부모 열린 상태를 잘못 상속받지 않게 함.
+- 수도권 물건의 진행상태 라인은 capital-status-note 블록으로 교체. 법적 상태 자동 확정 없음.
+- v0.7.19 / auction-shell-v0719. 기능 회귀 70개 정적 검사 통과, 공개 배포/실기기 육안 확인 아직 별도 검증 필요.
 ## 2026-11-10 v0.7.18 최신 인수인계
 - auctionPriceAnalysis(appraisalWon,minimumWon,source): 유효 가격 2개로만 최저가 비율과 차액 표시. 시세 할인율·유찰 증거 아님.
 - auctionBidCompare(bidManwon,minWon): 기존 보증금 계산기의 입찰가 입력을 재사용하는 최저가 대비 차액 안내. 입찰 적격 확정 기능 아님.

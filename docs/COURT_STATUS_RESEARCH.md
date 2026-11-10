@@ -272,3 +272,8 @@
 - `.github/workflows/court-sale-result-search.yml`에서 진단 프로세스 종료코드를 별도 임시파일에 보존하고 보고서 형식(`schemaVersion=1`, `legalStatusVerified=false`, `rawResponseSaved=false`, 비식별 `reason`)까지 검사. 결과 보고서에는 `probeExecutionSucceeded`를 기록.
 - 실패한 경우에도 우선 비식별 보고서를 GitHub에 커밋한 뒤, 워크플로우의 마지막 단계에서 **GitHub Actions 실행을 실패로 표시**. 이전의 조회-실패 은폐 가능성을 차단. 코드는 정확한 매각/취하 의미를 자동으로 판단하지 않음.
 - 정상 종료/비정상 종료/잘못된 보고서/법적 상태 참값/원문 저장 참값 5가지 종료코드 판정 조합과 워크플로우 단계 순서 및 2026-11-11 예약 가드 정적 검사 통과. **실제 GitHub Actions 실행·실사이트 접속은 아직 확인되지 않았으며, 현재 날짜는 2026-11-10 KST**.
+
+## 2026-11-10 법원 진단 전체 흐름 모의 통합 테스트 추가
+- `tests/court-sale-probe-integration.cjs` 생성: 외부 네트워크 없이 가짜 공식 법원 응답 4종으로 `scripts/probe-court-sale-result-search.cjs`의 **실제 실행 흐름** 검사. 정상 상세→결과검색 두 요청/기일 변경 시 결과조회 금지/같은 사건의 과거 기일 결과 거부/네트워크 오류 시 재시도 금지 및 종료코드 1. 비공개 응답 필드가 로그에 남지 않는지도 확인.
+- `.github/workflows/court-sale-result-search.yml`에서 기존 4종 단위 테스트 이후 모의 통합 테스트를 실행하도록 연결. 이 테스트가 실패하면 공식 서버 조회를 진행하지 않음.
+- 기존 회귀 테스트 및 진단 조회 함수의 가짜 응답을 별도 점검했으나 **추가한 Node 모의 통합 테스트 자체가 실제 GitHub Actions에서 통과했는지는 아직 확인되지 않음**. 실서버 법적 상태는 미확인.

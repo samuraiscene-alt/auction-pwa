@@ -1,2 +1,2 @@
-0.7.17
-Auction detail bid-deposit estimation with explicit user-selected rate and pre-bid verification checklist.
+0.7.18
+Conservative appraisal/minimum price comparison and proposed-bid comparison in auction details.

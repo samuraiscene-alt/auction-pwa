@@ -1,3 +1,9 @@
+## 2026-11-10 v0.7.15 인수인계
+- KST D-day: app.js의 validAuctionCalendarDay / auctionTodayKst / auctionDday. 날짜 검증 실패 시 미확인, 지난 날짜는 경과 일수로 표기. 실제 매각 여부 판단 금지.
+- 지도: usablePropertyAddress / auctionMapSearchLink / auctionMapControls. 카카오맵 공식 검색 URL 사용, 로드뷰 직접 URL은 좌표가 없어 미연결. 사용자 등록 물건 상세와 수도권 자동수집 목록에서만 실제 주소형 입력 연결. 시범 가상 물건 지도 미연결.
+- 상세 개요에 법원·사건번호·물건번호 표시 강화. 권리·투자위험 자동판단 기능 신규 추가 없음.
+- v0.7.15 (SW auction-shell-v0715). GitHub 소스 문법과 D-day 순수함수 KST/유효날짜/주소 차단 검사 통과. GitHub Pages 실배포 및 iPhone 실기기 테스트는 확인 필요.
+
 ## 2026-11-10 v0.7.14 업데이트 경로 수정
 - 원인 확인: scripts/verify-pages-release.cjs의 기존 빠른 메뉴 아이콘 고정 문자열 검사가 v0.7.11 이상 동적 렌더러와 불일치. 검사를 동적 구조 기반으로 수정하고 회귀 테스트를 추가.
 - 앱 버전 상태 UI: 서버 확인 실패 시 '최신' 단정 금지. 서비스워커 업데이트 실패와 VERSION.txt 서버 검사 분리.

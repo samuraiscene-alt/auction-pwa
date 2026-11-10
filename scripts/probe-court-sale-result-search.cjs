@@ -17,6 +17,14 @@ const KEYS=[
 'pgmId','rdnmNo','rdnmSdCd','rdnmSggCd','rprsAdongEmdCd','rprsAdongSdCd',
 'rprsAdongSggCd','sclDspslGdsLstUsgCd','statNum'
 ];
+// Separate deadline per court request: the result-search latency must not
+// consume the detail validation deadline. Maximum two calls, no retries.
+async function timedPost(url,options){
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),12000);
+ try{return await fetch(url,{...options,signal:controller.signal});}
+ finally{clearTimeout(timer);}
+}
 async function main(){
  const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
  const window=resultWindow(snapshotSaleDate,today);
@@ -27,17 +35,15 @@ async function main(){
   return;
  }
  let stage='connect';
- const ctrl=new AbortController();
- const timer=setTimeout(()=>ctrl.abort(),12000);
  try{
   const info=Object.fromEntries(KEYS.map(x=>[x,'']));
   Object.assign(info,{pgmId:'PGJ158M02',cortOfcCd:id.courtCode,csNo:id.caseNo});
   const page={pageNo:'1',pageSize:'50',bfPageNo:'',startRowNo:'1',
    totalCnt:'0',totalYn:'Y',groupTotalCount:''};
-  const response=await fetch('https://www.courtauction.go.kr/pgj/pgjsearch/selectDspslSchdRsltSrch.on',{
+  const response=await timedPost('https://www.courtauction.go.kr/pgj/pgjsearch/selectDspslSchdRsltSrch.on',{
    method:'POST',headers:{'Content-Type':'application/json; charset=UTF-8',
     Accept:'application/json',Referer:'https://www.courtauction.go.kr/pgj/index.on'},
-   body:JSON.stringify({dma_pageInfo:page,dma_srchGdsDtlSrchInfo:info}),signal:ctrl.signal});
+   body:JSON.stringify({dma_pageInfo:page,dma_srchGdsDtlSrchInfo:info})});
   stage='response';
   if(!response.ok)throw Error('http_error');
   if(!(response.headers.get('content-type')||'').includes('json'))throw Error('non_json');
@@ -54,11 +60,10 @@ async function main(){
   // Only one additional READ-ONLY official detail query after exactly one
   // case + lot row matched. No retries, no persistence of source response.
   stage='detail';
-  const detailResponse=await fetch('https://www.courtauction.go.kr/pgj/pgj15A/selectAuctnCsSrchRslt.on',{
+  const detailResponse=await timedPost('https://www.courtauction.go.kr/pgj/pgj15A/selectAuctnCsSrchRslt.on',{
    method:'POST',headers:{'Content-Type':'application/json; charset=UTF-8',
     Accept:'application/json',Referer:'https://www.courtauction.go.kr/pgj/index.on'},
-   body:JSON.stringify({dma_srchCsDtlInf:{cortOfcCd:id.courtCode,csNo:id.caseNo}}),
-   signal:ctrl.signal});
+   body:JSON.stringify({dma_srchCsDtlInf:{cortOfcCd:id.courtCode,csNo:id.caseNo}})});
   if(!detailResponse.ok)throw Error('detail_http_error');
   if(!(detailResponse.headers.get('content-type')||'').includes('json'))throw Error('detail_non_json');
   const detail=await detailResponse.json();
@@ -80,6 +85,6 @@ async function main(){
   console.log(JSON.stringify({schemaVersion:1,observed:false,reason,failedStage:stage,
    identityMatched:false,legalStatusVerified:false,rawResponseSaved:false}));
   process.exitCode=1;
- }finally{clearTimeout(timer);}
+ }
 }
 if(require.main===module)main();

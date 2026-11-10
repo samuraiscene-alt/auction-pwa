@@ -47,4 +47,4 @@
 ## 2026-11-10 예약 실행 출처 검증 보강
 - 결과조회 워크플로우가 보고서에 `triggerEvent`를 기록하도록 변경. GitHub Actions 이벤트 중 `schedule`, `workflow_dispatch`, `push`를 구분하며 그 외 값은 `unknown`으로 저장.
 - 확대 판단 안전장치는 `triggerEvent='schedule'`인 보고서만 승인 검토. 날짜만 맞는 수동 실행·코드 push 실행·이벤트 누락은 `scheduled_run_not_confirmed`로 거부. 예약 실행 여부를 보고서만으로 믿지 않고 GitHub Actions 로그와 대조할 수 있도록 함.
-- 기존 17개 사례에 push·수동·이벤트 누락 3개를 더해 총 20개 거부 사례 검사 통과. 한 번에 추가 조회를 승인하지 않는 정책(`allowedNewRequests:0`)은 유지. 법원의 공식 결과 및 공개 사이트 배포는 아직 직접 확인하지 못함.
+- 기존 17개 사례에 push·수동·이벤트 누락 3개를 더해 총 20개 사례(통과 1개·거부 19개) 검사 통과. 한 번에 추가 조회를 승인하지 않는 정책(`allowedNewRequests:0`)은 유지. 법원의 공식 결과 및 공개 사이트 배포는 아직 직접 확인하지 못함.

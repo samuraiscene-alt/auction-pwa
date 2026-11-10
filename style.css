@@ -874,3 +874,10 @@ html,body{
 #content .court-plan-open:focus-visible{outline:2px solid #1769ed;outline-offset:2px}
 #content .court-review-banner{margin-bottom:12px}
 #content .court-review-banner .status{margin-top:10px}
+
+/* v0.7.15: external map search and date labels without altering approved icons */
+#content .auction-dday{display:inline-flex;align-self:flex-start;margin-top:5px;border-radius:8px;background:#edf3ff;color:#1a63cb;padding:4px 7px;font-size:11px;font-weight:750;line-height:1.2;white-space:nowrap}
+#content .auction-map-controls{margin:10px 0 12px}
+#content .auction-map-controls a.secondary{display:flex;align-items:center;justify-content:center;min-height:44px;text-decoration:none;text-align:center;border-radius:11px;box-sizing:border-box}
+#content .auction-map-controls .helper{margin:7px 0 0}
+#content .auction-map-controls a:focus-visible{outline:2px solid #1769ed;outline-offset:2px}

@@ -20,9 +20,12 @@ function compareSaleSearchWithDetail(search,detail,id){
  if(!Array.isArray(rows)||rows.length>50||!Array.isArray(lots)||lots.length>300||
     !Array.isArray(history)||history.length>500||!base)
   return fail('invalid_structure');
- const exact=rows.filter(r=>r&&String(r.boCd??'')===id.courtCode&&
-  String(r.srnSaNo??'')===id.caseNo&&
-  String(r.maemulSer??r.mokmulSer??'')===id.itemNo);
+ const exact=rows.filter(r=>r&&typeof r==='object'&&!Array.isArray(r)&&
+  String(r.boCd??'')===id.courtCode&&String(r.srnSaNo??'')===id.caseNo&&
+  String(r.maemulSer??r.mokmulSer??'')===id.itemNo&&
+  (r.maemulSer==null||r.mokmulSer==null||String(r.maemulSer)===String(r.mokmulSer))&&
+  (r.cortOfcCd==null||String(r.cortOfcCd)===id.courtCode)&&
+  (!/^20\d{2}타경\d{1,10}$/.test(String(r.csNo??''))||String(r.csNo)===id.caseNo));
  if(exact.length!==1)return fail('result_identity_not_unique');
  const result=exact[0];
  const internal=String(base.csNo??'');
@@ -33,7 +36,11 @@ function compareSaleSearchWithDetail(search,detail,id){
   return fail('inconsistent_detail_lots');
  const selected=lots.filter(r=>String(r.dspslGdsSeq??'')===id.itemNo);
  if(selected.length!==1)return fail('detail_lot_not_unique');
- const day=safeDay(result.dxdyYmd??result.maeGiil);
+ const primary=safeDay(result.dxdyYmd);
+ const secondary=safeDay(result.maeGiil);
+ if(result.dxdyYmd!=null&&result.maeGiil!=null&&(!primary||!secondary||primary!==secondary))
+  return fail('contradictory_result_dates');
+ const day=primary??secondary;
  if(!day)return fail('result_schedule_day_missing');
  const schedules=history.filter(r=>r&&String(r.cortOfcCd??'')===id.courtCode&&
   String(r.csNo??'')===internal&&String(r.dspslGdsSeq??'')===id.itemNo&&

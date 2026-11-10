@@ -849,3 +849,18 @@ html,body{
 #content .study-category-count{z-index:1;right:9px;top:5px;line-height:1.2}
 #content .study-category-card:focus-visible{outline:2px solid #3477ed;outline-offset:2px}
 @media(max-width:380px){#content .study-category-grid{gap:7px}#content .study-category-card{padding:17px 6px 8px;gap:4px}#content .study-category-icon{flex-basis:36px;width:36px;height:36px}#content .study-category-text strong{font-size:13px}#content .study-category-text small{font-size:9px}}
+
+/* v0.7.11: optional quick-menu editing. Original five images unchanged. */
+#content .quick-section{gap:12px}
+#content .quick-edit-trigger{border:0;background:#e9f1ff;color:#1266ef;font-weight:750;padding:8px 13px;border-radius:11px;font-size:12px;min-height:36px}
+#content .quick-extra-icon{display:grid;place-items:center;width:58px;height:58px;font-size:29px;color:#1266ef;background:#edf3ff;border-radius:12px}
+#content .quick-editor{margin-top:12px;padding:14px}
+#content .quick-edit-row{display:flex;align-items:center;gap:7px;min-height:50px;border-bottom:1px solid #edf0f4;padding:6px 0}
+#content .quick-edit-row strong{flex:1;min-width:0;word-break:keep-all;font-size:13px}
+#content .quick-edit-row button{border:1px solid #e3eaf5;background:white;color:#33567d;border-radius:10px;min-height:36px;min-width:38px;padding:6px 10px;font-weight:700;font-size:12px}
+#content .quick-edit-row button:disabled{opacity:.32}
+#content .quick-editor #quickReset{margin-top:15px}
+#content .court-plan{margin-top:12px}
+#content .court-plan-row{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #edf0f4;padding:11px 2px;font-size:13px}
+#content .court-plan-row strong{color:#1266ef;font-variant-numeric:tabular-nums}
+@media(max-width:350px){#content .quick-extra-icon{width:50px;height:50px}#content .quick-edit-row{gap:4px}#content .quick-edit-row button{padding:4px 7px}}

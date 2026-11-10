@@ -29,7 +29,7 @@ function verifyRelease(){
  const navIcon=fs.readFileSync('assets/auction-nav-v078.webp');
  assert(navIcon.toString('ascii',0,4)==='RIFF'&&navIcon.toString('ascii',8,12)==='WEBP','bottom navigation sprite not valid WebP');
  assert(sw.includes('assets/auction-nav-v078.webp'),'bottom navigation sprite not pre-cached');
- assert(['nav-home','nav-search','nav-schedule','nav-favorites','nav-study'].every(x=>app.includes(x)&&read('style.css').includes('.'+x)),'five navigation icons not wired');
+ assert(app.includes('nav-icon nav-${p}')&&['nav-home','nav-search','nav-schedule','nav-favorites','nav-study'].every(x=>read('style.css').includes('.'+x)),'five navigation icons not wired');
  assert(html.includes('auction-ios-icon-v077.png')&&read('manifest.webmanifest').includes('auction-ios-icon-v077.png'),'home icon metadata mismatch');
  assert(app.includes('quick-icon quick-court')&&app.includes('quick-icon quick-study'),'generated quick-menu icon references missing');
  const snapshot=JSON.parse(read('data/capital-court-pilot.json'));

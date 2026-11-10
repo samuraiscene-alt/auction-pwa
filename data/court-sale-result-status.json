@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "attemptedAt": "2026-11-10T00:02:12.368Z",
+  "observed": false,
+  "reason": "network_error",
+  "identityMatched": false,
+  "exactDisplayLotRows": 0,
+  "rowCount": null,
+  "fieldNames": [],
+  "rawCodes": {},
+  "exactDisplayLabels": {},
+  "legalStatusVerified": false,
+  "rawResponseSaved": false
+}

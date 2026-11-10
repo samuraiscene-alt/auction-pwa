@@ -61,6 +61,14 @@ jobs:
             reason:typeof d.reason==='string'&&/^[a-z_]{1,40}$/.test(d.reason)?d.reason:'unknown',
             identityMatched:exact,exactDisplayLotRows:Number.isInteger(d.exactDisplayLotRows)?Math.min(d.exactDisplayLotRows,50):0,
             rowCount:Number.isInteger(d.rowCount)?Math.min(d.rowCount,50):null,
+            responseIdentityFieldNames:d.observed===true&&Array.isArray(d.responseIdentityFieldNames)?d.responseIdentityFieldNames.filter(x=>[
+              'boCd','cortOfcCd','srnSaNo','csNo','saNo','maemulSer','mokmulSer','dspslGdsSeq'
+            ].includes(x)).slice(0,8):[],
+            responseCandidateFieldNames:d.observed===true&&Array.isArray(d.responseCandidateFieldNames)?d.responseCandidateFieldNames.filter(x=>[
+              'boCd','cortOfcCd','srnSaNo','csNo','saNo','maemulSer','mokmulSer','dspslGdsSeq',
+              'auctnDxdyRsltCd','auctnDxdyRsltNm','dspslGdsStatCd','mulStatcd','jinstatCd','mulJinYn',
+              'dxdyYmd','maeGiil','maegyuljGiil','yuchalCnt','maeGiilRsltNm','dspslRsltNm'
+            ].includes(x)).slice(0,25):[],
             fieldNames:exact&&Array.isArray(d.fieldNames)?d.fieldNames.filter(x=>[
               'auctnDxdyRsltCd','auctnDxdyRsltNm','dspslGdsStatCd','mulStatcd','jinstatCd','mulJinYn','maemulSer','mokmulSer','dxdyYmd','maeGiil','maegyuljGiil','yuchalCnt','maeGiilRsltNm','dspslRsltNm'
             ].includes(x)).slice(0,14):[],

@@ -18,7 +18,7 @@ function verifyRelease(){
  for(const path of ['index.html','app.js','style.css','sw.js','manifest.webmanifest',
   'data/capital-court-pilot.json','data/capital-court-status.json','data/court-sale-result-status.json',
   'auction-ios-icon-v077.png','assets/auction-menu-v077.webp','assets/auction-nav-v078.webp',
-  'assets/auction-search-actions-v079.webp'])
+  'assets/auction-search-actions-v079.webp','assets/auction-study-categories-v080.webp'])
   assert(fs.existsSync(path),'required deployment asset missing: '+path);
  for(const path of ['app.js','sw.js'])execFileSync(process.execPath,['--check',path],{stdio:'pipe'});
  const homeIcon=fs.readFileSync('auction-ios-icon-v077.png');
@@ -38,6 +38,11 @@ function verifyRelease(){
  assert(sw.includes('assets/auction-search-actions-v079.webp'),'search shortcut sprite not offline cached');
  assert(app.includes('search-action-detail')&&app.includes('search-action-special')&&read('style.css').includes('auction-search-actions-v079.webp'),'search shortcut icons not connected');
  assert(app.includes('id="detailFilters"')&&app.includes('id="specialFilters"')&&app.includes("$('#detailFilters').onclick=()=>nav('advanced')")&&app.includes("$('#specialFilters').onclick=()=>nav('special')"),'search shortcut functionality changed');
+ const studyIcons=fs.readFileSync('assets/auction-study-categories-v080.webp');
+ assert(studyIcons.toString('ascii',0,4)==='RIFF'&&studyIcons.toString('ascii',8,12)==='WEBP','study category sprite not WebP');
+ assert(sw.includes('assets/auction-study-categories-v080.webp'),'study icons not precached');
+ assert(app.includes('study-category-icon-${i}')&&['0','1','2','3'].every(i=>read('style.css').includes('.study-category-icon-'+i)),'four study category images not wired');
+ assert(app.includes('data-study-category=')&&app.includes('study-category-card'),'study category routing changed');
  const snapshot=JSON.parse(read('data/capital-court-pilot.json'));
  assert(snapshot?.complete===false,'partial snapshot incorrectly marked complete');
  assert([1,2].includes(snapshot.schemaVersion),'snapshot schema mismatch');

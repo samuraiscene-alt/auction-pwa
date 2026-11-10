@@ -1,2 +1,2 @@
-0.7.9
+0.7.10
 Court lookup shows check time; update success requires a matching successful collection attempt.

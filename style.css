@@ -834,3 +834,18 @@ html,body{
 #content .search-action-special{background-position:100% 0%}
 #content .search-action-row .search-action-button:focus-visible{outline:2px solid #3477ed;outline-offset:2px}
 @media(max-width:360px){#content .search-action-row .search-action-button{gap:5px;font-size:13px;padding-inline:4px}#content .search-action-icon{flex-basis:36px;width:36px;height:36px}}
+
+/* v0.7.10: user-provided study-category icons; preserve card labels and functions */
+#content .study-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#content .study-category-card{min-width:0;min-height:88px;padding:17px 8px 10px;gap:6px;align-items:center;touch-action:manipulation}
+#content .study-category-icon{display:block;flex:0 0 44px;width:44px;height:44px;max-width:44px;background-image:url('./assets/auction-study-categories-v080.webp');background-size:400% 100%;background-repeat:no-repeat}
+#content .study-category-icon-0{background-position:0% 0%}
+#content .study-category-icon-1{background-position:33.333333% 0%}
+#content .study-category-icon-2{background-position:66.666667% 0%}
+#content .study-category-icon-3{background-position:100% 0%}
+#content .study-category-text{flex:1 1 auto;min-width:0;gap:4px}
+#content .study-category-text strong{font-size:14px;line-height:1.25;word-break:keep-all}
+#content .study-category-text small{font-size:10px;line-height:1.35;overflow-wrap:break-word;word-break:keep-all}
+#content .study-category-count{z-index:1;right:9px;top:5px;line-height:1.2}
+#content .study-category-card:focus-visible{outline:2px solid #3477ed;outline-offset:2px}
+@media(max-width:380px){#content .study-category-grid{gap:7px}#content .study-category-card{padding:17px 6px 8px;gap:4px}#content .study-category-icon{flex-basis:36px;width:36px;height:36px}#content .study-category-text strong{font-size:13px}#content .study-category-text small{font-size:9px}}

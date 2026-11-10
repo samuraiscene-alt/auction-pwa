@@ -129,3 +129,5 @@
 - 2026-11-10 UI v0.7.8: 홈 화면 하단 고정 탭 5개(홈·검색·일정·관심·공부방)를 승인된 파란색 이미지 시안에서 개별 추출한 투명 배경 스프라이트 `assets/auction-nav-v078.webp`로 변경. 선택 탭 파란색/비선택 탭 저채도, aria-current 및 최소 44px 터치 영역 보강. 기존 `data-page` 이동·저장소 키 `auction_skeleton_v1` 및 수도권 법원 자료는 변경하지 않음. 서비스워커 캐시 `auction-shell-v078`, 배포 검사에서 신규 이미지 확인.
 
 - 2026-11-10 UI v0.7.9: 사용자가 첨부한 상세검색(문서/돋보기/물음표) 및 특수물건(초록 실에 감긴 집/₩) 원본 PNG 두 개를 투명 배경 `assets/auction-search-actions-v079.webp` 스프라이트로 조합하여 통합검색의 두 `secondary` 버튼에 적용. `detailFilters`→`advanced`, `specialFilters`→`special` 이동 그대로 유지. 버튼 가로 정렬/반응형 크기/최소 54px 터치 높이 및 키보드 포커스 보강. JS 저장 키와 법원 데이터 불변. SW CACHE v079, 버전 0.7.9, 배포 전 검증 자산 검사 추가.
+
+- 2026-11-10 UI v0.7.10: 공부방 카테고리 4칸(권리분석·경매절차·세금·명도)에 사용자가 첨부한 이미지 원본을 조합한 `assets/auction-study-categories-v080.webp` 적용. 카드 아이콘 44px(소형 36px), 2열 카드/숫자/텍스트 정렬 보정. 카테고리 `data-study-category` 기능·노트 데이터·저장 키 `auction_skeleton_v1` 변경 없음. 서비스워커 캐시 `auction-shell-v0710`, 배포 자산 검사 추가.

@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.9';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.10';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -580,9 +580,9 @@ function noteCard(n){
 }
 function study(){
  const list=visibleNotes(),count=saved.notes.length;
- const categories=STUDY_CATEGORIES.map(c=>{
+ const categories=STUDY_CATEGORIES.map((c,i)=>{
   const total=saved.notes.filter(n=>normalizedStudyCategory(n.category)===c.id).length;
-  return `<button type="button" class="study-category-card ${state.studyCategory===c.id?'selected':''}" data-study-category="${escapeHtml(c.id)}"><span class="study-category-icon">${c.icon}</span><span class="study-category-text"><strong>${c.id}</strong><small>${c.desc}</small></span><span class="study-category-count">${total}개</span></button>`;
+  return `<button type="button" class="study-category-card ${state.studyCategory===c.id?'selected':''}" data-study-category="${escapeHtml(c.id)}"><span class="study-category-icon study-category-icon-${i}" aria-hidden="true"></span><span class="study-category-text"><strong>${c.id}</strong><small>${c.desc}</small></span><span class="study-category-count">${total}개</span></button>`;
  }).join('');
  const chosen=STUDY_CATEGORIES.find(c=>c.id===state.studyCategory);
  const lesson=chosen?`<div class="study-topic-panel"><div class="study-topic-heading"><strong>${chosen.icon} ${chosen.id} 학습 항목</strong><span>노트 연결</span></div>${chosen.topics.map((topic,i)=>{

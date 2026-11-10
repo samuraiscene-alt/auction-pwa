@@ -46,4 +46,11 @@ assert(app.includes("auctionMapControls(p.name,'사용자 입력 주소 기준")
 assert(app.includes('실제 경매물건 위치·촬영 시점은 다를 수 있습니다'),'map accuracy notice missing');
 assert(app.includes('detail-map-top')&&app.includes("auctionMapControls(x.address,'법원 수집 주소 기준"),'court location shortcut must be placed by the address');
 assert(app.includes("p.userRegistered?'<div class=\"detail-map-top\""),'registered item map must be prominent');
+assert(app.includes('function auctionBidDepositWon(bidManwon,ratePercent)'),'deposit math helper missing');
+assert(app.includes('![10,20].includes(Number(ratePercent))'),'deposit rate must be explicitly selected');
+assert(app.includes('가정 입찰보증금: '),'estimated deposit warning missing');
+assert(app.includes('function auctionPrebidChecklist()'),'pre-bid checklist missing');
+assert(app.includes("auctionBidCalculator(x.minimumWon,'법원 부분수집본"),'court preview calculator missing');
+assert(app.includes('auctionBidCalculator(propertyPrice(p),p.userRegistered'),'detail calculator missing');
+assert(app.includes("box.querySelector('[data-bid-rate]')"),'calculator interaction missing');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

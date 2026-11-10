@@ -1,2 +1,2 @@
-0.7.27
-Align all calendar date numerals at exactly the same vertical position, independently of event bars.
+0.7.28
+Find the exact saved court lot by case and lot identity, with safe missing-item fallback.

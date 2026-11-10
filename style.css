@@ -910,3 +910,10 @@ html,body{
 #content .capital-property .capital-status-note strong{display:block;font-size:12px;margin-bottom:3px;color:#415b83}
 #content .capital-property .auction-prebid>summary{list-style:disclosure-closed;position:static;padding-right:0;display:list-item}
 #content .capital-property .auction-prebid[open]>summary{list-style:disclosure-open}
+
+/* v0.7.20: source-dated minimum-price observation history */
+#content .capital-price-history{margin:10px 0 13px;border:1px solid #e1eaf6;border-radius:12px;padding:11px 12px}
+#content .capital-price-history>summary{font-size:13px;font-weight:750;cursor:pointer}
+#content .capital-history-event{padding:10px 0;border-bottom:1px solid #edf0f5;line-height:1.55;overflow-wrap:anywhere}
+#content .capital-history-event small{display:block;color:#62748f;font-size:11px}
+#content .capital-price-history .helper{margin-top:9px}

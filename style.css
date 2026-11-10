@@ -989,3 +989,6 @@ html,body{
 #content .calendar-day.selected .calendar-bar-court{background:#e4bcff}
 #content .calendar-day .calendar-dots{display:none}
 @media(max-width:360px){#content .calendar-day .calendar-date-number{font-size:16px}#content .calendar-day .calendar-bars,#content .calendar-day .calendar-bar{width:23px}}
+
+/* Keep 22px date text above three 5px event bars in the existing 46px cell. */
+#content .calendar-day:has(.calendar-bars) .calendar-date-number{position:absolute;top:1px;left:0;right:0;transform:none;text-align:center}

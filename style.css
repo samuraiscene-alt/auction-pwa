@@ -977,7 +977,7 @@ html,body{
 
 /* v0.7.26: larger dates and stacked, high-visibility source bars; calendar cell size unchanged. */
 #content .calendar-day{height:auto;min-height:46px;gap:0;justify-content:center;position:relative}
-#content .calendar-day .calendar-date-number{display:block;font-size:17px;line-height:22px;font-weight:750;letter-spacing:-.35px;font-variant-numeric:tabular-nums;position:relative;z-index:1;transform:translateY(-2px)}
+#content .calendar-day .calendar-date-number{display:block;font-size:17px;line-height:22px;font-weight:750;letter-spacing:-.35px;font-variant-numeric:tabular-nums;position:absolute;top:2px;left:0;right:0;text-align:center;z-index:1;transform:none}
 #content .calendar-day .calendar-bars{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:26px;height:19px;pointer-events:none}
 #content .calendar-day .calendar-bar{display:block;width:26px;height:5px;min-height:5px;border-radius:999px;flex:0 0 5px}
 #content .calendar-day .calendar-bar-registered{background:#4777ed}
@@ -990,5 +990,3 @@ html,body{
 #content .calendar-day .calendar-dots{display:none}
 @media(max-width:360px){#content .calendar-day .calendar-date-number{font-size:16px}#content .calendar-day .calendar-bars,#content .calendar-day .calendar-bar{width:23px}}
 
-/* Keep 22px date text above three 5px event bars in the existing 46px cell. */
-#content .calendar-day:has(.calendar-bars) .calendar-date-number{position:absolute;top:1px;left:0;right:0;transform:none;text-align:center}

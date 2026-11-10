@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.16';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.17';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -668,12 +668,42 @@ function favorites(){
   if(!all)return `${controls}<div class="empty favorites-empty"><div class="empty-symbol">♡</div><strong>아직 저장한 관심물건이 없어요.</strong><p>검색한 물건을 열고 ♡ 관심물건 저장을 눌러주세요.</p><button type="button" class="secondary" data-page="search">물건 찾아보기</button></div>`;
   return `${controls}${list.map(p=>`<article class="favorite-item"><button class="favorite-open" type="button" data-detail="${p.id}" aria-label="${escapeHtml(p.name)} 상세보기"><span class="favorite-icon">⌂</span><span class="favorite-info"><span class="auction-card-top"><span class="auction-type">${escapeHtml(p.type)}</span><span class="auction-demo ${p.userRegistered?'user-record':''}">${p.userRegistered?'직접 등록':'예시 물건'}</span></span><strong>${escapeHtml(p.name)}</strong><span class="favorite-case">${escapeHtml(p.case)}</span><span class="favorite-amount">${knownAuctionPrice(p,propertyPrice(p))}</span><span class="favorite-date">${p.userRegistered?'사용자 입력 입찰일':'입찰 예정일(예시)'} · ${escapeHtml(p.date||'미정')}</span></span><span class="arrow">›</span></button><div class="favorite-actions"><button type="button" data-favorite-date="${p.id}">일정 보기</button><button type="button" class="favorite-remove" data-remove-favorite="${p.id}"><span class="favorite-heart" aria-hidden="true">♥</span> 관심 해제</button></div></article>`).join('')||'<div class="empty">선택한 종류에 저장된 물건이 없어요.</div>'}<p class="helper favorites-help">예시 물건은 가상 정보입니다. 직접 등록한 사건의 가격과 입찰일은 법원 원문으로 다시 확인하세요.</p>`;
 }
+
+function auctionBidDepositWon(bidManwon,ratePercent){
+ const text=String(bidManwon??'').trim();
+ if(!/^[1-9]\d{0,8}$/.test(text)||![10,20].includes(Number(ratePercent)))return null;
+ const won=Number(text)*10000;
+ const result=won*Number(ratePercent)/100;
+ return Number.isSafeInteger(result)&&result>0?result:null;
+}
+function auctionBidCalculator(minWon,refLabel){
+ const minText=Number.isSafeInteger(minWon)&&minWon>0?prettyPrice(minWon):'미확인';
+ return '<div class="auction-bid-calc" data-auction-calc>'+
+  '<strong>입찰보증금 계산기</strong>'+
+  '<p class="helper">기준 최저매각가: '+escapeHtml(minText)+' · '+escapeHtml(refLabel)+'</p>'+
+  '<label class="label">가정 입찰가 (만원)<input class="search" data-bid-manwon type="number" inputmode="numeric" min="1" max="999999999" step="1" placeholder="직접 입력 (만원)"></label>'+
+  '<label class="label">법원 공고에서 확인한 보증금 비율<select class="select" data-bid-rate>'+
+  '<option value="">비율을 선택하세요</option><option value="10">10%</option><option value="20">20%</option></select></label>'+
+  '<div class="auction-bid-result" data-bid-result role="status" aria-live="polite">입찰가와 공고상 비율을 입력하면 예상 보증금이 계산됩니다.</div>'+
+  '<p class="helper">단순 계산 보조도구입니다. 사건별 보증금 비율·특별매각조건·최저가·진행 여부는 법원 공고와 원문을 반드시 확인하세요. 계산값은 공식 확인 또는 입찰 가능 판정이 아닙니다.</p>'+
+  '</div>';
+}
+function auctionPrebidChecklist(){
+ return '<details class="auction-prebid"><summary>입찰 전 확인사항 펼쳐보기</summary><ul>'+
+  '<li>법원 원문에서 사건번호·물건번호·입찰기일·변경·취하 여부 확인</li>'+
+  '<li>매각물건명세서·현황조사서·감정평가서 대조</li>'+
+  '<li>등기사항·임차인·점유·인수권리 확인</li>'+
+  '<li>특별매각조건 및 공고상 보증금 비율 확인</li>'+
+  '<li>현장·도로·건물 상태와 세금·명도 비용 별도 확인</li>'+
+  '</ul><p class="helper">확인 완료 표시가 아닌 점검 항목 안내입니다.</p></details>';
+}
+
 function detail(){
  const p=allProperties().find(x=>x.id===state.detail)||properties[0],tab=state.detailTab||'overview';
  const navTabs=[['overview','개요'],['rights','권리'],['market','시세'],['docs','서류']].map(([v,name])=>`<button type="button" class="detail-tab ${tab===v?'selected':''}" data-detail-tab="${v}" aria-pressed="${tab===v}">${name}</button>`).join('');
  let panel='';
  if(tab==='overview'){
-  panel=`<div class="row"><div class="metric"><div class="smTitle">감정가</div><b>${p.userRegistered?knownAuctionPrice(p,p.valueWon):escapeHtml(p.value)}</b></div><div class="metric"><div class="smTitle">최저입찰가</div><b class="detail-price">${compactAuctionPrice(knownAuctionPrice(p,propertyPrice(p)))}</b></div></div><div class="divider"></div><div class="line"><span class="muted">매각기일</span><strong>${escapeHtml(p.date||'미확인')} · ${p.userRegistered?escapeHtml(auctionDday(p.date)):'예시 '+escapeHtml(auctionDday(p.date))}</strong></div><div class="divider"></div><div class="line"><span class="muted">물건 종류</span><strong>${escapeHtml(p.type)}</strong></div><div class="line"><span class="muted">담당 법원·사건번호</span><strong>${escapeHtml(p.court)} · ${escapeHtml(p.case)}</strong></div>${p.userRegistered?`<div class="line"><span class="muted">물건번호</span><strong>${escapeHtml(p.itemNo||'미확인')}</strong></div>`:''}${p.courtUsage?.names?.large?`<div class="line"><span class="muted">법원 분류</span><strong>${escapeHtml([p.courtUsage.names.large,p.courtUsage.names.medium,p.courtUsage.names.small].filter(Boolean).join(" › "))}</strong></div>`:""}${p.userRegistered?'<div class="court-detail-pdf"><label class="official-pdf-label" for="detailPdfInput">▤ 법원 PDF에서 개요 보완</label><input type="file" id="detailPdfInput" accept="application/pdf,.pdf" hidden><p class="helper" id="detailPdfStatus">기존 사건번호와 법원을 대조하고 미확인 항목만 추가해요.</p></div>':''}<div class="divider"></div><div class="status">⚠ 법원 서류와 점유관계는 아직 확인되지 않았어요.</div>`;
+  panel=`<div class="row"><div class="metric"><div class="smTitle">감정가</div><b>${p.userRegistered?knownAuctionPrice(p,p.valueWon):escapeHtml(p.value)}</b></div><div class="metric"><div class="smTitle">최저입찰가</div><b class="detail-price">${compactAuctionPrice(knownAuctionPrice(p,propertyPrice(p)))}</b></div></div><div class="divider"></div><div class="line"><span class="muted">매각기일</span><strong>${escapeHtml(p.date||'미확인')} · ${p.userRegistered?escapeHtml(auctionDday(p.date)):'예시 '+escapeHtml(auctionDday(p.date))}</strong></div><div class="divider"></div><div class="line"><span class="muted">물건 종류</span><strong>${escapeHtml(p.type)}</strong></div><div class="line"><span class="muted">담당 법원·사건번호</span><strong>${escapeHtml(p.court)} · ${escapeHtml(p.case)}</strong></div>${p.userRegistered?`<div class="line"><span class="muted">물건번호</span><strong>${escapeHtml(p.itemNo||'미확인')}</strong></div>`:''}${p.courtUsage?.names?.large?`<div class="line"><span class="muted">법원 분류</span><strong>${escapeHtml([p.courtUsage.names.large,p.courtUsage.names.medium,p.courtUsage.names.small].filter(Boolean).join(" › "))}</strong></div>`:""}${p.userRegistered?'<div class="court-detail-pdf"><label class="official-pdf-label" for="detailPdfInput">▤ 법원 PDF에서 개요 보완</label><input type="file" id="detailPdfInput" accept="application/pdf,.pdf" hidden><p class="helper" id="detailPdfStatus">기존 사건번호와 법원을 대조하고 미확인 항목만 추가해요.</p></div>':''}<div class="divider"></div>${auctionBidCalculator(propertyPrice(p),p.userRegistered?'사용자 입력 · 법원 미검증':'가상 예시 · 실입찰 사용 불가')}${auctionPrebidChecklist()}<div class="status">⚠ 법원 서류와 점유관계는 아직 확인되지 않았어요.</div>`;
  }else if(tab==='rights'){
   panel=`<div class="detail-panel-heading">권리분석</div><div class="status">⚠ 등기·임차인·점유 자료가 연결되지 않았어요.</div><div class="info-row"><span>말소기준권리</span><strong>확인 필요</strong></div><div class="info-row"><span>임차인 현황</span><strong>확인 필요</strong></div><div class="info-row"><span>인수 가능 권리</span><strong>확인 필요</strong></div><button class="secondary full-secondary" id="rightsBtn" type="button">권리분석 상세 보기 →</button>`;
  }else if(tab==='market'){
@@ -1488,6 +1518,7 @@ function capital(){
    <div class="line"><span class="muted">최저매각가</span><strong>${escapeHtml(formatAmount(x.minimumWon))}</strong></div>
    <div class="line"><span class="muted">매각기일</span><strong>${escapeHtml(x.saleDate||'미확인')} · ${escapeHtml(auctionDday(x.saleDate))}</strong></div>
    <div class="line"><span class="muted">진행상태</span><strong>미확인 · 취하·변경·매각 여부는 법원 원문 확인</strong></div>
+   ${auctionBidCalculator(x.minimumWon,'법원 부분수집본 · 최신 가격 및 공고 확인 필요')}${auctionPrebidChecklist()}
    <button type="button" class="secondary full-secondary" data-capital-check="${escapeHtml(x.id)}">법원 서버에서 이 물건 재조회</button>
    <p class="helper" data-capital-result="${escapeHtml(x.id)}" aria-live="polite">재조회 전 · 법원 원문 확인 필요</p>
    <button type="button" class="secondary full-secondary" data-capital-official="1">법원 원문에서 사건 확인 ↗</button>
@@ -1798,6 +1829,15 @@ if($('#capitalSearchForm'))$('#capitalSearchForm').onsubmit=event=>{
  event.preventDefault();state.capitalQuery=$('#capitalSearch').value.trim();state.capitalLimit=40;render();
 };
 if($('#capitalMore'))$('#capitalMore').onclick=()=>{state.capitalLimit+=40;render();};
+document.querySelectorAll('[data-auction-calc]').forEach(box=>{
+ const amount=box.querySelector('[data-bid-manwon]'),rate=box.querySelector('[data-bid-rate]'),result=box.querySelector('[data-bid-result]');
+ const calculate=()=>{
+  if(!amount.value||!rate.value){result.textContent='입찰가와 공고상 비율을 모두 입력하세요.';return;}
+  const value=auctionBidDepositWon(amount.value,rate.value);
+  result.textContent=value===null?'올바른 입찰가와 보증금 비율을 확인하세요.':'가정 입찰보증금: '+prettyPrice(value)+' · 실제 공고에서 재확인 필요';
+ };
+ amount.addEventListener('input',calculate);rate.addEventListener('change',calculate);
+});
 document.querySelectorAll('[data-capital-check]').forEach(button=>button.onclick=()=>void verifyCapitalItem(button.dataset.capitalCheck,button));
 document.querySelectorAll('[data-capital-official]').forEach(button=>button.onclick=()=>window.open(OFFICIAL_AUCTION_URL,'_blank','noopener,noreferrer'));
 if(state.page==='capital'&&capitalLoadStatus==='unloaded')void loadCapital();

@@ -25,6 +25,10 @@ jobs:
         run: node scripts/verify-pages-release.cjs
       - name: Test published-site safety checks
         run: node tests/pages-published.cjs
+      - name: Test quick menu and verification schedule integration
+        run: |
+          node tests/quick-menu-schedule-ui.cjs
+          node tests/court-verification-plan.cjs
       - uses: actions/configure-pages@v5
         with:
           enablement: true

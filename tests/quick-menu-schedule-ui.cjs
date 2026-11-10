@@ -88,7 +88,7 @@ assert(app.includes('function courtFavoriteCalendarItems(date)'),'court date sel
 assert(app.includes('function courtFavoriteCalendarMarkup(items)'),'court day entries missing');
 assert(app.includes('courtFavoriteCalendarMarkup(courtItems)'),'court favorite date not rendered');
 assert(app.includes('data-court-favorite-date'),'favorite date navigation missing');
-assert(app.includes('저장 당시 입찰기일 기준입니다'),'historical date warning missing');
+assert(app.includes('수집 당시 입찰기일 기준입니다'),'historical date warning missing');
 assert(app.includes('count+courtCount'),'court favorite calendar marker missing');
 assert(app.includes('items.length+courtItems.length'),'selected day count missing court favorites');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

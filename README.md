@@ -1,11 +1,18 @@
 # 부동산 경매 — 개인용 PWA
-UI 골격 v0.1.1. 현재 법원 경매 API와 실제 경매물건 정보는 **연결되어 있지 않습니다**. 예시 물건은 테스트용 가상 데이터입니다.
 
-## 목표
-아이폰용 애플 스타일 경매앱. 홈, 통합검색, 경매일정, 관심물건, 공부방, 상세정보, 권리분석, 공부노트.
+iPhone 홈 화면에서 사용하는 **부동산 경매 공부·기록·검색용 웹앱**입니다. 앱 소스 버전 v0.7.6.
 
-## 채팅방 이관 원칙
-GitHub 저장소 `samuraiscene-alt/auction-pwa`의 `main`을 기준 원본으로 삼습니다. 다음 채팅에서 반드시 PROJECT_HANDOFF.md, DESIGN_SPEC.md, CHANGELOG.md, VERSION.txt 확인 후 수정하세요. 다른 앱 저장소를 수정하지 마세요.
+## 현재 기능과 한계
+
+- 서울·경기·인천 법원 경매물건 **805건 시범 수집 목록**(전체 사건을 포함하지 않는 부분 수집)과 지역·물건 종류·키워드 필터
+- 사건 직접 등록, 공식 법원 사건·물건 재조회, PDF 불러오기, 관심물건·학습 노트, 기기 백업·복원
+- 수집시각·검증 결과·수집 실패 경고 표시. 별도 공식 상태검증 진단은 **단일 사건 표본**이며 전체 목록의 매각/유찰/취하 여부를 증명하지 않습니다.
+- 원시 상태코드와 공식 법적 상태명 대응은 아직 미검증. 앱의 상태 표시는 **미확인**이며 반드시 법원 원문을 확인해야 합니다.
+
+## 개발 원칙
+
+GitHub `samuraiscene-alt/auction-pwa`의 `main` 브랜치가 기준 원본입니다. 대화창 변경 시 `PROJECT_HANDOFF.md`, `DESIGN_SPEC.md`, `CHANGELOG.md`, `VERSION.txt`, `docs/COURT_STATUS_RESEARCH.md`를 함께 확인하세요.
 
 ## 배포
-Settings > Pages > Build and deployment > Source = GitHub Actions. `.github/workflows/pages.yml`이 배포를 담당합니다. 개인 메모는 브라우저 기기 내부에 저장하고 GitHub에 업로드하지 않습니다.
+
+GitHub Pages 배포는 `.github/workflows/pages.yml`에서 실행됩니다. 실제 배포 성공 여부는 GitHub Actions에서 확인해야 합니다. 개인 노트·직접 등록 사건은 기기 내부에 저장되며 소스 저장소에 업로드되지 않습니다.

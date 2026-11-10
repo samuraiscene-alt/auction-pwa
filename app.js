@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.19';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.20';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -311,7 +311,7 @@ function backupSummary(data,attachments){
  return '관심물건 '+data.favorites.length+'개 · 노트 '+data.notes.length+'개 · 직접 등록 사건 '+(data.realProperties?.length||0)+'개 · 첨부파일 '+attachments.length+'개';
 }
 const MAIN_TABS=['home','search','schedule','favorites','study'];
-let capitalSnapshot=null,capitalAttemptStatus=null,capitalLegalDiagnostic=null,capitalLoadStatus='unloaded',capitalLoadError='';
+let capitalPriceHistory=null,capitalSnapshot=null,capitalAttemptStatus=null,capitalLegalDiagnostic=null,capitalLoadStatus='unloaded',capitalLoadError='';
 let appDepth=0;
 const viewHistory=new Map();
 function snapshot(){return {page:state.page,filter:state.filter,selected:state.selected,viewMonth:state.viewMonth,calendarFavoritesOnly:state.calendarFavoritesOnly,detail:state.detail,note:state.note,search:state.search,region:state.region,minPrice:state.minPrice,maxPrice:state.maxPrice,priceUnit:state.priceUnit,detailTab:state.detailTab,favoriteSort:state.favoriteSort,favoriteType:state.favoriteType,capitalRegion:state.capitalRegion,capitalType:state.capitalType,capitalQuery:state.capitalQuery,capitalLimit:state.capitalLimit,capitalReviewDate:state.capitalReviewDate,capitalReviewStage:state.capitalReviewStage,editRealId:state.editRealId,noteQuery:state.noteQuery,noteSort:state.noteSort,studyCategory:state.studyCategory,noteTopicDraft:state.noteTopicDraft}}
@@ -1495,6 +1495,28 @@ function initNoteEditor(){
 
 }
 
+
+function capitalPriceHistoryMarkup(item){
+ const data=capitalPriceHistory;
+ if(!data||data.schemaVersion!==1||data.kind!=='observed_snapshot_prices'||
+  data.legalStatusVerified!==false||!Array.isArray(data.events))
+  return '<p class="helper">수집값 변동 기록을 확인하지 못했습니다. 법원 원문에서 확인하세요.</p>';
+ const events=data.events.filter(e=>e.id===item.id&&
+  Number.isSafeInteger(e.previousMinimumWon)&&e.previousMinimumWon>0&&
+  Number.isSafeInteger(e.currentMinimumWon)&&e.currentMinimumWon>0&&
+  Number.isFinite(Date.parse(e.fromSnapshotAt))&&Number.isFinite(Date.parse(e.toSnapshotAt))&&
+  Date.parse(e.fromSnapshotAt)<Date.parse(e.toSnapshotAt)&&
+  Date.parse(e.toSnapshotAt)<=Date.parse(capitalSnapshot.fetchedAt)).slice(0,4);
+ if(!events.length)
+  return '<p class="helper">기록된 최저가 변경 없음 · 이전 수집범위 밖의 가격 변동까지 확인한 것은 아닙니다.</p>';
+ return '<details class="capital-price-history"><summary>최저매각가 수집값 변경 기록 '+events.length+'건</summary>'+
+  events.map(e=>'<div class="capital-history-event"><small>이전 수집 '+escapeHtml(e.fromSnapshotAt.slice(0,10))+
+   ' → 새 수집 '+escapeHtml(e.toSnapshotAt.slice(0,10))+'</small><div>'+
+   escapeHtml(prettyPrice(e.previousMinimumWon))+' → <strong>'+escapeHtml(prettyPrice(e.currentMinimumWon))+
+   '</strong></div></div>').join('')+
+  '<p class="helper">서로 다른 수집시점의 값 차이입니다. 유찰·낙찰·취하나 법적 상태를 확인한 결과가 아닙니다.</p></details>';
+}
+
 function capital(){
  const snapshot=capitalSnapshot;
  const allItems=Array.isArray(snapshot?.items)?snapshot.items:[];
@@ -1542,7 +1564,7 @@ function capital(){
    <div class="line"><span class="muted">최저매각가</span><strong>${escapeHtml(formatAmount(x.minimumWon))}</strong></div>
    <div class="line"><span class="muted">매각기일</span><strong>${escapeHtml(x.saleDate||'미확인')} · ${escapeHtml(auctionDday(x.saleDate))}</strong></div>
    <div class="capital-status-note"><strong>진행상태 · 미확인</strong><span>취하·기일변경·매각 여부는 법원 원문 확인 필요</span></div>
-   ${auctionPriceAnalysis(x.appraisalWon,x.minimumWon,'법원 시범 부분수집본 · 원문 대조 필요')}${auctionBidCalculator(x.minimumWon,'법원 부분수집본 · 최신 가격 및 공고 확인 필요')}${auctionPrebidChecklist()}
+   ${auctionPriceAnalysis(x.appraisalWon,x.minimumWon,'법원 시범 부분수집본 · 원문 대조 필요')}${capitalPriceHistoryMarkup(x)}${auctionBidCalculator(x.minimumWon,'법원 부분수집본 · 최신 가격 및 공고 확인 필요')}${auctionPrebidChecklist()}
    <button type="button" class="secondary full-secondary" data-capital-check="${escapeHtml(x.id)}">법원 서버에서 이 물건 재조회</button>
    <p class="helper" data-capital-result="${escapeHtml(x.id)}" aria-live="polite">재조회 전 · 법원 원문 확인 필요</p>
    <button type="button" class="secondary full-secondary" data-capital-official="1">법원 원문에서 사건 확인 ↗</button>
@@ -1655,10 +1677,11 @@ async function loadCapital(force=false){
  if(state.page==='capital')render();
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
  try{
-  const [response,statusResponse,legalResponse]=await Promise.all([
+  const [response,statusResponse,legalResponse,historyResponse]=await Promise.all([
    fetch('./data/capital-court-pilot.json',{cache:'no-store',signal:controller.signal}),
    fetch('./data/capital-court-status.json',{cache:'no-store',signal:controller.signal}).catch(()=>null),
-   fetch('./data/court-sale-result-status.json',{cache:'no-store',signal:controller.signal}).catch(()=>null)
+   fetch('./data/court-sale-result-status.json',{cache:'no-store',signal:controller.signal}).catch(()=>null),
+   fetch('./data/capital-price-history.json',{cache:'no-store',signal:controller.signal}).catch(()=>null)
   ]);
   let attempt=null;
   if(statusResponse?.ok){try{const item=await statusResponse.json();if(item?.schemaVersion===1&&['success','failed'].includes(item.outcome)&&Number.isFinite(Date.parse(item.attemptedAt)))attempt=item;}catch{}}
@@ -1676,6 +1699,21 @@ async function loadCapital(force=false){
     (payload.schemaVersion!==2||(Array.isArray(x.components)&&x.components.length>0&&x.components.length<=100&&x.components.every(c=>c&&typeof c.address==='string'&&c.address.length<=260)))))
     throw Error('목록 데이터 형식 확인 실패');
   if(payload.validation?.passed!==true||!Number.isSafeInteger(payload.validation.validatedItems)||payload.validation.validatedItems!==payload.items.length)throw Error('검증 완료 기록이 없는 목록은 표시하지 않습니다.');
+  let observed=null;
+  if(historyResponse?.ok){
+   try{
+    const h=await historyResponse.json();
+    if(h?.schemaVersion===1&&h.kind==='observed_snapshot_prices'&&h.source==='courtauction.go.kr'&&
+     h.partialCoverage===true&&h.legalStatusVerified===false&&Array.isArray(h.events)&&h.events.length<=1000&&
+     h.events.every(e=>e&&typeof e.id==='string'&&/^court-B\d{6}\|20\d{2}타경\d{1,10}\|[1-9]\d{0,3}$/.test(e.id)&&
+      Number.isSafeInteger(e.previousMinimumWon)&&e.previousMinimumWon>0&&
+      Number.isSafeInteger(e.currentMinimumWon)&&e.currentMinimumWon>0&&
+      Number.isFinite(Date.parse(e.fromSnapshotAt))&&Number.isFinite(Date.parse(e.toSnapshotAt))&&
+      Date.parse(e.fromSnapshotAt)<Date.parse(e.toSnapshotAt)&&Date.parse(e.toSnapshotAt)<=Date.parse(payload.fetchedAt)))
+      observed=h;
+   }catch{}
+  }
+  capitalPriceHistory=observed;
   capitalSnapshot=payload;capitalLoadStatus='ready';
   if(force&&capitalAttemptStatus?.outcome==='success'&&Date.parse(capitalAttemptStatus.attemptedAt)>=Date.parse(payload.fetchedAt)&&payload.validation?.passed===true)showSavedCheck('검증된 자료 불러오기 완료');
  }catch(e){

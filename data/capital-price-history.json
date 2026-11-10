@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "kind": "observed_snapshot_prices",
+  "source": "courtauction.go.kr",
+  "partialCoverage": true,
+  "legalStatusVerified": false,
+  "note": "부분수집 시각별 최저매각가 값 차이. 유찰·매각·취하나 공식 기일변경을 확인한 기록이 아님",
+  "events": []
+}

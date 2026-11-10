@@ -21,11 +21,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check court app release safety before deploying
+      - id: preflight
+        name: Check court app release safety before deploying
         run: node scripts/verify-pages-release.cjs
-      - name: Test published-site safety checks
+      - id: published_tests
+        name: Test published-site safety checks
         run: node tests/pages-published.cjs
-      - name: Test quick menu and verification schedule integration
+      - id: feature_tests
+        name: Test quick menu and verification schedule integration
         run: |
           node tests/quick-menu-schedule-ui.cjs
           node tests/court-verification-plan.cjs
@@ -37,8 +40,33 @@ jobs:
           path: .
       - id: deployment
         uses: actions/deploy-pages@v4
-      - name: Confirm actual public Pages assets
+      - id: verify_public
+        name: Confirm actual public Pages assets
         timeout-minutes: 3
         env:
           DEPLOYED_URL: ${{ steps.deployment.outputs.page_url }}
         run: node scripts/verify-pages-published.cjs "$DEPLOYED_URL"
+      - name: Explain deployment result for iPhone testing
+        if: always()
+        env:
+          PREFLIGHT: ${{ steps.preflight.outcome }}
+          PUBLISHED_TESTS: ${{ steps.published_tests.outcome }}
+          FEATURE_TESTS: ${{ steps.feature_tests.outcome }}
+          DEPLOY: ${{ steps.deployment.outcome }}
+          PUBLIC_CHECK: ${{ steps.verify_public.outcome }}
+        run: |
+          {
+            echo '## Auction PWA release status'
+            echo ''
+            echo "- Repository source version: $(head -n 1 VERSION.txt)"
+            echo "- Release safety gate: ${PREFLIGHT:-not_run}"
+            echo "- Published-site tests: ${PUBLISHED_TESTS:-not_run}"
+            echo "- Feature tests: ${FEATURE_TESTS:-not_run}"
+            echo "- GitHub Pages deploy: ${DEPLOY:-not_run}"
+            echo "- Live public URL verification: ${PUBLIC_CHECK:-not_run}"
+            echo ''
+            echo 'Live URL: https://samuraiscene-alt.github.io/auction-pwa/'
+            echo ''
+            echo 'A successful git push is not proof that Pages is updated.'
+            echo 'Installable iPhone app data must not be deleted as an update workaround.'
+          } >> "$GITHUB_STEP_SUMMARY"

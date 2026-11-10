@@ -108,8 +108,10 @@ jobs:
           } catch(error) {if(error.code!=='ENOENT')throw error;}
           NODE
               then
+                # Only compare verified current and previous samples. This does not infer auction outcomes.
+                node scripts/record-capital-price-history.cjs data/capital-court-pilot.json /tmp/court-validated-snapshot.json data/capital-price-history.json
                 cp /tmp/court-validated-snapshot.json data/capital-court-pilot.json
-                git add data/capital-court-pilot.json
+                git add data/capital-court-pilot.json data/capital-price-history.json
               else
                 code=$?
                 if [ "$code" -ne 3 ]; then exit "$code"; fi

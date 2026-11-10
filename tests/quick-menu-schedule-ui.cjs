@@ -44,4 +44,6 @@ assert(app.includes('function auctionMapControls(value,sourceLabel)'),'map entry
 assert(app.includes("auctionMapControls(x.address,'법원 수집 주소 기준"),'court list map link missing');
 assert(app.includes("auctionMapControls(p.name,'사용자 입력 주소 기준"),'manual detail map link missing');
 assert(app.includes('실제 경매물건 위치·촬영 시점은 다를 수 있습니다'),'map accuracy notice missing');
+assert(app.includes('detail-map-top')&&app.includes("auctionMapControls(x.address,'법원 수집 주소 기준"),'court location shortcut must be placed by the address');
+assert(app.includes("p.userRegistered?'<div class=\"detail-map-top\""),'registered item map must be prominent');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

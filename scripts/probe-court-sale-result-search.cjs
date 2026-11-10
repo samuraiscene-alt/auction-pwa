@@ -4,6 +4,7 @@
 // Inputs fixed to a previously cross-checked sample lot.
 const {analyzeSaleResultSearch}=require('./validate-court-sale-result-search.cjs');
 const {resultWindow}=require('./court-result-window.cjs');
+const {compareSaleSearchWithDetail}=require('./compare-court-sale-result-detail.cjs');
 // Known existing court snapshot lot; court sale date may change before the auction.
 const id={courtCode:'B000210',caseNo:'2025타경953',itemNo:'1'};
 const snapshotSaleDate='2026-11-10';
@@ -45,11 +46,34 @@ async function main(){
   if(body?.data?.ipcheck===false||body?.ipcheck===false)throw Error('access_rejected');
   stage='evaluate';
   const evidence=analyzeSaleResultSearch(body,id);
-  console.log(JSON.stringify({schemaVersion:1,...evidence}));
+  if(evidence.identityMatched!==true){
+   console.log(JSON.stringify({schemaVersion:1,...evidence,detailCrossChecked:false,
+    detailCrossCheckReason:'sale_result_identity_not_matched'}));
+   return;
+  }
+  // Only one additional READ-ONLY official detail query after exactly one
+  // case + lot row matched. No retries, no persistence of source response.
+  stage='detail';
+  const detailResponse=await fetch('https://www.courtauction.go.kr/pgj/pgj15A/selectAuctnCsSrchRslt.on',{
+   method:'POST',headers:{'Content-Type':'application/json; charset=UTF-8',
+    Accept:'application/json',Referer:'https://www.courtauction.go.kr/pgj/index.on'},
+   body:JSON.stringify({dma_srchCsDtlInf:{cortOfcCd:id.courtCode,csNo:id.caseNo}}),
+   signal:ctrl.signal});
+  if(!detailResponse.ok)throw Error('detail_http_error');
+  if(!(detailResponse.headers.get('content-type')||'').includes('json'))throw Error('detail_non_json');
+  const detail=await detailResponse.json();
+  if(detail?.data?.ipcheck===false||detail?.ipcheck===false)throw Error('access_rejected');
+  const compared=compareSaleSearchWithDetail(body,detail,id);
+  console.log(JSON.stringify({schemaVersion:1,...evidence,
+   detailCrossChecked:compared.crossChecked===true,
+   detailCrossCheckReason:compared.reason,
+   rawResultCodeMatched:compared.rawResultCodeMatched===true,
+   scheduleDayMatched:compared.scheduleDayMatched===true,
+   legalStatusVerified:false}));
  }catch(e){
   const code=String(e?.cause?.code||'');
   const reason=e?.name==='AbortError'?'timeout':
-   ['http_error','non_json','access_rejected'].includes(e?.message)?e.message:
+   ['http_error','non_json','access_rejected','detail_http_error','detail_non_json'].includes(e?.message)?e.message:
    ['ENOTFOUND','EAI_AGAIN'].includes(code)?'dns_failure':
    ['ETIMEDOUT','ECONNRESET','ECONNREFUSED','ENETUNREACH','UND_ERR_CONNECT_TIMEOUT'].includes(code)?'transport_error':
    e instanceof SyntaxError?'invalid_json':'network_error';

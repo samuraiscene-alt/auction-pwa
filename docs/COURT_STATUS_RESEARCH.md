@@ -217,3 +217,9 @@
 - `scripts/court-result-window.cjs`와 `tests/court-result-window.cjs`로 날짜 유효성/윤년/당일·다음날/7일 이후 검사를 추가. 진단은 오늘이 기일+1일~기일+7일 범위일 때만 요청하며, 범위 밖인 경우 **조회하지 않고 안전한 사유**를 남김. 실제 결과가 존재한다는 증명이나 매각·취하 자동 판정은 전혀 하지 않음.
 - `data/court-sale-result-status.json` (2026-11-10T00:07:44.795Z) 최신 결과: `reason=before_result_publication_window`, `observed=false`, `legalStatusVerified=false`. 조회가 실패한 것이 아니라 진단 기간 밖이어서 요청을 실행하지 않은 것. GitHub 소스 기준 진단/기간 테스트 통과.
 - 앱 v0.7.5·805건 목록·사용자 데이터 및 법적 상태 자동판정 불변. **다음 적합한 조회 시점은 2026-11-11 KST 이후**이나 기일 변경과 공식 제공정책 재확인 필요.
+
+## 2026-11-10 11월 11일 매각결과검증 단발 예약
+- `.github/workflows/court-sale-result-search.yml`에 GitHub Actions cron `30 0 11 11 *` 추가: 명목상 **2026-11-11 09:30 KST** 실행 의도(00:30 UTC). GitHub Actions의 스케줄 실행은 지연되거나 누락될 수 있어 결과 보장으로 간주하지 않음.
+- GitHub cron은 연도를 지원하지 않아 매년 같은 날짜에 워크플로우가 깨어날 수 있으므로, `github.event_name=schedule`에서는 KST 날짜가 **정확히 `2026-11-11`인 경우에만** 법원 POST 실행하도록 두 번째 날짜 조건을 추가. 다른 해/다른 날짜에는 `outside_one_time_scheduled_date` 비조회 사유만 기록. `workflow_dispatch`와 코드 수정 시 push 동작은 기존대로 유지되지만 조회 스크립트는 여전히 매각기일+1~7일 조건을 검사.
+- 진단 대상 `court-B000210|2025타경953|1`, 스냅샷상 매각기일 2026-11-10. 실제 기일 변경 여부는 별도로 검증되지 않았으므로 결과 0건/신원불일치/네트워크 오류를 매각·취하·유찰로 판단 금지.
+- 저장소 최신 테스트 `tests/court-sale-result-search.cjs`, `tests/court-result-window.cjs` 모두 통과; cron·KST 가드·기존 테스트 명령과 조회 명령 확인. **11월 11일 실제 Actions 실행 성공 여부/법원 응답은 아직 미확인.** 앱 v0.7.5/805건/개인자료 변경 없음.

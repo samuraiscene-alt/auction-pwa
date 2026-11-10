@@ -1,3 +1,9 @@
+## 2026-11-10 v0.7.21 최신 변경
+- app.js auctionFold(title,html,extraClass) 함수로 보조 영역을 독립형 details로 감쌈. 수도권 물건 카드는 지도/가격 분석/변동 이력/입찰보증금 계산기 각각 닫힘 기본. 주소·가격·기일·진행상태는 항상 표시.
+- 직접 등록 물건 상세 개요는 지도/가격 분석/보증금 계산기를 아코디언으로 묶음. 기존 PDF 정보보완 및 관심 기능 유지.
+- capitalPriceHistoryMarkup는 이제 내부 details 없이 일반 div를 반환해 중첩 접기 제거. style.css의 auction-fold 선택자는 외부 사건용 summary와 분리.
+- 버전 APP_VERSION 0.7.21 / SW auction-shell-v0721 / VERSION.txt 정합, 82개 정적 회귀검사 통과. GitHub Pages 실배포 및 아이폰 실사용 검증은 별도 확인해야 함.
+
 ## 2026-11-10 v0.7.20 최신 인수인계
 - 가격 이력 파일: data/capital-price-history.json. scripts/record-capital-price-history.cjs의 updateHistory(previous,current,existing)가 검증된 수도권 부분수집본 사이의 동일한 물건번호 최저가 변경만 관측 기록. 유찰 또는 낙찰 결과 판단 아님.
 - .github/workflows/capital-court-pilot.yml에서 새 검증 수집본을 이전 수집본과 비교한 다음 기록을 함께 commit/push. 테스트 tests/capital-price-history.cjs는 수집과 Pages 배포 단계 모두에서 실행하도록 연결.

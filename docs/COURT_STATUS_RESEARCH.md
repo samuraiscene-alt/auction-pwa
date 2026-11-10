@@ -266,3 +266,9 @@
 - 예약 매각결과조회 스크립트는 이미 `detail_preflight`(법원 상세정보·기일 사전조회)와 `sale_search`(결과검색) 단계를 구분했으나, `.github/workflows/court-sale-result-search.yml`의 요약 필드 허용 목록에 두 단계가 빠져 오류 시 `failedStage:none`으로 기록될 수 있었음.
 - 요약의 비식별 허용 목록에 두 단계를 추가. 네트워크 오류가 발생한 위치만 기록하고 사건·개인정보·원문은 저장하지 않음. `legalStatusVerified:false` 유지.
 - 공개 GitHub Pages와 실제 GitHub Actions 실행 기록은 현재 접근이 제한돼 직접 확인되지 않았으며, **실서버 조회 성공이나 배포 성공을 주장하지 않음**. 예약일 2026-11-11 KST, 앱 v0.7.6, 805건 유지.
+
+## 2026-11-10 법원 결과조회 실패를 GitHub Actions 성공으로 숨기지 않도록 수정
+- 법원 조회 명령의 `|| true`가 네트워크 오류 등으로 인해 **프로세스 종료코드가 1이어도** 워크플로우를 성공 취급할 수 있는 문제 발견.
+- `.github/workflows/court-sale-result-search.yml`에서 진단 프로세스 종료코드를 별도 임시파일에 보존하고 보고서 형식(`schemaVersion=1`, `legalStatusVerified=false`, `rawResponseSaved=false`, 비식별 `reason`)까지 검사. 결과 보고서에는 `probeExecutionSucceeded`를 기록.
+- 실패한 경우에도 우선 비식별 보고서를 GitHub에 커밋한 뒤, 워크플로우의 마지막 단계에서 **GitHub Actions 실행을 실패로 표시**. 이전의 조회-실패 은폐 가능성을 차단. 코드는 정확한 매각/취하 의미를 자동으로 판단하지 않음.
+- 정상 종료/비정상 종료/잘못된 보고서/법적 상태 참값/원문 저장 참값 5가지 종료코드 판정 조합과 워크플로우 단계 순서 및 2026-11-11 예약 가드 정적 검사 통과. **실제 GitHub Actions 실행·실사이트 접속은 아직 확인되지 않았으며, 현재 날짜는 2026-11-10 KST**.

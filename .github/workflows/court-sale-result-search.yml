@@ -41,6 +41,7 @@ jobs:
           const result={
             schemaVersion:1,attemptedAt:new Date().toISOString(),
             observed:d.observed===true,
+            failedStage:['connect','response','json','evaluate'].includes(d.failedStage)?d.failedStage:'none',
             reason:typeof d.reason==='string'&&/^[a-z_]{1,40}$/.test(d.reason)?d.reason:'unknown',
             identityMatched:exact,exactDisplayLotRows:Number.isInteger(d.exactDisplayLotRows)?Math.min(d.exactDisplayLotRows,50):0,
             rowCount:Number.isInteger(d.rowCount)?Math.min(d.rowCount,50):null,

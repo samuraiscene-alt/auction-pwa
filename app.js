@@ -455,7 +455,96 @@ function initGestureNavigation(){
 function setTab(page){nav(page)}function tabs(){return ['home','search','schedule','favorites','study'].map((p,i)=>`<button type="button" class="${state.page===p?'active':''}" data-page="${p}" aria-label="${['홈','검색','일정','관심','공부방'][i]}" ${state.page===p?'aria-current="page"':''}><span class="nav-icon nav-${p}" aria-hidden="true"></span><span class="nav-label">${['홈','검색','일정','관심','공부방'][i]}</span></button>`).join('')}function card(p){
   return `<div class="listItem auction-card" data-detail="${escapeHtml(p.id)}"><div class="thumb">⌂</div><div class="itemContent"><div class="auction-card-top"><span class="auction-type">${escapeHtml(p.type)}</span><span class="auction-demo ${p.userRegistered?'user-record':''}">${p.userRegistered?'직접 등록':'예시'}</span></div><strong>${escapeHtml(p.name)}</strong><p>${escapeHtml(p.court)} · ${escapeHtml(p.case)}</p><div class="auction-price-label">최저입찰가</div><span class="price">${knownAuctionPrice(p,propertyPrice(p))}</span><p>${p.userRegistered?'감정가 '+knownAuctionPrice(p,p.valueWon)+' · '+(p.date?'입찰 '+escapeHtml(p.date):'기일 미입력'):'감정가 '+escapeHtml(p.value)+' · '+escapeHtml(p.flag)}</p></div><span class="arrow">›</span></div>`;
 }
-function home(){return `<section class="hero dashboard"><div class="dash-heading"><div><p class="dash-kicker">MY AUCTION · 나의 경매 현황</p><h2>오늘도 좋은 물건을<br>차근차근 찾아봐요.</h2></div><span class="dash-mark" aria-hidden="true">⌂</span></div><div class="dash-stats"><button type="button" class="dash-stat" data-page="favorites"><span class="dash-stat-label"><span class="dashboard-heart">♥</span> 관심물건</span><strong>${saved.favorites.length}<small>건</small></strong></button><button type="button" class="dash-stat" data-page="study"><span class="dash-stat-label">▤ 공부 노트</span><strong>${saved.notes.length}<small>개</small></strong></button></div><p class="dash-disclaimer">직접 등록한 사건은 법원 원문을 다시 확인해 주세요. 자동 실시간 연동은 아직 지원되지 않아요.</p></section><input id="homeSearch" class="search" placeholder="⌕  지역, 주소, 사건번호로 검색" value="${escapeHtml(state.search)}"><div class="section"><h2>빠른 메뉴</h2></div><div class="grid quick-grid"><button class="quick" data-page="official"><span class="quick-icon quick-court" aria-hidden="true"></span><span class="quick-label">법원검색</span></button><button class="quick" data-page="capital"><span class="quick-icon quick-capital" aria-hidden="true"></span><span class="quick-label">수도권<br>자동등록</span></button><button class="quick" data-page="search" data-search-mode="address"><span class="quick-icon quick-address" aria-hidden="true"></span><span class="quick-label">주소검색</span></button><button class="quick" data-page="search" data-search-mode="case"><span class="quick-icon quick-case" aria-hidden="true"></span><span class="quick-label">사건번호</span></button><button class="quick" data-page="study"><span class="quick-icon quick-study" aria-hidden="true"></span><span class="quick-label">공부방</span></button></div><div class="section"><h2>${registeredProperties().length?'내가 등록한 경매물건':'최근 경매물건'}</h2><span class="muted">${registeredProperties().length?'법원 확인 필요':'예시 데이터'}</span></div>${(registeredProperties().length?registeredProperties().slice(-2).reverse():properties.slice(0,2)).map(card).join('')}<div class="section"><h2>다가오는 입찰일</h2></div><div class="card line"><div><strong>${nextRegisteredAuction()?escapeHtml(nextRegisteredAuction().date):'직접 등록한 예정 일정 없음'}</strong><p class="tiny">${nextRegisteredAuction()?escapeHtml(nextRegisteredAuction().case)+' · 사용자 입력, 법원 확인 필요':'경매물건 등록 시 입찰일정에 표시돼요.'}</p></div><button class="miniButton" data-page="schedule">일정 보기 ›</button></div>`}function matchingProperties(){
+
+const QUICK_MENU_KEY='auction_quick_menu_v1';
+const QUICK_MENU_ITEMS=[
+ {id:'official',name:'법원검색',page:'official',icon:'court'},
+ {id:'capital',name:'수도권 자동등록',page:'capital',icon:'capital'},
+ {id:'address',name:'주소검색',page:'search',mode:'address',icon:'address'},
+ {id:'case',name:'사건번호',page:'search',mode:'case',icon:'case'},
+ {id:'study',name:'공부방',page:'study',icon:'study'},
+ {id:'schedule',name:'경매일정',page:'schedule',glyph:'▦'},
+ {id:'favorites',name:'관심물건',page:'favorites',glyph:'♡'},
+ {id:'advanced',name:'상세검색',page:'advanced',glyph:'⌕'},
+ {id:'special',name:'특수물건',page:'special',glyph:'◇'}
+];
+const DEFAULT_QUICK_IDS=QUICK_MENU_ITEMS.slice(0,5).map(x=>x.id);
+function readQuickMenu(){
+ try{
+  const stored=JSON.parse(localStorage.getItem(QUICK_MENU_KEY));
+  if(!Array.isArray(stored)||new Set(stored).size!==stored.length||
+    stored.some(id=>!QUICK_MENU_ITEMS.some(item=>item.id===id)))return DEFAULT_QUICK_IDS.slice();
+  return stored.slice();
+ }catch{return DEFAULT_QUICK_IDS.slice();}
+}
+let quickMenuIds=readQuickMenu(),quickMenuEditing=false;
+function persistQuickMenu(next){
+ const encoded=JSON.stringify(next);
+ localStorage.setItem(QUICK_MENU_KEY,encoded);
+ if(localStorage.getItem(QUICK_MENU_KEY)!==encoded)throw Error('빠른 메뉴 저장 확인 실패');
+ quickMenuIds=next;
+}
+function quickMenuMarkup(){
+ const active=QUICK_MENU_ITEMS.filter(x=>quickMenuIds.includes(x.id))
+  .sort((a,b)=>quickMenuIds.indexOf(a.id)-quickMenuIds.indexOf(b.id));
+ const button=x=>'<button class="quick" type="button" data-page="'+x.page+'"'+
+  (x.mode?' data-search-mode="'+x.mode+'"':'')+'>'+
+  (x.icon?'<span class="quick-icon quick-'+x.icon+'" aria-hidden="true"></span>':
+   '<span class="quick-extra-icon" aria-hidden="true">'+x.glyph+'</span>')+
+  '<span class="quick-label">'+escapeHtml(x.name)+'</span></button>';
+ const editor=QUICK_MENU_ITEMS.map(x=>{
+  const enabled=quickMenuIds.includes(x.id),at=quickMenuIds.indexOf(x.id);
+  return '<div class="quick-edit-row"><strong>'+escapeHtml(x.name)+'</strong>'+
+   '<button type="button" data-quick-toggle="'+x.id+'">'+(enabled?'숨기기':'추가')+'</button>'+
+   (enabled?'<button type="button" data-quick-move="'+x.id+'" data-step="-1" '+(at===0?'disabled':'')+' aria-label="'+escapeHtml(x.name)+' 위로 이동">↑</button>'+
+   '<button type="button" data-quick-move="'+x.id+'" data-step="1" '+(at===quickMenuIds.length-1?'disabled':'')+' aria-label="'+escapeHtml(x.name)+' 아래로 이동">↓</button>':'')+
+   '</div>';
+ }).join('');
+ return '<div class="section quick-section"><h2>빠른 메뉴</h2><button type="button" class="quick-edit-trigger" id="quickEditToggle">'+
+  (quickMenuEditing?'완료':'편집')+'</button></div>'+
+  (active.length?'<div class="grid quick-grid">'+active.map(button).join('')+'</div>':
+   '<div class="card"><p class="helper">빠른 메뉴가 비어 있어요. 편집에서 메뉴를 추가할 수 있습니다.</p></div>')+
+  (quickMenuEditing?'<div class="card quick-editor"><strong>메뉴 추가·숨김·순서 변경</strong><p class="helper">숨겨도 실제 기능은 삭제되지 않습니다.</p>'+
+   editor+'<button type="button" class="secondary full-secondary" id="quickReset">기본 메뉴로 복원</button></div>':'');
+}
+let verificationPlan=null,verificationPlanStatus='unloaded';
+async function loadVerificationPlan(){
+ if(verificationPlanStatus!=='unloaded')return;
+ verificationPlanStatus='loading';
+ try{
+  const response=await fetch('./data/court-verification-plan.json',{cache:'no-store'});
+  if(!response.ok)throw Error('검증 일정표 파일을 읽지 못했습니다.');
+  const payload=await response.json();
+  if(payload?.schemaVersion!==1||payload.kind!=='schedule_only'||
+   payload.partialCoverage!==true||payload.legalStatusVerified!==false||
+   payload.automaticCourtRequests!==0||!Array.isArray(payload.days)||
+   payload.days.length>15||!Number.isSafeInteger(payload.snapshotItems)||
+   !Number.isFinite(Date.parse(payload.sourceSnapshotAt))||
+   payload.days.some(d=>!/^\d{4}-\d{2}-\d{2}$/.test(d.date)||
+    ['precheck','sale_day','result_check','result_recheck','final_followup'].some(k=>
+      !Array.isArray(d[k])||d[k].length>payload.snapshotItems||d[k].some(id=>typeof id!=='string'||!/^court-B\d{6}\|20\d{2}타경\d+\|[1-9]\d{0,3}$/.test(id)))))
+   throw Error('검증 일정표 형식이 올바르지 않습니다.');
+  verificationPlan=payload;verificationPlanStatus='ready';
+ }catch{verificationPlan=null;verificationPlanStatus='failed';}
+ if(state.page==='schedule')render();
+}
+function verificationPlanMarkup(day){
+ const stages=[['precheck','입찰 전 확인'],['sale_day','입찰 당일 점검'],['result_check','결과조회 예정'],['result_recheck','재검사 예정'],['final_followup','최종 추적']];
+ if(verificationPlanStatus==='unloaded'||verificationPlanStatus==='loading')
+  return '<div class="card"><strong>법원 수집물건 검증 예정</strong><p class="helper">검증 일정표를 불러오는 중…</p></div>';
+ if(verificationPlanStatus!=='ready')
+  return '<div class="card"><strong>법원 수집물건 검증 예정</strong><p class="helper">일정표를 확인할 수 없습니다. 법원 원문을 확인하세요.</p></div>';
+ const report=verificationPlan.days.find(d=>d.date===day);
+ const stale=Date.now()-Date.parse(verificationPlan.sourceSnapshotAt)>30*3600000;
+ return '<div class="card court-plan"><strong>법원 수집물건 검증 예정</strong>'+
+  '<p class="helper">수집본 '+escapeHtml(verificationPlan.snapshotItems)+'건 기준 · 일부 페이지만 수집 · '+escapeHtml(verificationPlan.generatedForDay)+' 생성'+
+  (stale?' · 수집본 30시간 경과':'')+'</p>'+
+  (report?stages.map(([key,label])=>'<div class="court-plan-row"><span>'+label+'</span><strong>'+report[key].length+'건</strong></div>').join(''):
+    '<p class="helper">선택한 날짜는 현재 생성된 8일 일정 범위 밖입니다.</p>')+
+  '<p class="helper">표시된 수치는 재조회 예정 건수이며 실제 법원 조회·낙찰·유찰·취하 확인 결과가 아닙니다. 입찰 전 법원 원문을 확인하세요.</p></div>';
+}
+
+function home(){return `<section class="hero dashboard"><div class="dash-heading"><div><p class="dash-kicker">MY AUCTION · 나의 경매 현황</p><h2>오늘도 좋은 물건을<br>차근차근 찾아봐요.</h2></div><span class="dash-mark" aria-hidden="true">⌂</span></div><div class="dash-stats"><button type="button" class="dash-stat" data-page="favorites"><span class="dash-stat-label"><span class="dashboard-heart">♥</span> 관심물건</span><strong>${saved.favorites.length}<small>건</small></strong></button><button type="button" class="dash-stat" data-page="study"><span class="dash-stat-label">▤ 공부 노트</span><strong>${saved.notes.length}<small>개</small></strong></button></div><p class="dash-disclaimer">직접 등록한 사건은 법원 원문을 다시 확인해 주세요. 자동 실시간 연동은 아직 지원되지 않아요.</p></section><input id="homeSearch" class="search" placeholder="⌕  지역, 주소, 사건번호로 검색" value="${escapeHtml(state.search)}">${quickMenuMarkup()}<div class="section"><h2>${registeredProperties().length?'내가 등록한 경매물건':'최근 경매물건'}</h2><span class="muted">${registeredProperties().length?'법원 확인 필요':'예시 데이터'}</span></div>${(registeredProperties().length?registeredProperties().slice(-2).reverse():properties.slice(0,2)).map(card).join('')}<div class="section"><h2>다가오는 입찰일</h2></div><div class="card line"><div><strong>${nextRegisteredAuction()?escapeHtml(nextRegisteredAuction().date):'직접 등록한 예정 일정 없음'}</strong><p class="tiny">${nextRegisteredAuction()?escapeHtml(nextRegisteredAuction().case)+' · 사용자 입력, 법원 확인 필요':'경매물건 등록 시 입찰일정에 표시돼요.'}</p></div><button class="miniButton" data-page="schedule">일정 보기 ›</button></div>`}function matchingProperties(){
   const query=state.search.trim().normalize('NFC').toLocaleLowerCase('ko');
   const min=state.minPrice===''?null:Number(state.minPrice);
   const max=state.maxPrice===''?null:Number(state.maxPrice);
@@ -514,7 +603,7 @@ function schedule(){
   const chosen=state.selected;
   const items=calendarItems(chosen);
   const actualCount=allProperties().filter(p=>propertyDate(p)===chosen).length;
-  return `<div class="card calendar-shell"><div class="calendar-toolbar"><button type="button" class="calendar-arrow" id="prevMonth" aria-label="이전 달">‹</button><strong>${label}</strong><button type="button" class="calendar-arrow" id="nextMonth" aria-label="다음 달">›</button><button type="button" class="calendar-today" id="todayMonth">오늘</button></div><div class="calendar-caption"><span>● 등록·예시 입찰일</span><span class="favorite-key">● 관심물건</span></div><div class="calendar">${week.map((d,i)=>`<div class="weekday ${i===0?'sun':''}">${d}</div>`).join('')}${Array(offset).fill('<div class="calendar-blank"></div>').join('')}${dates.join('')}</div><div class="calendar-filter"><label><input type="checkbox" id="favCalendarOnly" ${state.calendarFavoritesOnly?'checked':''}> 관심물건 일정만 표시</label><span>법원 자동 갱신 미지원</span></div></div><div class="section"><h2>${Number(chosen.slice(5,7))}월 ${Number(chosen.slice(-2))}일 일정</h2><span class="muted">${items.length}건 · 등록/예시 구분</span></div>${items.map(card).join('')||(state.calendarFavoritesOnly&&actualCount?'<div class="empty">선택한 날짜에 관심물건 일정이 없어요.</div>':'<div class="empty">선택한 날짜에 기록된 입찰일정이 없어요.</div>')}<p class="helper">직접 등록한 기일과 예시 일정이 함께 표시될 수 있습니다. 법원 실시간 변경 알림은 아직 없으므로 입찰 전에 반드시 원문을 확인하세요.</p>`;
+  return `<div class="card calendar-shell"><div class="calendar-toolbar"><button type="button" class="calendar-arrow" id="prevMonth" aria-label="이전 달">‹</button><strong>${label}</strong><button type="button" class="calendar-arrow" id="nextMonth" aria-label="다음 달">›</button><button type="button" class="calendar-today" id="todayMonth">오늘</button></div><div class="calendar-caption"><span>● 등록·예시 입찰일</span><span class="favorite-key">● 관심물건</span></div><div class="calendar">${week.map((d,i)=>`<div class="weekday ${i===0?'sun':''}">${d}</div>`).join('')}${Array(offset).fill('<div class="calendar-blank"></div>').join('')}${dates.join('')}</div><div class="calendar-filter"><label><input type="checkbox" id="favCalendarOnly" ${state.calendarFavoritesOnly?'checked':''}> 관심물건 일정만 표시</label><span>법원 자동 갱신 미지원</span></div></div><div class="section"><h2>${Number(chosen.slice(5,7))}월 ${Number(chosen.slice(-2))}일 일정</h2><span class="muted">${items.length}건 · 등록/예시 구분</span></div>${items.map(card).join('')||(state.calendarFavoritesOnly&&actualCount?'<div class="empty">선택한 날짜에 관심물건 일정이 없어요.</div>':'<div class="empty">선택한 날짜에 기록된 입찰일정이 없어요.</div>')}<p class="helper">직접 등록한 기일과 예시 일정이 함께 표시될 수 있습니다. 법원 실시간 변경 알림은 아직 없으므로 입찰 전에 반드시 원문을 확인하세요.</p>${verificationPlanMarkup(chosen)}`;
 }
 function sortedFavorites(){
   const selected=new Set(saved.favorites);
@@ -1528,7 +1617,27 @@ function settings(){const standalone=window.matchMedia('(display-mode: standalon
  $('#stickyRemove').addEventListener('click',changed);
  // Wait for editor controls and pending attachment list to initialize before restoring draft.
  recoverNoteDraft();
- }$('#tabs').innerHTML=tabs();$('#settings').onclick=()=>nav('settings');document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>nav(x.dataset.page,x.dataset.searchMode?{searchMode:x.dataset.searchMode}:x.dataset.page==='search'?{searchMode:'all'}:{}));document.querySelectorAll('[data-detail]').forEach(x=>x.onclick=()=>nav('detail',{detail:x.dataset.detail,detailTab:'overview'}));document.querySelectorAll('[data-filter]').forEach(x=>x.onclick=()=>{state.filter=x.dataset.filter;render()});document.querySelectorAll('[data-day]').forEach(x=>x.onclick=()=>{state.selected=x.dataset.day;render();});if($('#prevMonth'))$('#prevMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,-1);state.selected=state.viewMonth+'-01';render();};if($('#nextMonth'))$('#nextMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,1);state.selected=state.viewMonth+'-01';render();};if($('#todayMonth'))$('#todayMonth').onclick=()=>{const now=new Date();state.viewMonth=calendarMonthKey(now);state.selected=state.viewMonth+'-'+String(now.getDate()).padStart(2,'0');render();};if($('#favCalendarOnly'))$('#favCalendarOnly').onchange=e=>{state.calendarFavoritesOnly=e.target.checked;render();};document.querySelectorAll('[data-note]').forEach(x=>x.onclick=()=>nav('note',{note:Number(x.dataset.note)}));if($('#favoriteSort'))$('#favoriteSort').onchange=e=>{state.favoriteSort=e.target.value;render();};
+ }$('#tabs').innerHTML=tabs();$('#settings').onclick=()=>nav('settings');document.querySelectorAll('[data-page]').forEach(x=>x.onclick=()=>nav(x.dataset.page,x.dataset.searchMode?{searchMode:x.dataset.searchMode}:x.dataset.page==='search'?{searchMode:'all'}:{}));if($('#quickEditToggle'))$('#quickEditToggle').onclick=()=>{quickMenuEditing=!quickMenuEditing;render();};
+document.querySelectorAll('[data-quick-toggle]').forEach(button=>button.onclick=()=>{
+ const id=button.dataset.quickToggle;
+ const next=quickMenuIds.includes(id)?quickMenuIds.filter(x=>x!==id):[...quickMenuIds,id];
+ try{persistQuickMenu(next);render();showSavedCheck('빠른 메뉴 저장 완료');}
+ catch{toast('빠른 메뉴를 저장할 수 없습니다.');}
+});
+document.querySelectorAll('[data-quick-move]').forEach(button=>button.onclick=()=>{
+ const id=button.dataset.quickMove,from=quickMenuIds.indexOf(id),to=from+Number(button.dataset.step);
+ if(from<0||to<0||to>=quickMenuIds.length)return;
+ const next=quickMenuIds.slice();[next[from],next[to]]=[next[to],next[from]];
+ try{persistQuickMenu(next);render();showSavedCheck('순서 저장 완료');}
+ catch{toast('순서를 저장할 수 없습니다.');}
+});
+if($('#quickReset'))$('#quickReset').onclick=()=>{
+ if(!confirm('빠른 메뉴를 처음 구성으로 복원할까요?'))return;
+ try{persistQuickMenu(DEFAULT_QUICK_IDS.slice());render();showSavedCheck('기본 메뉴 복원 완료');}
+ catch{toast('기본 메뉴 복원에 실패했습니다.');}
+};
+if(state.page==='schedule'&&verificationPlanStatus==='unloaded')void loadVerificationPlan();
+document.querySelectorAll('[data-detail]').forEach(x=>x.onclick=()=>nav('detail',{detail:x.dataset.detail,detailTab:'overview'}));document.querySelectorAll('[data-filter]').forEach(x=>x.onclick=()=>{state.filter=x.dataset.filter;render()});document.querySelectorAll('[data-day]').forEach(x=>x.onclick=()=>{state.selected=x.dataset.day;render();});if($('#prevMonth'))$('#prevMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,-1);state.selected=state.viewMonth+'-01';render();};if($('#nextMonth'))$('#nextMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,1);state.selected=state.viewMonth+'-01';render();};if($('#todayMonth'))$('#todayMonth').onclick=()=>{const now=new Date();state.viewMonth=calendarMonthKey(now);state.selected=state.viewMonth+'-'+String(now.getDate()).padStart(2,'0');render();};if($('#favCalendarOnly'))$('#favCalendarOnly').onchange=e=>{state.calendarFavoritesOnly=e.target.checked;render();};document.querySelectorAll('[data-note]').forEach(x=>x.onclick=()=>nav('note',{note:Number(x.dataset.note)}));if($('#favoriteSort'))$('#favoriteSort').onchange=e=>{state.favoriteSort=e.target.value;render();};
 document.querySelectorAll('[data-favorite-type]').forEach(btn=>btn.onclick=()=>{state.favoriteType=btn.dataset.favoriteType;render();});
 document.querySelectorAll('[data-remove-favorite]').forEach(btn=>btn.onclick=()=>{
  const id=btn.dataset.removeFavorite;

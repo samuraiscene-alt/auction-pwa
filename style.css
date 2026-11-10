@@ -792,10 +792,10 @@ html,body{
 .official-form #officialUsageLarge,.official-form #officialUsageMedium,.official-form #officialType{width:100%;min-width:0}
 
 /* v0.6.2: aggregate same case without losing distinct auction items */
-.capital-case-group summary{cursor:pointer;list-style:none;display:block;position:relative;padding-right:20px}
-.capital-case-group summary::-webkit-details-marker{display:none}
-.capital-case-group summary::after{content:'⌄';position:absolute;right:1px;top:0;color:#64748b}
-.capital-case-group[open] summary::after{content:'⌃'}
+.capital-case-group > summary{cursor:pointer;list-style:none;display:block;position:relative;padding-right:20px}
+.capital-case-group > summary::-webkit-details-marker{display:none}
+.capital-case-group > summary::after{content:'⌄';position:absolute;right:1px;top:0;color:#64748b}
+.capital-case-group[open] > summary::after{content:'⌃'}
 .capital-case-count{display:inline-block;margin-top:8px;font-size:.82rem;font-weight:650;color:#2563eb}
 .capital-property{padding:14px 0 6px;border-top:1px solid #e5e7eb;margin-top:12px}
 .capital-property .line{padding:3px 0}
@@ -904,3 +904,9 @@ html,body{
 #content .auction-price-analysis .line{margin:0;padding:8px 0;gap:10px}
 #content .auction-price-analysis .line strong{font-size:13px;text-align:right;overflow-wrap:anywhere}
 #content .auction-bid-compare{padding:10px 11px;margin-top:10px;border:1px solid #e2e9f3;border-radius:10px;font-size:12px;line-height:1.45;font-weight:650}
+
+/* v0.7.19: readable court status and nested details labels */
+#content .capital-property .capital-status-note{display:block;margin:10px 0 12px;padding:10px 12px;background:#f5f8fe;border:1px solid #e3ebf6;border-radius:11px;font-size:12px;line-height:1.65;overflow-wrap:anywhere;word-break:keep-all}
+#content .capital-property .capital-status-note strong{display:block;font-size:12px;margin-bottom:3px;color:#415b83}
+#content .capital-property .auction-prebid>summary{list-style:disclosure-closed;position:static;padding-right:0;display:list-item}
+#content .capital-property .auction-prebid[open]>summary{list-style:disclosure-open}

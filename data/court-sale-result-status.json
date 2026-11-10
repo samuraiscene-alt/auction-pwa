@@ -1,11 +1,12 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-10T00:24:09.137Z",
+  "attemptedAt": "2026-11-10T00:24:30.004Z",
   "observed": false,
   "daysSinceSale": 0,
   "windowPolicy": "conservative_diagnostic_1_to_7_days",
   "failedStage": "none",
   "reason": "before_result_publication_window",
+  "schedulePreflightConfirmed": false,
   "detailCrossChecked": false,
   "rawResultCodeMatched": false,
   "scheduleDayMatched": false,

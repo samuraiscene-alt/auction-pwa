@@ -1,2 +1,2 @@
-0.7.29
-Remove duplicate case address/court number from lot details, preserving exact lot identity and differing addresses.
+0.7.30
+Split court and case number into separate mobile detail rows; move fake cases out of regular search/home into settings-only test gallery.

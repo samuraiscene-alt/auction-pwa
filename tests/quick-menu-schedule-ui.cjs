@@ -23,4 +23,10 @@ assert(app.includes('preferences:{quickMenu:quickMenuIds.slice()}'),'quick menu 
 assert(app.includes('if(hasQuickMenu)persistQuickMenu(backedQuickMenu.slice())'),'quick menu restore missing');
 assert(app.includes('const oldSaved=saved,oldQuickMenu=quickMenuIds.slice()'),'rollback not preserved');
 assert(app.includes('const editorItems=[...QUICK_MENU_ITEMS.filter'),'editor order not synchronized');
+assert(app.includes('data-plan-stage=')&&app.includes('data-plan-date='),'day groups must be clickable');
+assert(app.includes('capitalReviewDate:day,capitalReviewStage:stage'),'date drilldown missing');
+assert(app.includes('snapshot.fetchedAt===verificationPlan.sourceSnapshotAt'),'snapshot freshness guard missing');
+assert(app.includes('snapshot.items.length===verificationPlan.snapshotItems'),'snapshot count guard missing');
+assert(app.includes('id="capitalReviewClear"'),'clear review filter unavailable');
+assert(app.includes('기존 물건별 수동 재조회입니다'),'must not claim automatic verification');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

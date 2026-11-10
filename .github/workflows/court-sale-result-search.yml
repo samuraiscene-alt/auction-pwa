@@ -74,7 +74,7 @@ jobs:
               'raw_code_cross_checked','sale_result_identity_not_matched','unverified_response',
               'invalid_structure','result_identity_not_unique','internal_case_not_linked',
               'inconsistent_detail_lots','detail_lot_not_unique','result_schedule_day_missing',
-              'schedule_not_unique','result_code_not_confirmed'
+              'schedule_not_unique','result_code_not_confirmed','result_schedule_not_target_date'
             ].includes(d.detailCrossCheckReason)?d.detailCrossCheckReason:'not_checked',
             identityMatched:exact,exactDisplayLotRows:Number.isInteger(d.exactDisplayLotRows)?Math.min(d.exactDisplayLotRows,50):0,
             rowCount:Number.isInteger(d.rowCount)?Math.min(d.rowCount,50):null,

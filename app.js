@@ -604,8 +604,22 @@ function home(){return `<section class="hero dashboard"><div class="dash-heading
 }
 function search(){
   const rows=matchingProperties();
+  const query=state.search.trim().normalize('NFC').toLocaleLowerCase('ko');
+  // Keep independently sourced records separate: the court snapshot is partial and not live.
+  const courtMatches=query&&capitalSnapshot?.validation?.passed===true
+   ?capitalSnapshot.items.filter(x=>(state.region==='전체'||!['서울','경기','인천'].includes(state.region)||x.region===state.region)&&
+     [x.address,x.caseNo,x.courtName,x.itemNo,...(Array.isArray(x.components)?x.components.map(c=>c.address):[])].some(v=>String(v||'').normalize('NFC').toLocaleLowerCase('ko').includes(query)))
+   :[];
+  const courtPreview=query
+   ?'<div class="section"><h2>법원 수집목록 <span class="result-count">'+courtMatches.length+'건</span></h2><span class="muted">서울·경기·인천 부분수집본 · 법원 실시간 전체 검색 아님</span></div>'+
+     (capitalLoadStatus==='loading'||capitalLoadStatus==='unloaded'?'<div class="empty">검증된 법원 수집목록을 불러오는 중…</div>':
+      capitalLoadStatus==='failed'?'<div class="status">⚠ 법원 수집목록을 불러오지 못했습니다. 법원 원문에서 확인해 주세요.</div>':
+      (capitalLoadError?'<div class="status">⚠ 최신 목록 갱신에 실패해 이전 검증 자료를 표시합니다.</div>':'')+
+      (courtMatches.length?courtMatches.slice(0,5).map(x=>'<div class="card"><strong>'+escapeHtml(x.address)+'</strong><p class="helper">'+escapeHtml(x.courtName||'법원 미확인')+' · '+escapeHtml(x.caseNo)+' · 물건 '+escapeHtml(x.itemNo)+'번</p><p class="helper">법원 부분수집 · 상태 및 기일 원문 재확인 필요</p></div>').join('')+
+       (courtMatches.length>5?'<p class="helper">처음 5건만 미리 표시합니다. 전체 결과는 아래 버튼에서 확인하세요.</p>':''):'<div class="empty">현재 검증된 부분수집본에서 일치하는 물건이 없습니다. 법원 전체에 물건이 없다는 뜻은 아닙니다.</div>'))
+   :'';
   const tags=[state.region!=='전체'?state.region:null,state.minPrice!==''?prettyPrice(state.minPrice)+' 이상':null,state.maxPrice!==''?prettyPrice(state.maxPrice)+' 이하':null].filter(Boolean);
-  return `<div class="card"><label class="label" for="query">물건 찾아보기</label><form class="search-form" id="searchForm" role="search"><input class="search" id="query" type="search" enterkeyhint="search" autocomplete="off" placeholder="${state.searchMode==='case'?'예: 2025타경12345':state.searchMode==='address'?'도로명주소 또는 지번주소':'지역, 건물명, 사건번호'}" value="${escapeHtml(state.search)}"><button type="submit" class="search-submit">검색</button></form><div class="filters">${availablePropertyTypes().map(v=>`<button class="chip ${state.filter===v?'active':''}" data-filter="${v}">${v}</button>`).join('')}</div><div class="row search-action-row"><button type="button" class="secondary search-action-button" id="detailFilters"><span class="search-action-icon search-action-detail" aria-hidden="true"></span><span>상세검색</span></button><button type="button" class="secondary search-action-button" id="specialFilters"><span class="search-action-icon search-action-special" aria-hidden="true"></span><span>특수물건</span></button></div>${tags.length?`<div class="applied-filters">${tags.map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join('')}<button class="clear-filter" id="clearFilters">초기화</button></div>`:''}</div><div class="section"><h2>검색 결과 <span class="result-count">${rows.length}건</span></h2><span class="muted">직접 등록한 물건 · 법원 수집목록은 별도</span></div><button type="button" class="secondary full-secondary" id="searchCourtResults">⌕ 같은 검색어로 수도권 법원 수집목록 찾기</button><p class="helper search-court-note">검색어·수도권 지역만 전달합니다. 물건 종류·가격 조건은 별도로 다시 선택하세요. 법원 부분수집본이며 전체 사건을 검색한 결과가 아닙니다.</p><button type="button" class="secondary full-secondary" data-page="official">⚖ 대한민국 법원경매정보에서 찾기 · 등록</button><div id="searchResults">${rows.map(card).join('')||'<div class="empty">조건에 맞는 직접 등록 물건이 없어요.<br>수도권 법원 수집목록을 확인하거나 물건을 직접 등록해 보세요.</div>'}</div>`;
+  return `<div class="card"><label class="label" for="query">물건 찾아보기</label><form class="search-form" id="searchForm" role="search"><input class="search" id="query" type="search" enterkeyhint="search" autocomplete="off" placeholder="${state.searchMode==='case'?'예: 2025타경12345':state.searchMode==='address'?'도로명주소 또는 지번주소':'지역, 건물명, 사건번호'}" value="${escapeHtml(state.search)}"><button type="submit" class="search-submit">검색</button></form><div class="filters">${availablePropertyTypes().map(v=>`<button class="chip ${state.filter===v?'active':''}" data-filter="${v}">${v}</button>`).join('')}</div><div class="row search-action-row"><button type="button" class="secondary search-action-button" id="detailFilters"><span class="search-action-icon search-action-detail" aria-hidden="true"></span><span>상세검색</span></button><button type="button" class="secondary search-action-button" id="specialFilters"><span class="search-action-icon search-action-special" aria-hidden="true"></span><span>특수물건</span></button></div>${tags.length?`<div class="applied-filters">${tags.map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join('')}<button class="clear-filter" id="clearFilters">초기화</button></div>`:''}</div><div class="section"><h2>직접 등록한 물건 <span class="result-count">${rows.length}건</span></h2><span class="muted">기기에 저장된 사용자 등록 기록</span></div><button type="button" class="secondary full-secondary" id="searchCourtResults">⌕ 같은 검색어로 수도권 법원 수집목록 찾기</button><p class="helper search-court-note">검색어·수도권 지역만 전달합니다. 물건 종류·가격 조건은 별도로 다시 선택하세요. 법원 부분수집본이며 전체 사건을 검색한 결과가 아닙니다.</p><button type="button" class="secondary full-secondary" data-page="official">⚖ 대한민국 법원경매정보에서 찾기 · 등록</button><div id="searchResults">${rows.map(card).join('')||'<div class="empty">조건에 맞는 직접 등록 물건이 없어요.</div>'}</div>${courtPreview}`;
 }
 function demo(){
  return '<div class="card demo-catalog"><strong>개발 테스트용 예시 물건</strong><p class="helper">아래 3건은 모두 가상 사건번호·가격·입찰기일을 사용합니다. 실제 경매 검색이나 입찰에 이용하면 안 됩니다.</p></div>'+
@@ -1817,7 +1831,7 @@ async function loadCapital(force=false){
   capitalLoadStatus=capitalSnapshot?'ready':'failed';
   if(capitalSnapshot&&state.page==='capital')toast('갱신에 실패했습니다. 마지막으로 확인한 자료를 표시합니다.');
  }
- finally{clearTimeout(timer);if(state.page==='capital')render();}
+ finally{clearTimeout(timer);if(state.page==='capital'||state.page==='search')render();}
 }
 function official(){
  const records=registeredProperties().slice().reverse();
@@ -2022,7 +2036,7 @@ document.querySelectorAll('[data-auction-calc]').forEach(box=>{
 });
 document.querySelectorAll('[data-capital-check]').forEach(button=>button.onclick=()=>void verifyCapitalItem(button.dataset.capitalCheck,button));
 document.querySelectorAll('[data-capital-official]').forEach(button=>button.onclick=()=>window.open(OFFICIAL_AUCTION_URL,'_blank','noopener,noreferrer'));
-if(state.page==='capital'&&capitalLoadStatus==='unloaded')void loadCapital();
+if((state.page==='capital'||(state.page==='search'&&state.search.trim()))&&capitalLoadStatus==='unloaded')void loadCapital();
 if($('#officialUsageLarge')){
  const large=$('#officialUsageLarge'),middle=$('#officialUsageMedium'),small=$('#officialType');
  const populate=(node,entries,placeholder)=>{

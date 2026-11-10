@@ -881,3 +881,8 @@ html,body{
 #content .auction-map-controls a.secondary{display:flex;align-items:center;justify-content:center;min-height:44px;text-decoration:none;text-align:center;border-radius:11px;box-sizing:border-box}
 #content .auction-map-controls .helper{margin:7px 0 0}
 #content .auction-map-controls a:focus-visible{outline:2px solid #1769ed;outline-offset:2px}
+
+/* v0.7.16: map entry immediately below the property address */
+#content .detail-map-top{margin:12px 0 15px;padding:11px 12px;border:1px solid #e4edf8;border-radius:12px;background:#f7faff}
+#content .detail-map-top>strong{display:block;font-size:13px;margin-bottom:6px}
+#content .detail-map-top .auction-map-controls{margin:6px 0 0}

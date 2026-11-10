@@ -1,2 +1,2 @@
-0.7.14
-Reliable server-version status and cache-bypassing app update without clearing personal data.
+0.7.15
+Safe address-only Kakao map search, KST auction D-day and detail information enhancements.

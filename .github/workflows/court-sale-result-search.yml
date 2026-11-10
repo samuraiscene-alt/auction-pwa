@@ -44,8 +44,13 @@ jobs:
         run: |
           if [ "$EVENT_NAME" = "schedule" ] && [ "$(TZ=Asia/Seoul date +%F)" != "2026-11-11" ]; then
             printf '%s\n' '{"schemaVersion":1,"observed":false,"reason":"outside_one_time_scheduled_date","legalStatusVerified":false,"rawResponseSaved":false}' > /tmp/court-sale-result.json
+            printf '0\n' > /tmp/court-sale-probe-exit.txt
           else
-            node scripts/probe-court-sale-result-search.cjs > /tmp/court-sale-result.json || true
+            set +e
+            node scripts/probe-court-sale-result-search.cjs > /tmp/court-sale-result.json
+            code=$?
+            set -e
+            printf '%s\n' "$code" > /tmp/court-sale-probe-exit.txt
           fi
       - name: Redact output summary
         run: |
@@ -53,6 +58,11 @@ jobs:
           const fs=require('node:fs');
           let d={};
           try{d=JSON.parse(fs.readFileSync('/tmp/court-sale-result.json','utf8'));}catch{}
+          const exitCode=Number(fs.readFileSync('/tmp/court-sale-probe-exit.txt','utf8').trim());
+          const validReport=d.schemaVersion===1&&d.legalStatusVerified===false&&
+            d.rawResponseSaved===false&&typeof d.reason==='string';
+          const probeExecutionSucceeded=exitCode===0&&validReport;
+          fs.writeFileSync('/tmp/court-sale-probe-health.txt',probeExecutionSucceeded?'ok\n':'error\n');
           const exact=d.observed===true&&d.identityMatched===true&&d.exactDisplayLotRows===1;
           const jointlyVerified=exact&&d.detailCrossChecked===true&&d.rawResultCodeMatched===true&&d.scheduleDayMatched===true;
           const safeCode=v=>typeof v==='string'&&/^[A-Za-z0-9_-]{1,24}$/.test(v)?v:null;
@@ -61,7 +71,8 @@ jobs:
           const labels=['매각','유찰','취하','변경','연기','정지','취소','진행','불허가'];
           const result={
             schemaVersion:1,attemptedAt:new Date().toISOString(),
-            observed:d.observed===true,
+            probeExecutionSucceeded,
+            observed:probeExecutionSucceeded&&d.observed===true,
             daysSinceSale:Number.isInteger(d.daysSinceSale)?d.daysSinceSale:null,
             windowPolicy:'conservative_diagnostic_1_to_7_days',
             failedStage:['connect','response','json','evaluate','detail_preflight','sale_search'].includes(d.failedStage)?d.failedStage:'none',
@@ -110,3 +121,9 @@ jobs:
             sleep 2
           done
           exit 1
+      - name: Report court probe failure after recording evidence
+        run: |
+          if [ "$(cat /tmp/court-sale-probe-health.txt)" != "ok" ]; then
+            echo "::error::Official court probe failed or returned invalid output. See redacted report."
+            exit 1
+          fi

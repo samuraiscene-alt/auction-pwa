@@ -55,6 +55,8 @@ jobs:
             printf '%s\n' "$code" > /tmp/court-sale-probe-exit.txt
           fi
       - name: Redact output summary
+        env:
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           node - <<'NODE'
           const fs=require('node:fs');
@@ -73,6 +75,7 @@ jobs:
           const labels=['매각','유찰','취하','변경','연기','정지','취소','진행','불허가'];
           const result={
             schemaVersion:1,attemptedAt:new Date().toISOString(),
+            triggerEvent:['schedule','workflow_dispatch','push'].includes(process.env.EVENT_NAME)?process.env.EVENT_NAME:'unknown',
             probeExecutionSucceeded,
             observed:probeExecutionSucceeded&&d.observed===true,
             daysSinceSale:Number.isInteger(d.daysSinceSale)?d.daysSinceSale:null,

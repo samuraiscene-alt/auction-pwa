@@ -19,4 +19,8 @@ assert(app.includes("payload.legalStatusVerified!==false"));
 assert(app.includes('실제 법원 조회·낙찰·유찰·취하 확인 결과가 아닙니다'));
 assert(css.includes('.quick-edit-row')&&css.includes('.court-plan-row'));
 assert(sw.includes('./data/court-verification-plan.json'));
+assert(app.includes('preferences:{quickMenu:quickMenuIds.slice()}'),'quick menu omitted from new backup');
+assert(app.includes('if(hasQuickMenu)persistQuickMenu(backedQuickMenu.slice())'),'quick menu restore missing');
+assert(app.includes('const oldSaved=saved,oldQuickMenu=quickMenuIds.slice()'),'rollback not preserved');
+assert(app.includes('const editorItems=[...QUICK_MENU_ITEMS.filter'),'editor order not synchronized');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

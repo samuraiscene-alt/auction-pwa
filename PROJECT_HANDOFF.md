@@ -1,3 +1,9 @@
+## 2026-11-10 v0.7.25 최신 변경
+- 일정 화면: courtFavoriteCalendarMarkup의 법원 수집 관심 카드 상단 '법원 수집 · 저장 당시 기일' 배지, 한 줄 경고문. 기존 달력 데이터는 유지.
+- calendar-day에서 ordinary/favorite와 court-source 일정 마커를 별도 생성. 법원 수집 관심은 CSS court-favorite-dot 보라 마름모, legend court-key. 여러 일정이 겹치면 복수 점 표시.
+- 저장 법원 관심일정이 표시된 날에는 기존 중복 하단 경고문을 생략. 공식 법원 기일변경·취하·낙찰 검증 기능이 생긴 것은 아님.
+- 버전 0.7.25 / 서비스워커 auction-shell-v0725. JS 문법·정적 105조건·관심물건 32조건 통과. Pages 원격 및 iPhone 실기기 확인 필요.
+
 ## 2026-11-10 v0.7.24 최신 인수인계
 - app.js의 courtFavoriteCalendarItems(date), courtFavoriteCalendarMarkup(items)는 saved.courtFavorites의 저장 당시 입찰기일을 독립된 달력 항목으로 연결. 기존 직접 등록·예시 일정 유지.
 - 법원 수집 카드의 data-court-favorite-date 버튼으로 날짜 이동. 달력 관심물건 전용 필터에도 포함.

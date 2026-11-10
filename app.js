@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.28';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.29';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -1635,7 +1635,7 @@ function capital(){
  const groupedMap=new Map();
  for(const x of matched){const k=x.courtCode+'|'+x.caseNo;if(!groupedMap.has(k))groupedMap.set(k,[]);groupedMap.get(k).push(x);}
  const grouped=[...groupedMap.values()];
- const renderCapitalProperty=x=>{
+ const renderCapitalProperty=(x,caseHeader)=>{
 
   const components=componentsFor(x);
   const entry=COURT_USAGE_CATALOG.find(t=>t.level==='small'&&t.code===x.smallCode);
@@ -1645,7 +1645,7 @@ function capital(){
    return `<p class="helper">${escapeHtml(kind)} · ${escapeHtml(c.address)}</p>`;
   }).join('')}</details>`:'';
   return `<div class="capital-property">${focusing&&x.id===focusId?'<div class="capital-focus-found">✓ 관심 저장한 물건번호 '+escapeHtml(x.itemNo)+'번 · 수집본에서 정확히 일치</div>':''}<div class="auction-card-top"><span class="auction-type">${escapeHtml(category)}</span><span class="auction-demo user-record">법원 수집 · 시범</span></div>
-   <strong>${escapeHtml(x.address)}${components.length>1?' 외 구성요소 있음':''}</strong><p class="helper">${escapeHtml(x.courtName||'법원 미확인')} · ${escapeHtml(x.caseNo)} · 물건 ${escapeHtml(x.itemNo)}번</p><p class="helper">입찰일까지 ${escapeHtml(auctionDday(x.saleDate))} · 법원 수집본 기준</p>${partList}
+   <p class="capital-lot-label"><strong>물건 ${escapeHtml(x.itemNo)}번</strong>${components.length>1?' · 복합물건':''}</p>${x.address!==caseHeader.address?'<p class="capital-lot-address">'+escapeHtml(x.address)+'</p>':''}${partList}
    <div class="line"><span class="muted">감정평가액</span><strong>${escapeHtml(formatAmount(x.appraisalWon))}</strong></div>
    <div class="line"><span class="muted">최저매각가</span><strong>${escapeHtml(formatAmount(x.minimumWon))}</strong></div>
    <div class="line"><span class="muted">매각기일</span><strong>${escapeHtml(x.saleDate||'미확인')} · ${escapeHtml(auctionDday(x.saleDate))}</strong></div>
@@ -1707,7 +1707,7 @@ function capital(){
  ${capitalLoadStatus==='loading'?'<div class="empty">수도권 목록을 불러오는 중…</div>':capitalLoadStatus==='failed'?'<div class="empty">자동목록에 연결할 수 없습니다. 나중에 다시 확인해 주세요.</div>':matched.length===0?'<div class="empty">표시할 물건이 없습니다. 검색 조건을 변경해 주세요.</div>':
  grouped.slice(0,state.capitalLimit).map(group=>{
  const x=group[0];
- return '<details class="card capital-record capital-case-group"'+(focusing?' open':'')+'><summary><strong>'+escapeHtml(x.address)+'</strong><p class="helper">'+escapeHtml(x.courtName||'법원 미확인')+' · '+escapeHtml(x.caseNo)+'</p><span class="capital-case-count">'+group.length+'개 물건 · 펼쳐보기</span></summary>'+group.map(renderCapitalProperty).join('')+'</details>';
+ return '<details class="card capital-record capital-case-group"'+(focusing?' open':'')+'><summary><strong>'+escapeHtml(x.address)+'</strong><p class="helper">'+escapeHtml(x.courtName||'법원 미확인')+' · '+escapeHtml(x.caseNo)+'</p><span class="capital-case-count">'+group.length+'개 물건 · 펼쳐보기</span></summary>'+group.map(item=>renderCapitalProperty(item,x)).join('')+'</details>';
  }).join('')}
  ${grouped.length>state.capitalLimit?`<button class="secondary full-secondary" type="button" id="capitalMore">다음 40개 사건 더 보기 (${grouped.length-state.capitalLimit}건 남음)</button>`:''}
  <p class="helper">수집물건은 직접 등록 사건·일정에 자동 추가되지 않습니다. 관심물건 저장 버튼을 누른 물건만 기기에 별도로 저장됩니다.</p>`;

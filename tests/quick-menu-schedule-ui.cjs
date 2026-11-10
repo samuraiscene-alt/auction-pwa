@@ -64,4 +64,9 @@ assert(css.includes('.capital-case-group[open] > summary::after{'),'open arrow m
 assert(!css.includes('.capital-case-group[open] summary::after{'),'nested checklist inherits open arrow');
 assert(css.includes('.capital-status-note'),'court status layout missing');
 assert(app.includes('capital-status-note'),'court status block not wired');
+assert(app.includes('function capitalPriceHistoryMarkup(item)'),'history view missing');
+assert(app.includes('capitalPriceHistoryMarkup(x)'),'court lot history not displayed');
+assert(app.includes("fetch('./data/capital-price-history.json'"),'observation history fetch missing');
+assert(app.includes('유찰·낙찰·취하나 법적 상태를 확인한 결과가 아닙니다'),'history legal warning absent');
+assert(sw.includes('./data/capital-price-history.json'),'history data not precached');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

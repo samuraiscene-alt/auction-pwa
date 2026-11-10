@@ -1,3 +1,8 @@
+## 2026-11-10 v0.7.16 최신 변경
+- 지도 버튼 발견 어려움 개선: 사용자 등록 물건 상세의 법원·사건번호 아래 및 수도권 물건의 주소 아래에 '지도·로드뷰 확인' 제목과 주소 검색 버튼을 배치. 지도 링크 정책은 변경 없음.
+- 버전 0.7.16, SW cache auction-shell-v0716. 코드 문법 및 캐시 버전 정합성 검사 완료. 실배포 성공/기기 검증은 별도 확인 필요.
+- 사용자 저장 기록 및 기존 디자인·아이콘 수정 없음.
+
 ## 2026-11-10 v0.7.15 인수인계
 - KST D-day: app.js의 validAuctionCalendarDay / auctionTodayKst / auctionDday. 날짜 검증 실패 시 미확인, 지난 날짜는 경과 일수로 표기. 실제 매각 여부 판단 금지.
 - 지도: usablePropertyAddress / auctionMapSearchLink / auctionMapControls. 카카오맵 공식 검색 URL 사용, 로드뷰 직접 URL은 좌표가 없어 미연결. 사용자 등록 물건 상세와 수도권 자동수집 목록에서만 실제 주소형 입력 연결. 시범 가상 물건 지도 미연결.

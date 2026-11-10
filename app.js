@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.11';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.12';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -492,7 +492,8 @@ function quickMenuMarkup(){
   (x.icon?'<span class="quick-icon quick-'+x.icon+'" aria-hidden="true"></span>':
    '<span class="quick-extra-icon" aria-hidden="true">'+x.glyph+'</span>')+
   '<span class="quick-label">'+escapeHtml(x.name)+'</span></button>';
- const editor=QUICK_MENU_ITEMS.map(x=>{
+ const editorItems=[...QUICK_MENU_ITEMS.filter(x=>quickMenuIds.includes(x.id)).sort((a,b)=>quickMenuIds.indexOf(a.id)-quickMenuIds.indexOf(b.id)),...QUICK_MENU_ITEMS.filter(x=>!quickMenuIds.includes(x.id))];
+ const editor=editorItems.map(x=>{
   const enabled=quickMenuIds.includes(x.id),at=quickMenuIds.indexOf(x.id);
   return '<div class="quick-edit-row" data-quick-row="'+x.id+'">'+
    (enabled?'<button type="button" class="quick-drag-handle" data-quick-drag="'+x.id+'" aria-label="'+escapeHtml(x.name)+' 길게 눌러 순서 이동">↕</button>':'')+
@@ -1650,7 +1651,7 @@ document.querySelectorAll('[data-quick-drag]').forEach(handle=>{
   const target=rows.find(row=>{const r=row.getBoundingClientRect();return event.clientY>=r.top&&event.clientY<=r.bottom;});
   const from=quickMenuIds.indexOf(handle.dataset.quickDrag),to=target?quickMenuIds.indexOf(target.dataset.quickRow):-1;
   if(from<0||to<0||from===to)return;
-  // Correct insertion: rebuild from original order, removing the source only once.
+  // Reorder only visible active entries, leaving hidden items excluded.
   const reordered=quickMenuIds.slice(),moved=reordered.splice(from,1)[0];reordered.splice(to,0,moved);
   try{persistQuickMenu(reordered);render();showSavedCheck('순서 저장 완료');}
   catch{toast('순서를 저장할 수 없습니다.');}
@@ -2057,7 +2058,7 @@ if($('#export'))$('#export').onclick=async()=>{
  try{
   const attachments=await allAttachments();
   if(!confirm('백업할 자료를 확인해 주세요.\n'+backupSummary(saved,attachments)+'\n\n현재 저장된 데이터만 백업됩니다. 아직 노트 저장 버튼을 누르지 않은 편집 내용은 포함되지 않아요.\n\n백업 파일을 생성할까요?'))return;
-  const payload={version:2,exportedAt:new Date().toISOString(),data:saved,attachments};
+  const payload={version:3,exportedAt:new Date().toISOString(),data:saved,attachments,preferences:{quickMenu:quickMenuIds.slice()}};
   const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
   const a=document.createElement('a');a.href=url;a.download='auction-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),6000);
   localStorage.setItem(STORAGE_STAMP_KEY,new Date().toISOString());toast('백업 파일 생성 요청을 보냈어요. 아이폰 파일 앱에서 저장 여부를 확인해 주세요.');
@@ -2071,22 +2072,29 @@ if($('#import'))$('#import').onchange=async event=>{
   if(payload.data.realProperties!==undefined&&(!Array.isArray(payload.data.realProperties)||payload.data.realProperties.some(x=>!validateRealProperty(x))))throw Error('직접 등록 사건 데이터 오류');
   if(payload.data.notes.some(n=>!n||!Number.isFinite(Number(n.id))||typeof n.title!=='string'||typeof n.body!=='string'))throw Error('노트 데이터 형식 오류');
   const attachments=payload.version>=2?payload.attachments:[];
+  const hasQuickMenu=payload.version>=3&&payload.preferences&&Object.prototype.hasOwnProperty.call(payload.preferences,'quickMenu');
+  const backedQuickMenu=hasQuickMenu?payload.preferences.quickMenu:null;
+  if(hasQuickMenu&&(!Array.isArray(backedQuickMenu)||new Set(backedQuickMenu).size!==backedQuickMenu.length||backedQuickMenu.some(id=>!QUICK_MENU_ITEMS.some(item=>item.id===id))))throw Error('빠른 메뉴 백업 데이터 오류');
   if(!Array.isArray(attachments)||attachments.some(x=>!verifyAttachment(x)))throw Error('첨부파일 형식 오류');
   const before=await allAttachments();
   const destination=payload.data;
   if(!Array.isArray(destination.realProperties))destination.realProperties=[];
-  const summary='백업 파일 ('+backupSummary(destination,attachments)+')\n현재 앱 ('+backupSummary(saved,before)+')';
+  const summary='백업 파일 ('+backupSummary(destination,attachments)+')\n현재 앱 ('+backupSummary(saved,before)+')'+
+   '\n빠른 메뉴: '+(hasQuickMenu?'백업 설정 복원':'기존 기기 설정 유지');
   if(!confirm(summary+'\n\n복원하면 현재 앱의 저장 자료를 백업 내용으로 교체합니다. 계속할까요?'))return;
   if(destination.notes.length===0&&saved.notes.length>0){
    if(!confirm('주의: 선택한 백업 파일에는 노트가 0개입니다.\n현재 노트 '+saved.notes.length+'개가 모두 없어질 수 있어요.\n\n그래도 빈 노트 백업으로 교체할까요?'))return;
   }
-  const oldSaved=saved;
+  const oldSaved=saved,oldQuickMenu=quickMenuIds.slice();
   try{
    await attachmentRestoreAll(attachments);
    saved=destination;
    write();
+   if(hasQuickMenu)persistQuickMenu(backedQuickMenu.slice());
   }catch(err){
    saved=oldSaved;
+   try{write();}catch{}
+   try{persistQuickMenu(oldQuickMenu);}catch{}
    try{await attachmentRestoreAll(before);}catch(rollbackError){toast('복구 실패: 기존 백업 파일을 보존해 주세요.');throw rollbackError;}
    throw err;
   }

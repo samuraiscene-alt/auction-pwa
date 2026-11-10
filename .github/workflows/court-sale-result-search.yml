@@ -15,6 +15,7 @@ on:
       - scripts/validate-court-sale-preflight.cjs
       - tests/court-sale-preflight.cjs
       - tests/court-sale-result-detail.cjs
+      - tests/court-sale-probe-integration.cjs
       - scripts/court-result-window.cjs
       - tests/court-result-window.cjs
       - .github/workflows/court-sale-result-search.yml
@@ -38,6 +39,7 @@ jobs:
           node tests/court-sale-result-detail.cjs
           node tests/court-sale-preflight.cjs
           node tests/court-result-window.cjs
+          node tests/court-sale-probe-integration.cjs
       - name: Single official sale-results search
         env:
           EVENT_NAME: ${{ github.event_name }}

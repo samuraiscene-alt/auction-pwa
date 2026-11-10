@@ -19,6 +19,16 @@
 
 1단계에서 검토할 **후보**는 경기 `court-B000214|2024타경2190|2`, 인천 `court-B000240|2023타경518123|1`이다. 둘 다 2026-11-10 기일로 수집본에 존재하지만, 현재 기일/결과는 별도로 재확인해야 한다. 이 후보들을 조회하는 워크플로우는 **아직 생성·활성화하지 않는다.**
 
+## 2-1. 확대 판단 자동 차단기 (추가 조회 없음)
+
+`scripts/check-court-rollout-gate.cjs`는 `data/court-sale-result-status.json`을 **읽기만** 하여 단계 1의 지역별 진단 확대를 *검토할 자격*을 판정한다. 법원 서버를 호출하거나 추가 사건을 자동 조회하지 않는다.
+
+- 진단 시각이 2026-11-11 00:30 UTC(09:30 KST) 이후이고, 검사 시점보다 미래가 아니며 7일 이내여야 한다.
+- `probeExecutionSucceeded`, `schedulePreflightConfirmed`, `identityMatched`, `detailCrossChecked`, `rawResultCodeMatched`, `scheduleDayMatched`가 모두 `true`, `observed=true`, `exactDisplayLotRows=1`, `detailCrossCheckReason=raw_code_cross_checked`여야 한다.
+- `legalStatusVerified=false`, `rawResponseSaved=false` 유지. 결과가 완벽하게 일치하더라도 지역별 진단을 **자동으로 실행하지 않음**(`allowedNewRequests:0`).
+- 본문에 GitHub Actions의 실제 `schedule` 이벤트 여부가 저장되어 있지 않으므로 **이 검사만으로 예약 실행 사실을 증명할 수 없다.** 담당자가 Actions의 실행일·이벤트와 기록을 별도로 대조해야 한다.
+- 오프라인 단위 테스트 `tests/court-rollout-gate.cjs`: 정상 검토 후보 1개 및 누락/과거/부분 성공 등 거부 사례 16개 통과.
+
 ## 3. 중단 및 판정 금지 조건
 
 - GitHub Actions 예약 미실행, 네트워크 오류, HTTP/JSON 실패, 법원 IP 차단, 비정상 응답, 기일 변경·중복·누락, 사건번호/물건번호/내부번호 불일치, 결과검색 0건 → **미확인**. 0건=매각/취하/유찰 아님.

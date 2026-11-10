@@ -78,4 +78,10 @@ assert(app.includes('<details class="auction-prebid"><summary>입찰 전 확인�
 assert(css.includes('.capital-property .auction-prebid>summary::after'),'checklist disclosure arrow must be on right');
 assert(css.includes('.auction-prebid>summary::-webkit-details-marker'),'native left marker should be suppressed');
 assert(css.includes('.capital-case-group[open] .auction-prebid:not([open])>summary::after'),'parent accordion must not alter closed checklist arrow');
+assert(app.includes('function setCourtFavorite(item,enable)'),'court favorite save helper missing');
+assert(app.includes('function courtFavoriteCards()'),'court saved cards missing');
+assert(app.includes('data-court-favorite-toggle'),'court list save button missing');
+assert(app.includes('data-court-favorite-open'),'saved court lot navigation missing');
+assert(app.includes('data-court-favorite-remove'),'saved court lot removal missing');
+assert(app.includes('법원 관심물건 백업 데이터 오류'),'court favorites backup validation missing');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

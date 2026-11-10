@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.5';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.6';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -299,7 +299,7 @@ function backupSummary(data,attachments){
  return '관심물건 '+data.favorites.length+'개 · 노트 '+data.notes.length+'개 · 직접 등록 사건 '+(data.realProperties?.length||0)+'개 · 첨부파일 '+attachments.length+'개';
 }
 const MAIN_TABS=['home','search','schedule','favorites','study'];
-let capitalSnapshot=null,capitalAttemptStatus=null,capitalLoadStatus='unloaded',capitalLoadError='';
+let capitalSnapshot=null,capitalAttemptStatus=null,capitalLegalDiagnostic=null,capitalLoadStatus='unloaded',capitalLoadError='';
 let appDepth=0;
 const viewHistory=new Map();
 function snapshot(){return {page:state.page,filter:state.filter,selected:state.selected,viewMonth:state.viewMonth,calendarFavoritesOnly:state.calendarFavoritesOnly,detail:state.detail,note:state.note,search:state.search,region:state.region,minPrice:state.minPrice,maxPrice:state.maxPrice,priceUnit:state.priceUnit,detailTab:state.detailTab,favoriteSort:state.favoriteSort,favoriteType:state.favoriteType,capitalRegion:state.capitalRegion,capitalType:state.capitalType,capitalQuery:state.capitalQuery,capitalLimit:state.capitalLimit,editRealId:state.editRealId,noteQuery:state.noteQuery,noteSort:state.noteSort,studyCategory:state.studyCategory,noteTopicDraft:state.noteTopicDraft}}
@@ -1357,6 +1357,13 @@ function capital(){
  const info=capitalLoadStatus==='loading'?'목록을 불러오는 중…':capitalLoadStatus==='failed'?'목록 갱신 확인 실패 · '+capitalLoadError:
    capitalLoadStatus==='ready'?'마지막 수집 '+escapeHtml(new Date(capturedTime).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}))+' · 부분 수집':'목록 확인 전';
  const latestFailed=capitalAttemptStatus?.outcome==='failed'&&Date.parse(capitalAttemptStatus.attemptedAt)>capturedTime;
+ const legalDiagnosticText=capitalLegalDiagnostic?
+  '법적 상태 검증: 미완료 · 단일 사건 진단 '+escapeHtml(new Date(capitalLegalDiagnostic.attemptedAt).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}))+
+  (capitalLegalDiagnostic.reason==='before_result_publication_window'?' · 기일 당일 조회 대기':
+   capitalLegalDiagnostic.reason==='snapshot_schedule_changed_or_unconfirmed'?' · 기일 변경 또는 확인 실패':
+   capitalLegalDiagnostic.reason==='empty_result'?' · 결과검색 0건 (매각·취하 뜻 아님)':
+   capitalLegalDiagnostic.reason==='raw_code_cross_checked'?' · 원시코드 교차확인 (법적 상태 미확정)':' · 공식 상태명 확인 전'):
+  '법적 상태 검증: 미확인 · 진단 보고서 없음';
  const safetyNotice=capitalLoadStatus==='ready'?
   (capitalLoadError?'<div class="status">⚠ 최신 목록 다시 불러오기 실패: '+escapeHtml(capitalLoadError)+' · 이전에 검증된 목록을 표시합니다.</div>':'')+
   (!capitalAttemptStatus?'<div class="status">⚠ 마지막 자동 수집 시도의 성공·실패 정보를 확인할 수 없습니다. 법원 원문을 확인하세요.</div>':'')+
@@ -1375,7 +1382,7 @@ function capital(){
 
  return `<div class="card search-panel"><strong>서울·경기·인천 법원 경매물건</strong>
  <p class="helper">자동 수집 시범 목록입니다. 수도권 전체 사건 목록이 아니며, 매각기일·가격·진행 상태는 법원 원문에서 다시 확인해야 합니다.</p>
- <p class="helper" id="capitalStatus">${info}</p>${safetyNotice}
+ <p class="helper" id="capitalStatus">${info}</p><div class="status">⚠ ${legalDiagnosticText} · 전체 ${items.length}건의 매각·취하 여부가 확인됐다는 뜻은 아닙니다.</div>${safetyNotice}
  <div class="filters">${['전체','서울','경기','인천'].map(r=>`<button type="button" class="chip ${region===r?'active':''}" data-capital-region="${r}">${r}</button>`).join('')}</div>
  <label class="label" for="capitalTypeFilter">물건 종류</label>
  <select id="capitalTypeFilter" class="select" aria-label="물건 종류별 필터">
@@ -1448,13 +1455,20 @@ async function loadCapital(force=false){
  if(state.page==='capital')render();
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
  try{
-  const [response,statusResponse]=await Promise.all([
+  const [response,statusResponse,legalResponse]=await Promise.all([
    fetch('./data/capital-court-pilot.json',{cache:'no-store',signal:controller.signal}),
-   fetch('./data/capital-court-status.json',{cache:'no-store',signal:controller.signal}).catch(()=>null)
+   fetch('./data/capital-court-status.json',{cache:'no-store',signal:controller.signal}).catch(()=>null),
+   fetch('./data/court-sale-result-status.json',{cache:'no-store',signal:controller.signal}).catch(()=>null)
   ]);
   let attempt=null;
   if(statusResponse?.ok){try{const item=await statusResponse.json();if(item?.schemaVersion===1&&['success','failed'].includes(item.outcome)&&Number.isFinite(Date.parse(item.attemptedAt)))attempt=item;}catch{}}
   capitalAttemptStatus=attempt;
+  let legalDiagnostic=null;
+  if(legalResponse?.ok){try{
+   const item=await legalResponse.json();
+   if(item?.schemaVersion===1&&item.legalStatusVerified===false&&Number.isFinite(Date.parse(item.attemptedAt))&&Date.parse(item.attemptedAt)<=Date.now()+60000&&typeof item.reason==='string'&&/^[a-z_]{1,40}$/.test(item.reason))legalDiagnostic=item;
+  }catch{}}
+  capitalLegalDiagnostic=legalDiagnostic;
   if(!response.ok)throw Error('목록 파일이 아직 배포되지 않았습니다.');
   const payload=await response.json();
   if(![1,2].includes(payload?.schemaVersion)||payload.complete!==false||!Array.isArray(payload.items)||payload.items.length===0||payload.items.length>5000||

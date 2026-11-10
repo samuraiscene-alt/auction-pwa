@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.13';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.14';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -70,10 +70,11 @@ window.addEventListener('pagehide',persistNoteDraft);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)persistNoteDraft();});
 
 function statusText(){
- if(updateState.checking)return '업데이트 확인 중…';
- if(updateState.available)return '새 버전 v'+updateState.latest+' 준비됨';
- if(!navigator.onLine)return '오프라인 · 저장한 자료 사용 가능';
- return '최신 버전 v'+APP_VERSION;
+ if(updateState.checking)return '서버 최신 버전 확인 중…';
+ if(updateState.available)return '새 버전 v'+updateState.latest+' 준비됨 · 현재 v'+APP_VERSION;
+ if(!navigator.onLine)return '오프라인 · 설치된 버전 v'+APP_VERSION;
+ if(!updateState.network)return '서버 버전 확인 필요 · 설치된 버전 v'+APP_VERSION;
+ return '서버 확인 완료 · 현재 v'+APP_VERSION;
 }
 function updateUpdateStatus(){
  const info=$('#appUpdateState');
@@ -83,6 +84,12 @@ function updateUpdateStatus(){
  const row=$('#updateAvailableMessage');
  if(row)row.hidden=!updateState.available;
 }
+function newerAppVersion(remote,installed){
+ if(!/^\d+\.\d+\.\d+$/.test(remote)||!/^\d+\.\d+\.\d+$/.test(installed))return false;
+ const a=remote.split('.').map(Number),b=installed.split('.').map(Number);
+ for(let i=0;i<3;i++){if(a[i]!==b[i])return a[i]>b[i];}
+ return false;
+}
 async function inspectAppUpdate(announce=false){
  if(!('serviceWorker'in navigator)||location.protocol==='file:'){
   if(announce)toast('이 환경에서는 자동 업데이트를 사용할 수 없어요.');return;
@@ -90,21 +97,23 @@ async function inspectAppUpdate(announce=false){
  if(updateState.checking)return;
  updateState.checking=true;updateUpdateStatus();
  try{
-  const reg=await navigator.serviceWorker.getRegistration('./');
-  if(reg){updateState.registration=reg;await reg.update();}
+  // SW update may fail independently of the version probe; do not suppress a
+  // real newer server version solely because SW registration was unavailable.
+  try{
+   const reg=await navigator.serviceWorker.getRegistration('./');
+   if(reg){updateState.registration=reg;await reg.update();}
+  }catch(error){console.warn('Service worker refresh failed:',error);}
   const response=await fetch('./VERSION.txt?check='+Date.now(),{cache:'no-store'});
   if(!response.ok)throw Error('버전 확인 응답 오류');
   const remote=(await response.text()).trim().split(/\s+/)[0];
   if(!/^\d+\.\d+\.\d+$/.test(remote))throw Error('버전 정보 오류');
   updateState.latest=remote;
-  const toNums=v=>v.split('.').map(Number);
-  const local=toNums(APP_VERSION),next=toNums(remote);
-  updateState.available=next.some((n,i)=>n>local[i]&&next.slice(0,i).every((x,j)=>x===local[j]));
+  updateState.available=newerAppVersion(remote,APP_VERSION);
   updateState.network=true;
-  if(announce)toast(updateState.available?'업데이트가 준비됐어요.':'현재 최신 버전입니다.');
+  if(announce)toast(updateState.available?'새 버전 v'+remote+'이 준비됐어요.':'서버 버전 v'+remote+' 확인 완료');
  }catch(err){
   updateState.network=false;
-  if(announce)toast(navigator.onLine?'업데이트 확인 실패 · 연결을 확인해 주세요.':'인터넷에 연결한 뒤 확인해 주세요.');
+  if(announce)toast(navigator.onLine?'서버 버전 확인 실패 · 배포 상태를 확인해 주세요.':'인터넷에 연결한 뒤 확인해 주세요.');
  }finally{updateState.checking=false;updateUpdateStatus();}
 }
 function applyAppUpdate(){
@@ -112,8 +121,12 @@ function applyAppUpdate(){
   toast('작성 중인 노트를 먼저 저장해 주세요.');
   return;
  }
- if(updateState.available)location.reload();
- else inspectAppUpdate(true);
+ if(!updateState.available){void inspectAppUpdate(true);return;}
+ // A fresh navigation URL avoids reusing an old HTML navigation cache.
+ // No localStorage, IndexedDB, cookies or personal records are cleared.
+ const url=new URL(location.href);
+ url.searchParams.set('app_update',updateState.latest);
+ location.replace(url.pathname+url.search+url.hash);
 }
 function initUpdateMonitoring(){
  window.addEventListener('online',()=>inspectAppUpdate(false));
@@ -126,7 +139,6 @@ function initUpdateMonitoring(){
  }
  inspectAppUpdate(false);
 }
-
 
 const ATTACH_DB='auction-note-files-v1',ATTACH_STORE='files',MAX_NOTE_ATTACH=8,MAX_FILE_BYTES=8*1024*1024;
 let attachDbPromise=null;

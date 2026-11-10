@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-10T00:12:46.668Z",
+  "attemptedAt": "2026-11-10T00:13:07.660Z",
   "observed": false,
   "daysSinceSale": 0,
   "windowPolicy": "conservative_diagnostic_1_to_7_days",
@@ -9,6 +9,8 @@
   "identityMatched": false,
   "exactDisplayLotRows": 0,
   "rowCount": null,
+  "responseIdentityFieldNames": [],
+  "responseCandidateFieldNames": [],
   "fieldNames": [],
   "rawCodes": {},
   "exactDisplayLabels": {},

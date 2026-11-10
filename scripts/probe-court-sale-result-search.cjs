@@ -4,26 +4,22 @@
 // Inputs fixed to a previously cross-checked sample lot.
 const {analyzeSaleResultSearch}=require('./validate-court-sale-result-search.cjs');
 const id={courtCode:'B000210',caseNo:'2008타경25092',itemNo:'1'};
+// Exact search fields observed in official PGJ158M02.xml as of 2026-11-10.
+// Previous PGJ151M01 47-field payload was not valid evidence of sale results.
 const KEYS=[
-'rletDspslSpcCondCd','bidDvsCd','mvprpRletDvsCd','cortAuctnSrchCondCd',
-'rprsAdongSdCd','rprsAdongSggCd','rprsAdongEmdCd','rdnmSdCd','rdnmSggCd','rdnmNo',
-'mvprpDspslPlcAdongSdCd','mvprpDspslPlcAdongSggCd','mvprpDspslPlcAdongEmdCd',
-'rdDspslPlcAdongSdCd','rdDspslPlcAdongSggCd','rdDspslPlcAdongEmdCd',
-'cortOfcCd','jdbnCd','execrOfcDvsCd','lclDspslGdsLstUsgCd',
-'mclDspslGdsLstUsgCd','sclDspslGdsLstUsgCd','cortAuctnMbrsId','aeeEvlAmtMin',
-'aeeEvlAmtMax','rletLwsDspslPrcMin','rletLwsDspslPrcMax','mvprpLwsDspslPrcMin',
-'mvprpLwsDspslPrcMax','lwsDspslPrcRateMin','lwsDspslPrcRateMax','flbdNcntMin',
-'flbdNcntMax','objctArDtsMin','objctArDtsMax','mvprpArtclKndCd','mvprpArtclNm',
-'mvprpAtchmPlcTypCd','notifyLoc','lafjOrderBy','pgmId','csNo','cortStDvs',
-'statNum','bidBgngYmd','bidEndYmd'];
+'aeeEvlAmtMax','aeeEvlAmtMin','auctnGdsStatCd','cortOfcCd',
+'cortStDvs','csNo','dspslAmtMax','dspslAmtMin','flbdNcntMax','flbdNcntMin',
+'jdbnCd','lafjOrderBy','lclDspslGdsLstUsgCd','mclDspslGdsLstUsgCd',
+'pgmId','rdnmNo','rdnmSdCd','rdnmSggCd','rprsAdongEmdCd','rprsAdongSdCd',
+'rprsAdongSggCd','sclDspslGdsLstUsgCd','statNum'
+];
 async function main(){
  let stage='connect';
  const ctrl=new AbortController();
  const timer=setTimeout(()=>ctrl.abort(),12000);
  try{
   const info=Object.fromEntries(KEYS.map(x=>[x,'']));
-  Object.assign(info,{mvprpRletDvsCd:'00031R',cortAuctnSrchCondCd:'0004601',
-   pgmId:'PGJ158M02',notifyLoc:'Y',cortOfcCd:id.courtCode,csNo:id.caseNo});
+  Object.assign(info,{pgmId:'PGJ158M02',cortOfcCd:id.courtCode,csNo:id.caseNo});
   const page={pageNo:'1',pageSize:'50',bfPageNo:'',startRowNo:'1',
    totalCnt:'0',totalYn:'Y',groupTotalCount:''};
   const response=await fetch('https://www.courtauction.go.kr/pgj/pgjsearch/selectDspslSchdRsltSrch.on',{

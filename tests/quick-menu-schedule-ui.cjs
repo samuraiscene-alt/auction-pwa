@@ -74,4 +74,8 @@ for(const label of ['지도·로드뷰 확인','감정가 대비 가격 분석',
  assert(app.includes("auctionFold('"+label+"'"),'missing disclosure: '+label);
 assert(css.includes('.auction-fold>summary')&&css.includes('.auction-fold[open]>summary::after'),'collapse arrow styles missing');
 assert(css.includes('.capital-case-group>.capital-property .auction-fold>summary'),'nested accordion styling not isolated');
+assert(app.includes('<details class="auction-prebid"><summary>입찰 전 확인사항</summary>'),'checklist heading not aligned');
+assert(css.includes('.capital-property .auction-prebid>summary::after'),'checklist disclosure arrow must be on right');
+assert(css.includes('.auction-prebid>summary::-webkit-details-marker'),'native left marker should be suppressed');
+assert(css.includes('.capital-case-group[open] .auction-prebid:not([open])>summary::after'),'parent accordion must not alter closed checklist arrow');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

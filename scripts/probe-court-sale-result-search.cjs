@@ -17,6 +17,7 @@ const KEYS=[
 'mvprpAtchmPlcTypCd','notifyLoc','lafjOrderBy','pgmId','csNo','cortStDvs',
 'statNum','bidBgngYmd','bidEndYmd'];
 async function main(){
+ let stage='connect';
  const ctrl=new AbortController();
  const timer=setTimeout(()=>ctrl.abort(),12000);
  try{
@@ -29,17 +30,23 @@ async function main(){
    method:'POST',headers:{'Content-Type':'application/json; charset=UTF-8',
     Accept:'application/json',Referer:'https://www.courtauction.go.kr/pgj/index.on'},
    body:JSON.stringify({dma_pageInfo:page,dma_srchGdsDtlSrchInfo:info}),signal:ctrl.signal});
+  stage='response';
   if(!response.ok)throw Error('http_error');
   if(!(response.headers.get('content-type')||'').includes('json'))throw Error('non_json');
+  stage='json';
   const body=await response.json();
   if(body?.data?.ipcheck===false||body?.ipcheck===false)throw Error('access_rejected');
+  stage='evaluate';
   const evidence=analyzeSaleResultSearch(body,id);
   console.log(JSON.stringify({schemaVersion:1,...evidence}));
  }catch(e){
+  const code=String(e?.cause?.code||'');
   const reason=e?.name==='AbortError'?'timeout':
    ['http_error','non_json','access_rejected'].includes(e?.message)?e.message:
-   ['ENOTFOUND','EAI_AGAIN'].includes(e?.cause?.code)?'dns_failure':'network_error';
-  console.log(JSON.stringify({schemaVersion:1,observed:false,reason,
+   ['ENOTFOUND','EAI_AGAIN'].includes(code)?'dns_failure':
+   ['ETIMEDOUT','ECONNRESET','ECONNREFUSED','ENETUNREACH','UND_ERR_CONNECT_TIMEOUT'].includes(code)?'transport_error':
+   e instanceof SyntaxError?'invalid_json':'network_error';
+  console.log(JSON.stringify({schemaVersion:1,observed:false,reason,failedStage:stage,
    identityMatched:false,legalStatusVerified:false,rawResponseSaved:false}));
   process.exitCode=1;
  }finally{clearTimeout(timer);}

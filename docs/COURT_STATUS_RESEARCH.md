@@ -229,3 +229,10 @@
 - 법원 공식 결과검색 응답 필드 구성이 목록과 다를 가능성에 대비하여 최대 3개 응답 행에서 **허용된 상태·신원 관련 필드의 이름만** 모아 `responseIdentityFieldNames`, `responseCandidateFieldNames`로 기록. 행 내용(사건번호, 주소, 당사자 성명, 법원 내부 ID)은 기록하지 않음. 실제 개별 코드값·표시문구는 `boCd+srnSaNo+maemulSer`가 정확히 일치한 단일 행에 대해서만 기존 제한 규칙으로 기록.
 - `tests/court-sale-result-search.cjs`에 비어 있는 목록/잘못된 사건번호/다른 필드명 응답/개인정보 차단 사례를 추가해 통과. `.github/workflows/court-sale-result-search.yml` 보고서 필드에도 이중 화이트리스트 적용.
 - 현재(2026-11-10) 매각기일 당일이므로 `before_result_publication_window`로 조회를 건너뜀. **11월 11일 Actions 실제 실행·응답 검증은 아직 수행되지 않았고, 예약은 최선 노력이며 성공 보장이 아님.** 앱 v0.7.5/805건 시범 목록/개인자료/법적 자동판정 불변.
+
+## 2026-11-10 매각결과검색 ↔ 사건 상세조회 교차검증 연결
+- `scripts/compare-court-sale-result-detail.cjs` 및 `tests/court-sale-result-detail.cjs` 추가. 매각결과검색 `dlt_srchResult`의 **동일 법원/표시 사건번호/물건번호 단일 행**을 상세 응답 `dma_csBasInf`의 내부 사건번호와 결과 행 `saNo`의 정확한 일치로 검증. 상세 물건 목록의 법원/내부 사건번호 전체 일관성 및 물건번호 단일 매칭도 요구.
+- 결과검색 행의 유효한 매각기일(`dxdyYmd` 또는 `maeGiil`)이 상세의 동일 물건 이력에서 정확히 1건이어야 하고, `auctnDxdyRsltCd`의 원시값까지 일치해야만 `crossChecked:true`를 반환. 중복/다른 물건/다른 기일/불완전 내부 사건번호/결과코드 충돌 사례는 전부 차단.
+- `scripts/probe-court-sale-result-search.cjs`는 **검색 결과 물건 신원이 정확히 1건 일치했을 때만** 추가로 법원 사건 상세조회 POST를 1회 수행(기존 매각결과검색 1회 + 상세조회 최대 1회, 재시도 없음). `.github/workflows/court-sale-result-search.yml`은 교차검증 관련 회귀 테스트를 실행하고, 사건/물건/기일/코드가 교차검증된 경우에만 원시 코드 및 허용된 짧은 결과 텍스트를 보고서에 남기도록 제한.
+- `tests/court-sale-result-detail.cjs`, 기존 `tests/court-sale-result-search.cjs`, `tests/court-result-window.cjs` 모두 통과. **법적 상태는 교차검증 성공이어도 `legalStatusVerified:false`를 유지**. 코드 `002`의 뜻을 공식 대응표 없이 추론하지 않음.
+- 아직 11월 11일 예약 실행 전이므로 **실제 매각결과 API와 상세정보 교차검증 실서버 성공은 미확인**. 현재 앱 v0.7.5, 기존 805건과 사용자 데이터는 변경하지 않음.

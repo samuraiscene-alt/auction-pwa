@@ -917,3 +917,19 @@ html,body{
 #content .capital-history-event{padding:10px 0;border-bottom:1px solid #edf0f5;line-height:1.55;overflow-wrap:anywhere}
 #content .capital-history-event small{display:block;color:#62748f;font-size:11px}
 #content .capital-price-history .helper{margin-top:9px}
+
+/* v0.7.21 - compact disclosure sections for auction details */
+#content .auction-fold{margin:9px 0;border:1px solid #e2eaf5;border-radius:12px;background:#f9fbff;overflow:visible}
+#content .auction-fold>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;font-size:13px;line-height:1.45;font-weight:750;list-style:none;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+#content .auction-fold>summary::-webkit-details-marker{display:none}
+#content .auction-fold>summary::after{content:'⌄';color:#64748b;font-size:18px;font-weight:600;flex:0 0 auto}
+#content .auction-fold[open]>summary::after{content:'⌃'}
+#content .auction-fold>summary:focus-visible{outline:2px solid #1769ed;outline-offset:2px}
+#content .auction-fold-body{border-top:1px solid #edf1f7;padding:12px 13px}
+#content .auction-fold-body>.auction-price-analysis,#content .auction-fold-body>.auction-bid-calc{margin:0}
+#content .auction-fold-body>.auction-map-controls{margin:0}
+#content .auction-fold-body>.capital-price-history{margin:0;border:0;padding:0}
+#content .auction-fold-body>.capital-price-history .capital-history-event{margin:0}
+#content .capital-case-group>.capital-property .auction-fold>summary{display:flex;padding:13px 14px;position:static}
+#content .capital-case-group[open] .auction-fold:not([open])>summary::after{content:'⌄'}
+#content .capital-case-group[open] .auction-fold[open]>summary::after{content:'⌃'}

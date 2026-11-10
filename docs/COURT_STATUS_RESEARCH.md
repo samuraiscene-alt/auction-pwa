@@ -236,3 +236,9 @@
 - `scripts/probe-court-sale-result-search.cjs`는 **검색 결과 물건 신원이 정확히 1건 일치했을 때만** 추가로 법원 사건 상세조회 POST를 1회 수행(기존 매각결과검색 1회 + 상세조회 최대 1회, 재시도 없음). `.github/workflows/court-sale-result-search.yml`은 교차검증 관련 회귀 테스트를 실행하고, 사건/물건/기일/코드가 교차검증된 경우에만 원시 코드 및 허용된 짧은 결과 텍스트를 보고서에 남기도록 제한.
 - `tests/court-sale-result-detail.cjs`, 기존 `tests/court-sale-result-search.cjs`, `tests/court-result-window.cjs` 모두 통과. **법적 상태는 교차검증 성공이어도 `legalStatusVerified:false`를 유지**. 코드 `002`의 뜻을 공식 대응표 없이 추론하지 않음.
 - 아직 11월 11일 예약 실행 전이므로 **실제 매각결과 API와 상세정보 교차검증 실서버 성공은 미확인**. 현재 앱 v0.7.5, 기존 805건과 사용자 데이터는 변경하지 않음.
+
+## 2026-11-10 법원 매각결과검색의 상충 신원·날짜 필드 차단
+- `scripts/validate-court-sale-result-search.cjs`에서 결과행의 `maemulSer`/`mokmulSer`가 동시에 존재하고 값이 다르거나, `boCd`/`cortOfcCd`가 다르거나, `csNo`가 표시 형식의 다른 사건번호인 경우 **검색 결과 일치 거부**. 내부 숫자 사건번호는 별도 상세 검증 절차에 맡김.
+- `scripts/compare-court-sale-result-detail.cjs`에도 동일한 신원 필드 불일치 거부 적용. 특히 `dxdyYmd`와 `maeGiil`이 모두 존재할 때 서로 다른 날짜이거나 한쪽이 실제 달력상 불가능한 날짜라면 `contradictory_result_dates`로 차단. 임의로 한 값을 선택해 결론 내리지 않음.
+- `tests/court-sale-result-search.cjs`, `tests/court-sale-result-detail.cjs`에 다른 법원·사건·물건번호와 충돌 날짜 회귀 사례 추가. 기존 기간 테스트 포함 **3종 전부 통과**.
+- 결과 표본이 실제로 존재하거나 매각/유찰/취하가 확정됐다는 뜻은 아님. 예약된 2026-11-11 KST 결과검색 조회 전에 검증 조건만 강화. `legalStatusVerified:false` 및 앱 v0.7.5, 기존 805건, 개인자료 불변.

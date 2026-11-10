@@ -261,3 +261,8 @@
 - 교차검증 함수에 목표 기일 `expectedDate` 필수 조건 추가. 결과검색 날짜(`dxdyYmd`/`maeGiil`)가 대상 스냅샷 매각기일과 **정확히 같은 날짜**인 경우만 나머지 상세 교차검증 진행. 목표 날짜 미지정/달력 오류/과거 날짜 모두 `result_schedule_not_target_date`로 거부.
 - 실서버 진단 `scripts/probe-court-sale-result-search.cjs`에서 `snapshotSaleDate`를 해당 함수에 명시적으로 전달. workflow에서 거부 사유를 비식별 코드로만 기록. 테스트 `tests/court-sale-result-detail.cjs`의 올바른 기일/옛 기일/목표 날짜 미지정/불가능 날짜 사례 통과.
 - 확인 대상은 기존 스냅샷의 2026-11-10 매각기일 1건이며, 다음날 예정된 실제 결과검색의 실행·매각 여부는 아직 미확인. 앱 v0.7.6/기존 805건/개인자료 변경 없음.
+
+## 2026-11-10 법원 결과검색 실패 단계 표시 수정
+- 예약 매각결과조회 스크립트는 이미 `detail_preflight`(법원 상세정보·기일 사전조회)와 `sale_search`(결과검색) 단계를 구분했으나, `.github/workflows/court-sale-result-search.yml`의 요약 필드 허용 목록에 두 단계가 빠져 오류 시 `failedStage:none`으로 기록될 수 있었음.
+- 요약의 비식별 허용 목록에 두 단계를 추가. 네트워크 오류가 발생한 위치만 기록하고 사건·개인정보·원문은 저장하지 않음. `legalStatusVerified:false` 유지.
+- 공개 GitHub Pages와 실제 GitHub Actions 실행 기록은 현재 접근이 제한돼 직접 확인되지 않았으며, **실서버 조회 성공이나 배포 성공을 주장하지 않음**. 예약일 2026-11-11 KST, 앱 v0.7.6, 805건 유지.

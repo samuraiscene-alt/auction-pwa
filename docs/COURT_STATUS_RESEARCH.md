@@ -223,3 +223,9 @@
 - GitHub cron은 연도를 지원하지 않아 매년 같은 날짜에 워크플로우가 깨어날 수 있으므로, `github.event_name=schedule`에서는 KST 날짜가 **정확히 `2026-11-11`인 경우에만** 법원 POST 실행하도록 두 번째 날짜 조건을 추가. 다른 해/다른 날짜에는 `outside_one_time_scheduled_date` 비조회 사유만 기록. `workflow_dispatch`와 코드 수정 시 push 동작은 기존대로 유지되지만 조회 스크립트는 여전히 매각기일+1~7일 조건을 검사.
 - 진단 대상 `court-B000210|2025타경953|1`, 스냅샷상 매각기일 2026-11-10. 실제 기일 변경 여부는 별도로 검증되지 않았으므로 결과 0건/신원불일치/네트워크 오류를 매각·취하·유찰로 판단 금지.
 - 저장소 최신 테스트 `tests/court-sale-result-search.cjs`, `tests/court-result-window.cjs` 모두 통과; cron·KST 가드·기존 테스트 명령과 조회 명령 확인. **11월 11일 실제 Actions 실행 성공 여부/법원 응답은 아직 미확인.** 앱 v0.7.5/805건/개인자료 변경 없음.
+
+## 2026-11-10 매각결과검색 응답구조 비식별 진단 강화
+- 내일(2026-11-11 KST) 09:30에 예약된 단발 진단에서 `0건`, `결과행은 있지만 사건번호가 불일치`, `동일 사건·물건 일치 1건`을 구분하도록 `scripts/validate-court-sale-result-search.cjs` 수정. `reason=empty_result` / `identity_not_unique_or_not_found` / `processed`를 분리.
+- 법원 공식 결과검색 응답 필드 구성이 목록과 다를 가능성에 대비하여 최대 3개 응답 행에서 **허용된 상태·신원 관련 필드의 이름만** 모아 `responseIdentityFieldNames`, `responseCandidateFieldNames`로 기록. 행 내용(사건번호, 주소, 당사자 성명, 법원 내부 ID)은 기록하지 않음. 실제 개별 코드값·표시문구는 `boCd+srnSaNo+maemulSer`가 정확히 일치한 단일 행에 대해서만 기존 제한 규칙으로 기록.
+- `tests/court-sale-result-search.cjs`에 비어 있는 목록/잘못된 사건번호/다른 필드명 응답/개인정보 차단 사례를 추가해 통과. `.github/workflows/court-sale-result-search.yml` 보고서 필드에도 이중 화이트리스트 적용.
+- 현재(2026-11-10) 매각기일 당일이므로 `before_result_publication_window`로 조회를 건너뜀. **11월 11일 Actions 실제 실행·응답 검증은 아직 수행되지 않았고, 예약은 최선 노력이며 성공 보장이 아님.** 앱 v0.7.5/805건 시범 목록/개인자료/법적 자동판정 불변.

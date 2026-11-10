@@ -1,2 +1,2 @@
-0.7.25
-Cleaner auction calendar notices with distinct court-source favorite markers and provenance labels.
+0.7.26
+Larger calendar date numerals with stacked blue/pink/purple event bars; demo dates hidden only from calendar.

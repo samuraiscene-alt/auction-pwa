@@ -933,3 +933,20 @@ html,body{
 #content .capital-case-group>.capital-property .auction-fold>summary{display:flex;padding:13px 14px;position:static}
 #content .capital-case-group[open] .auction-fold:not([open])>summary::after{content:'⌄'}
 #content .capital-case-group[open] .auction-fold[open]>summary::after{content:'⌃'}
+
+/* v0.7.22: keep the pre-bid checklist visually identical to the four disclosure rows */
+#content .auction-prebid{margin:9px 0;border:1px solid #e2eaf5;border-radius:12px;padding:0;background:#f9fbff;overflow:visible}
+#content .auction-prebid>summary,
+#content .capital-property .auction-prebid>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;list-style:none;position:static;cursor:pointer;font-size:13px;line-height:1.45;font-weight:750;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#content .auction-prebid>summary::-webkit-details-marker,
+#content .capital-property .auction-prebid>summary::-webkit-details-marker{display:none}
+#content .auction-prebid>summary::after,
+#content .capital-property .auction-prebid>summary::after{content:'⌄';font-size:18px;color:#64748b;font-weight:600;flex:0 0 auto;position:static}
+#content .auction-prebid[open]>summary::after,
+#content .capital-property .auction-prebid[open]>summary::after,
+#content .capital-case-group[open] .auction-prebid[open]>summary::after{content:'⌃'}
+#content .capital-case-group[open] .auction-prebid:not([open])>summary::after{content:'⌄'}
+#content .auction-prebid[open]>summary{border-bottom:1px solid #edf1f7}
+#content .auction-prebid ul{padding:3px 13px 0 33px}
+#content .auction-prebid .helper{padding:0 13px 12px;margin-bottom:0}
+#content .auction-prebid>summary:focus-visible{outline:2px solid #1769ed;outline-offset:2px}

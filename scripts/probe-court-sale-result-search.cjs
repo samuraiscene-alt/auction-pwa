@@ -3,7 +3,10 @@
 // ONE official read-only sale-result search, zero retries.
 // Inputs fixed to a previously cross-checked sample lot.
 const {analyzeSaleResultSearch}=require('./validate-court-sale-result-search.cjs');
-const id={courtCode:'B000210',caseNo:'2008타경25092',itemNo:'1'};
+const {resultWindow}=require('./court-result-window.cjs');
+// Known existing court snapshot lot; court sale date may change before the auction.
+const id={courtCode:'B000210',caseNo:'2025타경953',itemNo:'1'};
+const snapshotSaleDate='2026-11-10';
 // Exact search fields observed in official PGJ158M02.xml as of 2026-11-10.
 // Previous PGJ151M01 47-field payload was not valid evidence of sale results.
 const KEYS=[
@@ -14,6 +17,14 @@ const KEYS=[
 'rprsAdongSggCd','sclDspslGdsLstUsgCd','statNum'
 ];
 async function main(){
+ const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ const window=resultWindow(snapshotSaleDate,today);
+ if(!window.eligible){
+  console.log(JSON.stringify({schemaVersion:1,observed:false,reason:window.reason,
+   daysSinceSale:window.daysSinceSale,windowPolicy:'conservative_diagnostic_1_to_7_days',
+   identityMatched:false,legalStatusVerified:false,rawResponseSaved:false}));
+  return;
+ }
  let stage='connect';
  const ctrl=new AbortController();
  const timer=setTimeout(()=>ctrl.abort(),12000);

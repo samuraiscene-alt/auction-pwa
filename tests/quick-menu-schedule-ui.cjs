@@ -120,4 +120,13 @@ assert(app.includes('x.address!==caseHeader.address'),'show distinct lot address
 assert(app.includes('capital-lot-label'),'lot number must remain visible');
 assert(app.includes('물건 ${escapeHtml(x.itemNo)}번'),'each item must retain its own number');
 assert(css.includes('.capital-lot-address'),'distinct item address style missing');
+assert(app.includes('function demo(){'),'developer test gallery missing');
+assert(app.includes("capital:'수도권 자동목록',demo:'테스트용 예시 물건'"),'test gallery navigation missing');
+assert(app.includes('return registeredProperties().filter(p=>{'),'regular search must exclude demo data');
+assert(app.includes('테스트용 예시 3건 보기'),'test cases must be accessible from settings');
+assert(app.includes("properties.map(card).join('')"),'sample test items must remain available');
+assert(app.includes('auction-detail-ident'),'separate court/case rows missing');
+assert(app.includes('<span class="muted">사건번호</span><strong>${escapeHtml(p.case)}</strong>'),'case number should not be split among labels');
+assert(css.includes('.auction-detail .auction-detail-ident'),'mobile case identity CSS missing');
+assert(!app.includes('properties.slice(0,2)'),'home must not show demo listings by default');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

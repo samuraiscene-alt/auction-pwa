@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.22';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.23';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -308,7 +308,7 @@ function showSavedCheck(message='저장 완료'){
  saveCheckTimer=setTimeout(()=>overlay.classList.remove('visible'),1450);
 }
 function backupSummary(data,attachments){
- return '관심물건 '+data.favorites.length+'개 · 노트 '+data.notes.length+'개 · 직접 등록 사건 '+(data.realProperties?.length||0)+'개 · 첨부파일 '+attachments.length+'개';
+ return '관심물건 '+(data.favorites.length+(data.courtFavorites?.length||0))+'개 · 노트 '+data.notes.length+'개 · 직접 등록 사건 '+(data.realProperties?.length||0)+'개 · 첨부파일 '+attachments.length+'개';
 }
 const MAIN_TABS=['home','search','schedule','favorites','study'];
 let capitalPriceHistory=null,capitalSnapshot=null,capitalAttemptStatus=null,capitalLegalDiagnostic=null,capitalLoadStatus='unloaded',capitalLoadError='';
@@ -651,6 +651,58 @@ function schedule(){
   const actualCount=allProperties().filter(p=>propertyDate(p)===chosen).length;
   return `<div class="card calendar-shell"><div class="calendar-toolbar"><button type="button" class="calendar-arrow" id="prevMonth" aria-label="이전 달">‹</button><strong>${label}</strong><button type="button" class="calendar-arrow" id="nextMonth" aria-label="다음 달">›</button><button type="button" class="calendar-today" id="todayMonth">오늘</button></div><div class="calendar-caption"><span>● 등록·예시 입찰일</span><span class="favorite-key">● 관심물건</span></div><div class="calendar">${week.map((d,i)=>`<div class="weekday ${i===0?'sun':''}">${d}</div>`).join('')}${Array(offset).fill('<div class="calendar-blank"></div>').join('')}${dates.join('')}</div><div class="calendar-filter"><label><input type="checkbox" id="favCalendarOnly" ${state.calendarFavoritesOnly?'checked':''}> 관심물건 일정만 표시</label><span>법원 자동 갱신 미지원</span></div></div><div class="section"><h2>${Number(chosen.slice(5,7))}월 ${Number(chosen.slice(-2))}일 일정</h2><span class="muted">${items.length}건 · 등록/예시 구분</span></div>${items.map(card).join('')||(state.calendarFavoritesOnly&&actualCount?'<div class="empty">선택한 날짜에 관심물건 일정이 없어요.</div>':'<div class="empty">선택한 날짜에 기록된 입찰일정이 없어요.</div>')}<p class="helper">직접 등록한 기일과 예시 일정이 함께 표시될 수 있습니다. 법원 실시간 변경 알림은 아직 없으므로 입찰 전에 반드시 원문을 확인하세요.</p>${verificationPlanMarkup(chosen)}`;
 }
+
+const COURT_FAVORITES_LIMIT=200;
+function validCourtFavorite(x){
+ return x&&typeof x==='object'&&
+ typeof x.id==='string'&&/^court-B\d{6}\|20\d{2}타경\d{1,10}\|[1-9]\d{0,3}$/.test(x.id)&&
+ typeof x.courtCode==='string'&&/^B\d{6}$/.test(x.courtCode)&&
+ typeof x.caseNo==='string'&&/^20\d{2}타경\d{1,10}$/.test(x.caseNo)&&
+ typeof x.itemNo==='string'&&/^[1-9]\d{0,3}$/.test(x.itemNo)&&
+ x.id==='court-'+x.courtCode+'|'+x.caseNo+'|'+x.itemNo&&
+ ['서울','경기','인천'].includes(x.region)&&
+ typeof x.address==='string'&&x.address.length>3&&x.address.length<=260&&
+ typeof x.courtName==='string'&&x.courtName.length<=80&&
+ (x.saleDate===null||validAuctionCalendarDay(x.saleDate)!==null)&&
+ [x.appraisalWon,x.minimumWon].every(v=>v===null||Number.isSafeInteger(v)&&v>0&&v<=999999999999999)&&
+ typeof x.savedAt==='string'&&Number.isFinite(Date.parse(x.savedAt));
+}
+function courtFavorites(){
+ return Array.isArray(saved.courtFavorites)?saved.courtFavorites.filter(validCourtFavorite):[];
+}
+function courtFavoriteFromLot(item){
+ return {id:item.id,courtCode:item.courtCode,caseNo:item.caseNo,itemNo:item.itemNo,region:item.region,
+  address:item.address,courtName:item.courtName||'',saleDate:item.saleDate||null,
+  appraisalWon:item.appraisalWon??null,minimumWon:item.minimumWon??null,savedAt:new Date().toISOString()};
+}
+function setCourtFavorite(item,enable){
+ const old=Array.isArray(saved.courtFavorites)?saved.courtFavorites:[],previous=saved.courtFavorites;
+ const next=enable?[...old.filter(x=>x.id!==item.id),courtFavoriteFromLot(item)]:
+  old.filter(x=>x.id!==item.id);
+ if(next.length>COURT_FAVORITES_LIMIT)throw Error('관심물건 최대 200건');
+ if(next.some(x=>!validCourtFavorite(x)))throw Error('관심물건 자료 오류');
+ saved.courtFavorites=next;
+ try{write();}catch(error){if(previous===undefined)delete saved.courtFavorites;else saved.courtFavorites=previous;throw error;}
+}
+function courtFavoriteCards(){
+ let entries=courtFavorites();
+ if(state.favoriteType!=='전체')entries=entries.filter(x=>x.region===state.favoriteType||state.favoriteType==='법원 수집');
+ if(state.favoriteSort==='date')entries.sort((a,b)=>(a.saleDate||'9999').localeCompare(b.saleDate||'9999'));
+ else if(state.favoriteSort==='price')entries.sort((a,b)=>(a.minimumWon??Number.MAX_SAFE_INTEGER)-(b.minimumWon??Number.MAX_SAFE_INTEGER));
+ else entries.sort((a,b)=>b.savedAt.localeCompare(a.savedAt));
+ return entries.map(x=>'<article class="favorite-item court-favorite-item">'+
+  '<button class="favorite-open" type="button" data-court-favorite-open="'+escapeHtml(x.id)+'">'+
+  '<span class="favorite-icon">⌂</span><span class="favorite-info">'+
+  '<span class="auction-card-top"><span class="auction-type">'+escapeHtml(x.region)+'</span><span class="auction-demo user-record">법원 수집 · 저장 당시</span></span>'+
+  '<strong>'+escapeHtml(x.address)+'</strong><span class="favorite-case">'+escapeHtml(x.courtName)+' · '+escapeHtml(x.caseNo)+' · 물건 '+escapeHtml(x.itemNo)+'번</span>'+
+  '<span class="favorite-amount">'+escapeHtml(Number.isSafeInteger(x.minimumWon)?prettyPrice(x.minimumWon):'최저가 미확인')+'</span>'+
+  '<span class="favorite-date">저장 당시 입찰기일: '+escapeHtml(x.saleDate||'미확인')+'</span>'+
+  '</span><span class="arrow">›</span></button>'+
+  '<div class="favorite-actions"><button type="button" data-court-favorite-open="'+escapeHtml(x.id)+'">수집목록에서 찾기</button>'+
+  '<button type="button" class="favorite-remove" data-court-favorite-remove="'+escapeHtml(x.id)+'"><span class="favorite-heart">♥</span> 관심 해제</button></div>'+
+  '</article>').join('');
+}
+
 function sortedFavorites(){
   const selected=new Set(saved.favorites);
   const list=allProperties().filter(p=>selected.has(p.id));
@@ -662,11 +714,12 @@ function sortedFavorites(){
 }
 function favorites(){
   const list=sortedFavorites();
-  const all=allProperties().filter(p=>saved.favorites.includes(p.id)).length;
-  const filters=availablePropertyTypes();
+  const courtCount=courtFavorites().length;
+  const all=allProperties().filter(p=>saved.favorites.includes(p.id)).length+courtCount;
+  const filters=[...availablePropertyTypes(),'법원 수집'];
   const controls=`<div class="favorites-toolbar"><div class="favorites-title"><h2>내 관심물건 <span>${all}건</span></h2><p>저장한 물건을 날짜와 가격순으로 정리해요.</p></div><label for="favoriteSort" class="favorite-sort-label">정렬 <select class="select favorite-sort" id="favoriteSort"><option value="recent" ${state.favoriteSort==='recent'?'selected':''}>최근 저장순</option><option value="date" ${state.favoriteSort==='date'?'selected':''}>입찰일 빠른순</option><option value="price" ${state.favoriteSort==='price'?'selected':''}>최저가 낮은순</option></select></label></div><div class="filters favorite-type-filters">${filters.map(v=>`<button class="chip ${state.favoriteType===v?'active':''}" type="button" data-favorite-type="${v}">${v}</button>`).join('')}</div>`;
   if(!all)return `${controls}<div class="empty favorites-empty"><div class="empty-symbol">♡</div><strong>아직 저장한 관심물건이 없어요.</strong><p>검색한 물건을 열고 ♡ 관심물건 저장을 눌러주세요.</p><button type="button" class="secondary" data-page="search">물건 찾아보기</button></div>`;
-  return `${controls}${list.map(p=>`<article class="favorite-item"><button class="favorite-open" type="button" data-detail="${p.id}" aria-label="${escapeHtml(p.name)} 상세보기"><span class="favorite-icon">⌂</span><span class="favorite-info"><span class="auction-card-top"><span class="auction-type">${escapeHtml(p.type)}</span><span class="auction-demo ${p.userRegistered?'user-record':''}">${p.userRegistered?'직접 등록':'예시 물건'}</span></span><strong>${escapeHtml(p.name)}</strong><span class="favorite-case">${escapeHtml(p.case)}</span><span class="favorite-amount">${knownAuctionPrice(p,propertyPrice(p))}</span><span class="favorite-date">${p.userRegistered?'사용자 입력 입찰일':'입찰 예정일(예시)'} · ${escapeHtml(p.date||'미정')}</span></span><span class="arrow">›</span></button><div class="favorite-actions"><button type="button" data-favorite-date="${p.id}">일정 보기</button><button type="button" class="favorite-remove" data-remove-favorite="${p.id}"><span class="favorite-heart" aria-hidden="true">♥</span> 관심 해제</button></div></article>`).join('')||'<div class="empty">선택한 종류에 저장된 물건이 없어요.</div>'}<p class="helper favorites-help">예시 물건은 가상 정보입니다. 직접 등록한 사건의 가격과 입찰일은 법원 원문으로 다시 확인하세요.</p>`;
+  return `${controls}${courtCount?'<p class="helper court-favorite-info">법원 수집 관심물건 '+courtCount+'건 · 저장 당시의 정보이며 현재 가격·기일·진행상태는 법원 원문에서 다시 확인해야 합니다.</p>':''}${courtFavoriteCards()}${list.map(p=>`<article class="favorite-item"><button class="favorite-open" type="button" data-detail="${p.id}" aria-label="${escapeHtml(p.name)} 상세보기"><span class="favorite-icon">⌂</span><span class="favorite-info"><span class="auction-card-top"><span class="auction-type">${escapeHtml(p.type)}</span><span class="auction-demo ${p.userRegistered?'user-record':''}">${p.userRegistered?'직접 등록':'예시 물건'}</span></span><strong>${escapeHtml(p.name)}</strong><span class="favorite-case">${escapeHtml(p.case)}</span><span class="favorite-amount">${knownAuctionPrice(p,propertyPrice(p))}</span><span class="favorite-date">${p.userRegistered?'사용자 입력 입찰일':'입찰 예정일(예시)'} · ${escapeHtml(p.date||'미정')}</span></span><span class="arrow">›</span></button><div class="favorite-actions"><button type="button" data-favorite-date="${p.id}">일정 보기</button><button type="button" class="favorite-remove" data-remove-favorite="${p.id}"><span class="favorite-heart" aria-hidden="true">♥</span> 관심 해제</button></div></article>`).join('')||'<div class="empty">선택한 종류에 저장된 물건이 없어요.</div>'}<p class="helper favorites-help">예시 물건은 가상 정보입니다. 직접 등록한 사건의 가격과 입찰일은 법원 원문으로 다시 확인하세요.</p>`;
 }
 
 function auctionFold(title,html,extraClass=''){
@@ -1566,6 +1619,7 @@ function capital(){
    <div class="line"><span class="muted">최저매각가</span><strong>${escapeHtml(formatAmount(x.minimumWon))}</strong></div>
    <div class="line"><span class="muted">매각기일</span><strong>${escapeHtml(x.saleDate||'미확인')} · ${escapeHtml(auctionDday(x.saleDate))}</strong></div>
    <div class="capital-status-note"><strong>진행상태 · 미확인</strong><span>취하·기일변경·매각 여부는 법원 원문 확인 필요</span></div>
+   <button type="button" class="secondary full-secondary court-favorite-toggle" data-court-favorite-toggle="${escapeHtml(x.id)}">${courtFavorites().some(f=>f.id===x.id)?'♥ 관심물건 해제':'♡ 관심물건 저장'}</button>
    ${auctionFold('지도·로드뷰 확인',auctionMapControls(x.address,'법원 수집 주소 기준 · 정확한 위치 확인 필요'),'auction-fold-map')}
    ${auctionFold('감정가 대비 가격 분석',auctionPriceAnalysis(x.appraisalWon,x.minimumWon,'법원 시범 부분수집본 · 원문 대조 필요'),'auction-fold-analysis')}
    ${auctionFold('최저매각가 변경 이력',capitalPriceHistoryMarkup(x),'auction-fold-history')}
@@ -1817,6 +1871,24 @@ if($('#quickReset'))$('#quickReset').onclick=()=>{
 if(state.page==='schedule'&&verificationPlanStatus==='unloaded')void loadVerificationPlan();
 document.querySelectorAll('[data-detail]').forEach(x=>x.onclick=()=>nav('detail',{detail:x.dataset.detail,detailTab:'overview'}));document.querySelectorAll('[data-filter]').forEach(x=>x.onclick=()=>{state.filter=x.dataset.filter;render()});document.querySelectorAll('[data-day]').forEach(x=>x.onclick=()=>{state.selected=x.dataset.day;render();});if($('#prevMonth'))$('#prevMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,-1);state.selected=state.viewMonth+'-01';render();};if($('#nextMonth'))$('#nextMonth').onclick=()=>{state.viewMonth=shiftMonth(state.viewMonth,1);state.selected=state.viewMonth+'-01';render();};if($('#todayMonth'))$('#todayMonth').onclick=()=>{const now=new Date();state.viewMonth=calendarMonthKey(now);state.selected=state.viewMonth+'-'+String(now.getDate()).padStart(2,'0');render();};if($('#favCalendarOnly'))$('#favCalendarOnly').onchange=e=>{state.calendarFavoritesOnly=e.target.checked;render();};document.querySelectorAll('[data-note]').forEach(x=>x.onclick=()=>nav('note',{note:Number(x.dataset.note)}));if($('#favoriteSort'))$('#favoriteSort').onchange=e=>{state.favoriteSort=e.target.value;render();};
 document.querySelectorAll('[data-favorite-type]').forEach(btn=>btn.onclick=()=>{state.favoriteType=btn.dataset.favoriteType;render();});
+document.querySelectorAll('[data-court-favorite-toggle]').forEach(button=>button.onclick=()=>{
+ const lot=capitalSnapshot?.items?.find(x=>x.id===button.dataset.courtFavoriteToggle);
+ if(!lot||capitalSnapshot?.validation?.passed!==true){toast('검증된 수집목록에서만 저장할 수 있어요.');return;}
+ const enable=!courtFavorites().some(x=>x.id===lot.id);
+ try{setCourtFavorite(lot,enable);render();showSavedCheck(enable?'관심물건 저장 완료':'관심물건 해제 완료');}
+ catch(error){toast(String(error.message||'관심물건 저장 실패'));}
+});
+document.querySelectorAll('[data-court-favorite-remove]').forEach(button=>button.onclick=()=>{
+ const lot=courtFavorites().find(x=>x.id===button.dataset.courtFavoriteRemove);
+ if(!lot||!confirm('법원 수집 관심물건을 해제할까요?'))return;
+ try{setCourtFavorite(lot,false);render();showSavedCheck('관심물건 해제 완료');}
+ catch{toast('관심물건 해제 실패');}
+});
+document.querySelectorAll('[data-court-favorite-open]').forEach(button=>button.onclick=()=>{
+ const lot=courtFavorites().find(x=>x.id===button.dataset.courtFavoriteOpen);
+ if(!lot)return;
+ nav('capital',{capitalRegion:lot.region,capitalType:'전체',capitalQuery:lot.caseNo,capitalLimit:40,capitalReviewDate:'',capitalReviewStage:''});
+});
 document.querySelectorAll('[data-remove-favorite]').forEach(btn=>btn.onclick=()=>{
  const id=btn.dataset.removeFavorite;
  const property=allProperties().find(p=>p.id===id);
@@ -2243,6 +2315,7 @@ if($('#import'))$('#import').onchange=async event=>{
   const file=event.target.files?.[0];if(!file)return;
   const payload=JSON.parse(await file.text());
   if(!payload.data||!Array.isArray(payload.data.favorites)||!Array.isArray(payload.data.notes))throw Error('백업 파일 형식 오류');
+  if(payload.data.courtFavorites!==undefined&&(!Array.isArray(payload.data.courtFavorites)||payload.data.courtFavorites.length>COURT_FAVORITES_LIMIT||payload.data.courtFavorites.some(x=>!validCourtFavorite(x))||new Set(payload.data.courtFavorites.map(x=>x.id)).size!==payload.data.courtFavorites.length))throw Error('법원 관심물건 백업 데이터 오류');
   if(payload.data.realProperties!==undefined&&(!Array.isArray(payload.data.realProperties)||payload.data.realProperties.some(x=>!validateRealProperty(x))))throw Error('직접 등록 사건 데이터 오류');
   if(payload.data.notes.some(n=>!n||!Number.isFinite(Number(n.id))||typeof n.title!=='string'||typeof n.body!=='string'))throw Error('노트 데이터 형식 오류');
   const attachments=payload.version>=2?payload.attachments:[];

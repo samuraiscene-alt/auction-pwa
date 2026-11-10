@@ -36,4 +36,12 @@ assert(app.includes('function newerAppVersion(remote,installed)'),'version compa
 assert(app.includes("url.searchParams.set('app_update',updateState.latest)"),'stale navigation bypass missing');
 assert(app.includes('서버 버전 확인 필요'),'unchecked version must not be called latest');
 assert(!app.includes('if(updateState.available)location.reload()'),'old reload-only update path not allowed');
+assert(app.includes('function validAuctionCalendarDay(value)'),'calendar validation missing');
+assert(app.includes('function auctionDday(value,today=auctionTodayKst())'),'KST D-day missing');
+assert(app.includes('function usablePropertyAddress(value)'),'address gate missing');
+assert(app.includes('https://map.kakao.com/link/search/'),'official address search URL missing');
+assert(app.includes('function auctionMapControls(value,sourceLabel)'),'map entry point missing');
+assert(app.includes("auctionMapControls(x.address,'법원 수집 주소 기준"),'court list map link missing');
+assert(app.includes("auctionMapControls(p.name,'사용자 입력 주소 기준"),'manual detail map link missing');
+assert(app.includes('실제 경매물건 위치·촬영 시점은 다를 수 있습니다'),'map accuracy notice missing');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

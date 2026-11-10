@@ -1,5 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
 const {pageBase,verifyPublished}=require('../scripts/verify-pages-published.cjs');
 const base='https://samuraiscene-alt.github.io/auction-pwa/';
 assert.equal(pageBase(base),base);
@@ -9,8 +10,11 @@ for(const input of ['http://samuraiscene-alt.github.io/auction-pwa/',
  'https://samuraiscene-alt.github.io/auction-pwa/sub/']){
  assert.throws(()=>pageBase(input));
 }
-const version='0.7.6',cache='auction-shell-v076';
-const responses={'VERSION.txt':version+'\n','app.js':"const APP_VERSION='0.7.6'; 법적 상태 검증: 미완료 단일 사건 진단",
+const version=fs.readFileSync('VERSION.txt','utf8').trim().split(/\s+/)[0];
+assert.match(version,/^\d+\.\d+\.\d+$/);
+const cache='auction-shell-v'+version.split('.').join('');
+const responses={'VERSION.txt':version+'\n',
+ 'app.js':"const APP_VERSION='"+version+"'; 법적 상태 검증: 미완료 단일 사건 진단",
  'sw.js':"const CACHE='"+cache+"';"};
 const fetcher=async url=>{
  const pathname=new URL(url).pathname.split('/').at(-1);
@@ -21,13 +25,14 @@ const fetcher=async url=>{
  assert.equal(valid.verified,true);
  assert.equal(valid.courtLegalStatusAutoVerified,false);
  for(const [path,value] of [
-  ['VERSION.txt','0.7.5'],['app.js',"const APP_VERSION='0.7.6';"],
-  ['sw.js',"const CACHE='auction-shell-v075';"]]){
+  ['VERSION.txt','0.0.0'],
+  ['app.js',"const APP_VERSION='"+version+"';"],
+  ['sw.js',"const CACHE='auction-shell-v000';"]]){
   const original=responses[path];responses[path]=value;
   await assert.rejects(verifyPublished(base,version,fetcher));
   responses[path]=original;
  }
- const redirect=async()=>({ok:false,status:404,headers:{get:()=>null}});
- await assert.rejects(verifyPublished(base,version,redirect));
- console.log('PASS: published Pages version, app warning and SW cache checks fail closed');
+ const missing=async()=>({ok:false,status:404,headers:{get:()=>null}});
+ await assert.rejects(verifyPublished(base,version,missing));
+ console.log('PASS: published Pages version, app warning and SW cache checks fail closed (v'+version+')');
 })().catch(e=>{console.error(e);process.exitCode=1;});

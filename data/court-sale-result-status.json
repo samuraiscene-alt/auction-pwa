@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-10T00:02:41.228Z",
+  "attemptedAt": "2026-11-10T00:02:51.566Z",
   "observed": true,
+  "failedStage": "none",
   "reason": "processed",
   "identityMatched": false,
   "exactDisplayLotRows": 0,

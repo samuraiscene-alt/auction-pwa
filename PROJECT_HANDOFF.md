@@ -1,3 +1,9 @@
+## 2026-11-10 v0.7.31 최신 인수인계
+- search()의 id=searchCourtResults 버튼은 실제 검색 입력칸의 값을 읽고 state.search 및 capitalQuery로 전달. 수도권 서울/경기/인천 지역만 함께 전달, 나머지는 '전체'로 처리.
+- 이동 시 capitalFocusId, capitalReviewDate, capitalReviewStage를 비우고 capitalType='전체', capitalLimit=40으로 재설정. 가격·일반 카테고리 필터를 법원 검색에 부정확하게 적용하지 않음.
+- 법원 수집목록은 여전히 일부 페이지만 수집한 독립 목록. 전체 법원 데이터·매각 결과 확인을 의미하지 않음. 일반 검색에는 직접 등록한 사건만 표시.
+- v0.7.31 / SW cache auction-shell-v0731 / VERSION.txt. 문법·UI 정적 144개와 관심 기록 32개 조건 검사 통과. Pages 공개 배포 및 iPhone 실기기 확인 전.
+
 ## 2026-11-10 v0.7.30 최신 변경
 - 일반 검색 matchingProperties()는 allProperties()가 아닌 registeredProperties()만 필터. 검색·상세검색 안내 문구도 직접 등록 물건 기준. 홈의 테스트 예시 카드 자동 출력 중단.
 - settings()에서 data-page="demo" 버튼 제공; demo() 전용 페이지의 예시 3건을 통해 개발 테스트 가능. 원래 예시 properties 데이터는 그대로 보존; 기존 저장/복원 기록 삭제 없음.

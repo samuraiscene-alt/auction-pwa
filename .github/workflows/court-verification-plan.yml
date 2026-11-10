@@ -1,0 +1,49 @@
+name: Build auction-date verification plan (no court requests)
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '15 19 * * *' # 04:15 KST, next calendar day
+  push:
+    branches: [main]
+    paths:
+      - data/capital-court-pilot.json
+      - scripts/build-court-verification-plan.cjs
+      - tests/court-verification-plan.cjs
+      - .github/workflows/court-verification-plan.yml
+permissions:
+  contents: write
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    concurrency:
+      group: auction-verification-plan
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test date-based plan without accessing the court
+        run: node tests/court-verification-plan.cjs
+      - name: Generate read-only schedule
+        run: node scripts/build-court-verification-plan.cjs
+      - name: Publish schedule only (never modify auction listings)
+        run: |
+          set -e
+          cp data/court-verification-plan.json /tmp/initial-plan.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for retry in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            # Recompute from newest snapshot after concurrent data commits.
+            node tests/court-verification-plan.cjs
+            node scripts/build-court-verification-plan.cjs
+            git add data/court-verification-plan.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "data: update court auction-date verification schedule"
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 2
+          done
+          exit 1

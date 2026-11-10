@@ -77,7 +77,7 @@ async function main(){
     detailCrossChecked:false,detailCrossCheckReason:'sale_result_identity_not_matched'}));
    return;
   }
-  const compared=compareSaleSearchWithDetail(body,detail,id);
+  const compared=compareSaleSearchWithDetail(body,detail,id,snapshotSaleDate);
   console.log(JSON.stringify({schemaVersion:1,...evidence,
    schedulePreflightConfirmed:true,
    detailCrossChecked:compared.crossChecked===true,

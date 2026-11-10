@@ -88,7 +88,13 @@ assert(app.includes('function courtFavoriteCalendarItems(date)'),'court date sel
 assert(app.includes('function courtFavoriteCalendarMarkup(items)'),'court day entries missing');
 assert(app.includes('courtFavoriteCalendarMarkup(courtItems)'),'court favorite date not rendered');
 assert(app.includes('data-court-favorite-date'),'favorite date navigation missing');
-assert(app.includes('수집 당시 입찰기일 기준입니다'),'historical date warning missing');
-assert(app.includes('count+courtCount'),'court favorite calendar marker missing');
+assert(app.includes('기일 변경·취하·낙찰 미확인 · 입찰 전 법원 원문 확인'),'historical date warning missing');
+assert(app.includes('courtCount?\'<span class="calendar-dot court-favorite-dot"></span>\''),'court favorite marker missing');
 assert(app.includes('items.length+courtItems.length'),'selected day count missing court favorites');
+assert(app.includes('법원 수집 · 저장 당시 기일'),'saved court provenance badge missing');
+assert(app.includes('court-calendar-caution'),'consolidated court warning missing');
+assert(app.includes('calendar-dots'),'multiple calendar event types must coexist');
+assert(css.includes('.court-favorite-dot'),'separate court date marker style missing');
+assert(css.includes('.court-key'),'court marker legend missing');
+assert(!app.includes('법원 실시간 변경 알림은 아직 없으므로 입찰 전에 반드시 원문을 확인하세요.'),'duplicated footer warning remains');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

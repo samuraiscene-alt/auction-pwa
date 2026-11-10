@@ -201,3 +201,11 @@
 - 로컬 저장소 소스 기반 테스트 및 진단 스크립트 문법 확인 통과. 초기 실서버 결과 `network_error`가 발생해 단계별 네트워크 실패 분류 보강. 이어서 실서버 `data/court-sale-result-status.json` 2026-11-10T00:02:41.228Z에서는 `observed=true`, `reason=processed`, `rowCount=0`, `identityMatched=false`. **공식 검색 API 응답을 받았지만 대상 사건 결과가 반환됐다는 뜻은 아님.**
 - 현재 요청은 기존 물건검색의 필드 집합을 결과검색 API에 적용한 첫 진단용 구성. 결과검색 화면의 검색조건/기간 필터가 다를 수 있으므로 `0건`을 매각·취하 등으로 해석하지 않음. `002`의 공식 의미 및 결과명 확인도 아직 실패.
 - 앱 v0.7.5, 기존 805건 목록, 사용자 저장자료, 자동 법적상태 표시 전부 불변.
+
+## 2026-11-10 매각결과검색 공식 입력필드 확보 및 0건 재검증
+- 실서버 `PGJ158M02.xml`에서 실제 검색조건 이름을 비식별 진단으로 확인. `auctnGdsStatCd`, `dspslAmtMin/Max`, `cortOfcCd`, `csNo`, `pgmId` 등 23개가 확인되며, `getJSON`/`set`/`setJSON`은 자료필드가 아닌 스크립트 메서드로 제외. `data/court-sale-screen-status.json` 2026-11-10T00:04:30.946Z 참고.
+- `scripts/probe-court-sale-result-search.cjs`를 기존 물건검색 PGJ151M01용 47필드 요청 대신 **공식 매각결과검색 화면에서 관찰된 필드로만 구성**하도록 수정. 임의로 넣던 `mvprpRletDvsCd`, `cortAuctnSrchCondCd`, `notifyLoc`도 제거. `pgmId=PGJ158M02`, 검증된 고정 법원·사건번호로 단발 읽기 전용 조회.
+- 수정 후 `data/court-sale-result-status.json` 2026-11-10T00:05:05.852Z: `observed=true`, `reason=processed`, `rowCount=0`, `identityMatched=false`. **검색조건 필드 정정만으로는 0건이 해결되지 않았음.**
+- 현재 시범 목록 `data/capital-court-pilot.json`의 805건 중 `saleDate <= 2026-11-09`인 기록은 **0건**. 따라서 시범 목록에서 과거 매각결과 교차검증용으로 이미 끝난 사건을 자동 선별할 수 없음.
+- 0건의 이유는 검색범위/필수 기본값/대상 사건 수록 여부 등이 아직 미확인. 매각/취하/유찰 상태로 해석 금지. 공식 UI의 검색조건 기본값과 최근 기일이 지난 사건의 **동일사건 표본**을 먼저 확인해야 함.
+- 사용자 앱 v0.7.5, 개인자료, 기존 805건 목록은 불변. 실서버 진단 로직만 수정.

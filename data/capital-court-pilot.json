@@ -4,7 +4,7 @@
   "collectionMode": "limited-pages-pilot",
   "complete": false,
   "source": "courtauction.go.kr",
-  "fetchedAt": "2026-11-10T09:13:25.188Z",
+  "fetchedAt": "2026-11-10T09:15:22.480Z",
   "regions": {
     "서울": {
       "returned": 400,
@@ -20300,7 +20300,7 @@
   ],
   "validation": {
     "passed": true,
-    "checkedAt": "2026-11-10T09:13:25.201Z",
+    "checkedAt": "2026-11-10T09:15:22.490Z",
     "validatedItems": 802,
     "regions": {
       "서울": 337,

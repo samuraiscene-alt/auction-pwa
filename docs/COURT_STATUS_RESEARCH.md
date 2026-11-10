@@ -249,3 +249,9 @@
 - 진단 스크립트 최신 소스 문법 검사 및 `tests/court-sale-result-search.cjs`, `tests/court-sale-result-detail.cjs`, `tests/court-result-window.cjs` 3종 회귀검증 통과.
 - 표본 `court-B000210|2025타경953|1`이 기존 `data/capital-court-pilot.json`에 있고 `saleDate=2026-11-10`으로 수록됐음을 재확인. 이 기록은 수집 당시 스냅샷으로 실제 현재 기일 보장이 아님. 2026-11-11 예약실행 성공 여부도 아직 미확인.
 - 운영 앱 v0.7.5, 805건 시범 물건, 개인 저장자료 및 매각/유찰/취하 자동분류 기능 불변.
+
+## 2026-11-10 예약 매각결과검색의 공식 기일 재확인 사전검사
+- `scripts/validate-court-sale-preflight.cjs`와 `tests/court-sale-preflight.cjs` 추가. 결과검색 전에 현재 법원 사건 상세 `dma_csBasInf` 및 `dlt_dspslGdsDspslObjctLst`에서 법원 내부 사건번호/대상 물건번호를 엄격하게 검사하고, `dlt_rletCsGdsDtsDxdyInf`의 **대상 물건 최신 기일**이 시범 목록에서 읽은 날짜(2026-11-10)와 같은지 검증. 상세 기일 누락, 변경, 중복, 비정상 날짜, 신원 불일치 시 결과검색 요청을 실행하지 않음. 기일 불일치는 매각·취하의 증거가 아님.
+- `scripts/probe-court-sale-result-search.cjs` 순서를 **법원 상세 1회 → 정확한 일정 확인 시 매각결과검색 1회 → 확보해 둔 상세 원본으로 결과 교차검증**으로 변경. 조회는 최대 2회, 재시도 없음, 응답 원문·개인정보 저장 없음. 이전 '결과검색 후 일치할 때만 상세 조회' 구조보다 기일 변경 후 결과검색의 부정확한 0건 기록 가능성을 줄임.
+- `.github/workflows/court-sale-result-search.yml`에 사전검사 테스트를 추가하고 `schedulePreflightConfirmed`만 비식별 보고서에 기록. 매각결과코드는 결과검색과 상세정보가 정확히 일치한 때만 기존대로 기록하고 법적 상태는 항상 미확인 유지.
+- 공식 기일 검사/결과검색/상세 교차검증/기간 검사 **4종 회귀 테스트 및 진단 스크립트 문법 점검 모두 통과**. 11월 11일 예약실행의 실서버 결과는 아직 미확인. 운영 앱 v0.7.5, 시범 목록 805건, 디자인·개인 저장자료 변경 없음.

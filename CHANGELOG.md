@@ -1,3 +1,7 @@
+### v0.7.6 배포 테스트 버전 고정값 제거
+- `tests/pages-published.cjs`가 `0.7.6` 및 `auction-shell-v076`를 고정해서 다음 버전 배포 시 정상 코드를 오탐지할 수 있는 문제 수정. `VERSION.txt`를 읽어 앱 코드/캐시 기대값을 계산하며, 불일치·경고 누락·404는 계속 테스트 실패 처리.
+- GitHub 저장소 최신 파일로 코드 문법, Pages 배포 후 검사 위치, 현재 805건 수집 목록 유지 확인. 실행 로그/API로 **실제 공개 사이트의 버전 수신은 확인하지 못함**. 법원 매각상태 자동판정 미적용.
+
 ### v0.7.6 배포 후 공개 사이트 실제 확인 추가
 - `scripts/verify-pages-published.cjs`와 `tests/pages-published.cjs` 추가. Pages 배포 완료 후 실제 공개된 `VERSION.txt`, `app.js`, `sw.js`를 조회해 버전·서비스워커 캐시·법적 상태 미확인 경고 유지 여부 검사. 캐시 우회 요청, 최대 5회 확인, 실패 시 배포 작업 검사 실패로 표기.
 - `.github/workflows/pages.yml`에 배포 전 검사 테스트 및 배포 후 실사이트 확인 단계를 연결. 이번 변경은 GitHub 소스와 배포 워크플로우에 반영되었고 **실제 공개 사이트의 응답 확인은 GitHub Actions 결과로 검증해야 함**.

@@ -1,3 +1,8 @@
+## 2026-11-10 v0.7.29 최신 인수인계
+- app.js capital()의 renderCapitalProperty(x,caseHeader)는 그룹 대표 물건을 전달받아 중복 사건 주소·법원·사건번호 표시를 생략. 모든 물건은 물건번호를 유지하고 x.address와 caseHeader.address가 다른 경우 독립 주소 출력.
+- 사건 제목은 원래대로 유지하며 집중검색·관심물건·지도·가격·기일·재조회 기능 변경 없음. 세로 길이 축소 목적의 표시 정리만 수행.
+- v0.7.29, SW cache auction-shell-v0729. JS 문법, UI 128조건, 법원 관심 32조건 통과. GitHub Pages 배포 및 아이폰 실기기 확인 필요.
+
 ## 2026-11-10 v0.7.28 최신 인수인계
 - app.js state.capitalFocusId와 snapshot() 항목 추가. 법원 수집 관심 카드 및 일정 카드의 data-court-favorite-open → 정확한 court-법원코드|사건번호|물건번호 ID 기반 수도권 탐색. caseNo 검색 결과 여러 건을 잘못 선택하는 문제 해결.
 - capital()에서 검증된 snapshot의 exact ID만 필터. 사건 details open 및 capital-focus-found 안내 제공. 미수집·검증실패·로딩을 구분, 잘못된 유사 물건 대체 없음.

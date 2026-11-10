@@ -1,6 +1,10 @@
 name: Official court sale result search - bounded diagnostic
 on:
   workflow_dispatch:
+  # Single intended UTC date: 2026-11-11 00:30 = KST 09:30.
+  # GitHub cron is recurring; the explicit year/day gate below prevents later runs.
+  schedule:
+    - cron: '30 0 11 11 *'
   push:
     branches: [main]
     paths:
@@ -29,8 +33,14 @@ jobs:
           node tests/court-sale-result-search.cjs
           node tests/court-result-window.cjs
       - name: Single official sale-results search
+        env:
+          EVENT_NAME: ${{ github.event_name }}
         run: |
-          node scripts/probe-court-sale-result-search.cjs > /tmp/court-sale-result.json || true
+          if [ "$EVENT_NAME" = "schedule" ] && [ "$(TZ=Asia/Seoul date +%F)" != "2026-11-11" ]; then
+            printf '%s\n' '{"schemaVersion":1,"observed":false,"reason":"outside_one_time_scheduled_date","legalStatusVerified":false,"rawResponseSaved":false}' > /tmp/court-sale-result.json
+          else
+            node scripts/probe-court-sale-result-search.cjs > /tmp/court-sale-result.json || true
+          fi
       - name: Redact output summary
         run: |
           node - <<'NODE'

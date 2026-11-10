@@ -1,3 +1,9 @@
+## 2026-11-10 v0.7.28 최신 인수인계
+- app.js state.capitalFocusId와 snapshot() 항목 추가. 법원 수집 관심 카드 및 일정 카드의 data-court-favorite-open → 정확한 court-법원코드|사건번호|물건번호 ID 기반 수도권 탐색. caseNo 검색 결과 여러 건을 잘못 선택하는 문제 해결.
+- capital()에서 검증된 snapshot의 exact ID만 필터. 사건 details open 및 capital-focus-found 안내 제공. 미수집·검증실패·로딩을 구분, 잘못된 유사 물건 대체 없음.
+- capitalFocusClear 버튼 또는 일반 필터/검색 진입으로 일반 목록 복귀. 기존 courtFavorites, 저장/백업/복원 자료 변경 없음.
+- v0.7.28 / auction-shell-v0728. 정적 UI 122개 조건 + 법원 관심 32조건 검사 통과. GitHub Pages 실배포와 아이폰 실사용 확인 전.
+
 ## 2026-11-10 v0.7.27 최신 수정
 - 달력에서 색상바 존재 날짜 숫자만 상향되는 문제 수정: style.css의 calendar-date-number를 전 날짜 top:2px, position:absolute로 통일. 기존 :has(.calendar-bars) 숫자 상단 별도 규칙은 삭제.
 - 날짜 글자 17px, 기존 날짜 셀 46px 및 3색 누적 막대 유지. v0.7.27 / SW auction-shell-v0727, 정적 회귀 115개 통과. 실제 배포·아이폰 테스트 확인 전.

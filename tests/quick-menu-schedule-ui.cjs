@@ -105,4 +105,6 @@ assert(app.includes("const showPink=personalFavCount>0"),'personal favorite bar 
 assert(app.includes("const showPurple=courtCount>0"),'court favorite bar missing');
 assert(app.includes("return registeredProperties().filter(p=>propertyDate(p)===date"),'demo properties must not appear on production calendar');
 assert(!app.includes('<span>● 등록·예시</span>'),'outdated demo legend remains');
+assert(css.includes('.calendar-date-number{display:block;font-size:17px;line-height:22px;font-weight:750;letter-spacing:-.35px;font-variant-numeric:tabular-nums;position:absolute;top:2px;left:0;right:0;text-align:center;z-index:1;transform:none}'),'date numbers must share fixed vertical baseline');
+assert(!css.includes('.calendar-day:has(.calendar-bars) .calendar-date-number'),'bar-specific date shift must not return');
 console.log('PASS: configurable home shortcuts and advisory-only date schedule connected');

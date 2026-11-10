@@ -897,3 +897,10 @@ html,body{
 #content .auction-prebid summary{cursor:pointer;font-size:13px;font-weight:750}
 #content .auction-prebid ul{padding-left:20px;margin:12px 0 7px}
 #content .auction-prebid li{margin-bottom:8px;line-height:1.55;font-size:12px}
+
+/* v0.7.18: appraisal/minimum price math and proposed bid comparison */
+#content .auction-price-analysis{margin:12px 0;padding:13px;border:1px solid #e1e9f4;border-radius:13px;background:#f9fbff}
+#content .auction-price-analysis>strong{display:block;font-size:14px;margin-bottom:8px}
+#content .auction-price-analysis .line{margin:0;padding:8px 0;gap:10px}
+#content .auction-price-analysis .line strong{font-size:13px;text-align:right;overflow-wrap:anywhere}
+#content .auction-bid-compare{padding:10px 11px;margin-top:10px;border:1px solid #e2e9f3;border-radius:10px;font-size:12px;line-height:1.45;font-weight:650}

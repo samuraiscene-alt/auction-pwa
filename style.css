@@ -867,3 +867,10 @@ html,body{
 
 #content .quick-edit-row .quick-drag-handle{touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;color:#1266ef;font-size:20px;min-width:36px}
 #content .quick-edit-row.dragging{background:#edf3ff;border-radius:10px}
+
+/* v0.7.13: review-day drilldown; existing navigation and approved icons unchanged */
+#content .court-plan-open{border:0;border-radius:9px;background:#edf3ff;color:#1769ed;font-weight:750;font-size:13px;padding:7px 12px;min-width:70px;min-height:36px;font-variant-numeric:tabular-nums}
+#content .court-plan-open:disabled{opacity:.38}
+#content .court-plan-open:focus-visible{outline:2px solid #1769ed;outline-offset:2px}
+#content .court-review-banner{margin-bottom:12px}
+#content .court-review-banner .status{margin-top:10px}

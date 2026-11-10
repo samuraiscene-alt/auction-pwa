@@ -43,4 +43,27 @@ assert.equal(saved.favorites[0],'demo1');
 assert(app.includes('payload.data.courtFavorites.some(x=>!validCourtFavorite(x))'),'restore must validate court favorites');
 assert(app.includes('new Set(payload.data.courtFavorites.map(x=>x.id)).size'),'restore must reject duplicate IDs');
 assert(app.includes('data.favorites.length+(data.courtFavorites?.length||0)'),'backup summary must include court lots');
+// Saved court listing dates are advisory and remain separate from direct registration.
+const calStart=app.indexOf('function courtFavoriteCalendarItems(date){');
+const calEnd=app.indexOf('function calendarItems(date){',calStart);
+assert(calStart>=0&&calEnd>calStart,'calendar integration functions missing');
+const calendar=Function('validAuctionCalendarDay','courtFavorites','escapeHtml','prettyPrice',app.slice(calStart,calEnd)+
+ ';return {courtFavoriteCalendarItems,courtFavoriteCalendarMarkup};')(
+ date=>/^20\d{2}-\d{2}-\d{2}$/.test(String(date))?{value:date}:null,
+ ()=>methods.courtFavorites(),
+ x=>String(x),n=>Number(n).toLocaleString('ko-KR')+'원'
+);
+methods.setCourtFavorite(lot,true);
+assert.equal(calendar.courtFavoriteCalendarItems(lot.saleDate).length,1);
+assert.equal(calendar.courtFavoriteCalendarItems('2000-01-01').length,0);
+assert.equal(calendar.courtFavoriteCalendarItems('invalid').length,0);
+const calendarHtml=calendar.courtFavoriteCalendarMarkup(calendar.courtFavoriteCalendarItems(lot.saleDate));
+assert(calendarHtml.includes('수집 당시 입찰기일 기준입니다'),'historical date warning absent');
+assert(calendarHtml.includes('data-court-favorite-open'),'saved court calendar link absent');
+assert(calendarHtml.includes('기일 변경·취하·낙찰 여부를 확인한 일정이 아닙니다'),'unverified outcomes not disclosed');
+assert(app.includes('data-court-favorite-date'),'favorites calendar navigation missing');
+assert(app.includes('calendarFavoritesOnly:true'),'calendar favorites-only mode not applied');
+methods.setCourtFavorite(lot,false);
+assert.equal(calendar.courtFavoriteCalendarItems(lot.saleDate).length,0);
+
 console.log('PASS: separate court favorites, persistence, dedupe, rollback and backup validation');

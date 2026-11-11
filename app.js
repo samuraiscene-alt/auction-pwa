@@ -983,7 +983,7 @@ function attachRightsScenario(){
  const controls=[...shell.querySelectorAll('[data-scenario-amount]')];
  const amount=parseNode=>{const raw=parseNode.value.trim();
   if(!raw)return null;
-  if(!/^\\d{1,16}$/.test(raw))throw Error('금액은 0 이상의 원 단위 숫자만 입력하세요.');
+  if(!/^\d{1,16}$/.test(raw))throw Error('금액은 0 이상의 원 단위 숫자만 입력하세요.');
   const n=Number(raw);if(!Number.isSafeInteger(n)||n>1_000_000_000_000_000)throw Error('금액 범위를 확인하세요.');
   return n;
  };

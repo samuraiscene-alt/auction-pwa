@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.36';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.37';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -643,7 +643,7 @@ function verificationPlanMarkup(day){
   '<p class="helper">표시된 수치는 재조회 예정 건수이며 실제 법원 조회·낙찰·유찰·취하 확인 결과가 아닙니다. 입찰 전 법원 원문을 확인하세요.</p></div>';
 }
 
-function home(){return `<section class="hero dashboard"><div class="dash-heading"><div><p class="dash-kicker">MY AUCTION · 나의 경매 현황</p><h2>오늘도 좋은 물건을<br>차근차근 찾아봐요.</h2></div><span class="dash-mark" aria-hidden="true">⌂</span></div><div class="dash-stats"><button type="button" class="dash-stat" data-page="favorites"><span class="dash-stat-label"><span class="dashboard-heart">♥</span> 관심물건</span><strong>${saved.favorites.length}<small>건</small></strong></button><button type="button" class="dash-stat" data-page="study"><span class="dash-stat-label">▤ 공부 노트</span><strong>${saved.notes.length}<small>개</small></strong></button></div><p class="dash-disclaimer">직접 등록한 사건은 법원 원문을 다시 확인해 주세요. 자동 실시간 연동은 아직 지원되지 않아요.</p></section><input id="homeSearch" class="search" placeholder="⌕  지역, 주소, 사건번호로 검색" value="${escapeHtml(state.search)}">${quickMenuMarkup()}<div class="section"><h2>${registeredProperties().length?'내가 등록한 경매물건':'내가 등록한 경매물건'}</h2><span class="muted">${registeredProperties().length?'법원 확인 필요':'등록 0건'}</span></div>${registeredProperties().length?registeredProperties().slice(-2).reverse().map(card).join(''):'<div class="empty">직접 등록한 경매물건이 없어요. 법원 수집목록을 확인하거나 물건을 등록해 주세요.</div>'}<div class="section"><h2>다가오는 입찰일</h2></div><div class="card line"><div><strong>${nextRegisteredAuction()?escapeHtml(nextRegisteredAuction().date):'직접 등록한 예정 일정 없음'}</strong><p class="tiny">${nextRegisteredAuction()?escapeHtml(nextRegisteredAuction().case)+' · 사용자 입력, 법원 확인 필요':'경매물건 등록 시 입찰일정에 표시돼요.'}</p></div><button class="miniButton" data-page="schedule">일정 보기 ›</button></div>`}function matchingProperties(){
+function home(){return `<section class="hero dashboard"><div class="dash-heading"><div><p class="dash-kicker">MY AUCTION · 나의 경매 현황</p><h2>오늘도 좋은 물건을<br>차근차근 찾아봐요.</h2></div><span class="dash-mark" aria-hidden="true">⌂</span></div><div class="dash-stats"><button type="button" class="dash-stat" data-page="favorites"><span class="dash-stat-label"><span class="dashboard-heart">♥</span> 관심물건</span><strong>${saved.favorites.length}<small>건</small></strong></button><button type="button" class="dash-stat" data-page="study"><span class="dash-stat-label">▤ 공부 노트</span><strong>${saved.notes.length}<small>개</small></strong></button></div><p class="dash-disclaimer">직접 등록한 사건은 법원 원문을 다시 확인해 주세요. 자동 실시간 연동은 아직 지원되지 않아요.</p></section><form id="homeSearchForm" class="search-form" role="search"><input id="homeSearch" class="search" type="search" enterkeyhint="search" autocomplete="off" placeholder="지역, 주소, 사건번호로 검색" value="${escapeHtml(state.search)}"><button type="submit" class="search-submit">검색</button></form>${quickMenuMarkup()}<div class="section"><h2>${registeredProperties().length?'내가 등록한 경매물건':'내가 등록한 경매물건'}</h2><span class="muted">${registeredProperties().length?'법원 확인 필요':'등록 0건'}</span></div>${registeredProperties().length?registeredProperties().slice(-2).reverse().map(card).join(''):'<div class="empty">직접 등록한 경매물건이 없어요. 법원 수집목록을 확인하거나 물건을 등록해 주세요.</div>'}<div class="section"><h2>다가오는 입찰일</h2></div><div class="card line"><div><strong>${nextRegisteredAuction()?escapeHtml(nextRegisteredAuction().date):'직접 등록한 예정 일정 없음'}</strong><p class="tiny">${nextRegisteredAuction()?escapeHtml(nextRegisteredAuction().case)+' · 사용자 입력, 법원 확인 필요':'경매물건 등록 시 입찰일정에 표시돼요.'}</p></div><button class="miniButton" data-page="schedule">일정 보기 ›</button></div>`}function matchingProperties(){
   const query=state.search.trim().normalize('NFC').toLocaleLowerCase('ko');
   const min=state.minPrice===''?null:Number(state.minPrice);
   const max=state.maxPrice===''?null:Number(state.maxPrice);
@@ -2294,12 +2294,11 @@ if($('#homeSearch')){
   let composing=false;
   input.addEventListener('compositionstart',()=>{composing=true});
   input.addEventListener('compositionend',()=>{composing=false});
-  input.addEventListener('keydown',e=>{
-    if(e.key==='Enter'&&!composing&&!e.isComposing){
-      e.preventDefault();
-      state.search=input.value.normalize('NFC').trim();
-      input.blur();nav('search');
-    }
+  $('#homeSearchForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    if(composing||e.isComposing)return;
+    state.search=input.value.normalize('NFC').trim();
+    input.blur();nav('search');
   });
   input.addEventListener('change',()=>{state.search=input.value.normalize('NFC').trim()});
 }

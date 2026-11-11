@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.49';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.50';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -246,6 +246,70 @@ async function attachmentRestoreAll(files){
   tx.onabort=()=>reject(tx.error||Error('첨부파일 복원 취소'));
  });
 }
+
+const MAX_RIGHTS_PDF_BYTES=8*1024*1024;
+// Rights PDFs share the existing IndexedDB and whole-backup attachment stream.
+// -1 cannot collide with normal positive note IDs. The explicit property/doc IDs
+// avoid linking a saved file to a different court lot.
+function verifyRightsPdfAttachment(file){
+ return file&&file.noteId===-1&&typeof file.rightsPropertyId==='string'&&
+  /^(court-B\d{6}|real-[^|\n]{1,100})\|20\d{2}타경\d{1,10}\|[1-9]\d{0,3}$/.test(file.rightsPropertyId)&&
+  typeof file.rightsDocId==='string'&&/^[A-Za-z0-9_-]{1,36}$/.test(file.rightsDocId)&&
+  file.type==='application/pdf'&&typeof file.name==='string'&&file.name.length<=180&&
+  Number.isSafeInteger(file.size)&&file.size>0&&file.size<=MAX_RIGHTS_PDF_BYTES&&
+  typeof file.data==='string'&&file.data.startsWith('data:application/pdf;base64,');
+}
+async function rightsPdfPut(file){
+ if(!verifyRightsPdfAttachment(file))throw Error('권리 원본 PDF 형식 오류');
+ const db=await attachmentDb();
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(ATTACH_STORE,'readwrite');
+  tx.objectStore(ATTACH_STORE).put(file);
+  tx.oncomplete=resolve;
+  tx.onerror=()=>reject(tx.error||Error('PDF 저장 실패'));
+  tx.onabort=()=>reject(tx.error||Error('PDF 저장 취소'));
+ });
+}
+async function rightsPdfGet(id){
+ const db=await attachmentDb();
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(ATTACH_STORE,'readonly');
+  const req=tx.objectStore(ATTACH_STORE).get(id);
+  req.onsuccess=()=>resolve(req.result||null);
+  req.onerror=()=>reject(req.error||Error('PDF 읽기 실패'));
+ });
+}
+async function rightsPdfDelete(id){
+ const db=await attachmentDb();
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction(ATTACH_STORE,'readwrite');
+  tx.objectStore(ATTACH_STORE).delete(id);
+  tx.oncomplete=resolve;
+  tx.onerror=()=>reject(tx.error||Error('PDF 제거 실패'));
+ });
+}
+function openRightsPdfViewer(file){
+ if(!verifyRightsPdfAttachment(file))throw Error('보관된 원본 PDF 확인 실패');
+ const base64=file.data.slice('data:application/pdf;base64,'.length);
+ const binary=atob(base64);
+ const bytes=new Uint8Array(binary.length);
+ for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+ const url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
+ const layer=document.createElement('div');
+ layer.className='rights-pdf-overlay';
+ layer.setAttribute('role','dialog');layer.setAttribute('aria-modal','true');
+ const head=document.createElement('div');head.className='rights-pdf-head';
+ const title=document.createElement('strong');title.textContent=file.name;
+ const close=document.createElement('button');close.type='button';close.textContent='닫기';close.className='secondary';
+ const frame=document.createElement('iframe');frame.title='권리분석 PDF 원본: '+file.name;frame.src=url;
+ head.append(title,close);layer.append(head,frame);
+ let closed=false;
+ const dismiss=()=>{if(closed)return;closed=true;layer.remove();URL.revokeObjectURL(url);};
+ close.onclick=dismiss;
+ layer.addEventListener('keydown',event=>{if(event.key==='Escape')dismiss();});
+ document.body.append(layer);close.focus();
+}
+
 function attachmentId(){return 'file-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);}
 function readFileAsDataUrl(file){
  return new Promise((resolve,reject)=>{
@@ -257,7 +321,8 @@ function readFileAsDataUrl(file){
 }
 function verifyAttachment(item){
  return item&&typeof item.id==='string'&&typeof item.noteId==='number'&&typeof item.name==='string'&&typeof item.data==='string'
-  &&item.data.startsWith('data:')&&(item.type==='application/pdf'||item.type.startsWith('image/'));
+  &&item.data.startsWith('data:')&&(item.type==='application/pdf'||item.type.startsWith('image/'))&&
+  (item.noteId!==-1||verifyRightsPdfAttachment(item));
 }
 const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const PRICE_FACTORS={'원':1,'만원':10000,'억원':100000000};

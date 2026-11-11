@@ -38,30 +38,49 @@ function parseCourtPdfFacts(pages,selectedType){
   }
  }
  const tenants=[],hasDateHeaders=/전입\s*신고/.test(all)&&/확정\s*일자/.test(all);
- if(selectedType==='sale_statement'||selectedType==='occupancy_report'||documentType==='sale_statement'){
+ // A tenant is a person listed in the occupancy table, not merely a person
+ // whose deposit is known. Court PDF cells can span multiple visual lines.
+ if(selectedType==='sale_statement'||documentType==='sale_statement'||selectedType==='occupancy_report'){
+  const skip=/^(?:주거|임차인|현황조사|권리신고|점유자|보증금|성명|구분|부분|정보출처|임대차기간|확정일자|차임|요구여부|비고란|전입신고일자|부동산|최선순위|사건번호)$/;
   for(const page of source){
-   const rows=page.text.split(/\n/).map(s=>s.replace(/\s+/g,' ').trim()).filter(Boolean);
+   const table=page.text.match(/점\s*유\s*자|점유자/);
+   if(!table)continue;
+   const begin=table.index;
+   const stop=page.text.slice(begin).search(/(?:^|\n)\s*(?:<비고>|비고란|매각에 따라 설정된)/);
+   const section=page.text.slice(begin,stop<0?undefined:begin+stop);
+   const rows=section.split(/\n/).map(x=>x.replace(/\s+/g,' ').trim()).filter(Boolean);
+   const anchors=[];
    for(let i=0;i<rows.length;i++){
-    let row=rows[i];
-    // Each horizontally reassembled row normally begins with a name. If a PDF
-    // wraps the deposit into the next line, join only one continuation line.
-    const nm=row.match(/^([가-힣]{2,4})\s+(?=.{0,120}(?:임차인|권리신고|현황조사))/);
-    if(!nm||!/(?:임차인|권리신고|현황조사)/.test(row))continue;
-    if(!/\b\d{1,3}(?:,\d{3}){1,4}\b/.test(row)&&rows[i+1]&&!/^[가-힣]{2,4}\s+.*(?:임차인|권리신고)/.test(rows[i+1]))
-     row+=' '+rows[i+1];
-    const tail=row.slice(row.search(/임차인|권리신고|현황조사/));
-    const amount=tail.match(/(?:^|[^\d])(\d{1,3}(?:,\d{3}){1,4})(?!\d)/);
-    if(!amount)continue;
-    const depositWon=Number(amount[1].replace(/,/g,''));
-    if(!Number.isSafeInteger(depositWon)||depositWon<100000||depositWon>1000000000000000)continue;
-    const after=tail.slice(tail.indexOf(amount[1])+amount[1].length);
-    const dates=[...after.matchAll(/20\d{2}\s*[.\/-]\s*\d{1,2}\s*[.\/-]\s*\d{1,2}/g)]
+    const m=rows[i].match(/^([가-힣]{2,4})(?=\s|$)/);
+    if(!m||skip.test(m[1]))continue;
+    // Require independent table evidence, including for rows with no deposit.
+    const nearby=rows.slice(Math.max(0,i-3),Math.min(rows.length,i+5)).join(' ');
+    if(!/(?:주거|임차인|현황조사|권리신고)/.test(nearby))continue;
+    if(!/20\d{2}\s*[.\/-]\s*\d{1,2}\s*[.\/-]\s*\d{1,2}|\d{1,3}(?:,\d{3}){1,4}/.test(nearby))continue;
+    anchors.push({i,name:m[1]});
+   }
+   for(let k=0;k<anchors.length;k++){
+    const {i,name}=anchors[k];
+    if(tenants.some(x=>x.name===name))continue;
+    const next=anchors[k+1]?.i??rows.length;
+    const before=rows.slice(Math.max(0,i-2),i).join(' ');
+    const block=rows.slice(i,next).join(' ');
+    const evidence=(before+' '+block).trim();
+    const amount=block.match(/(?:^|[^\d])(\d{1,3}(?:,\d{3}){1,4})(?!\d)/);
+    const depositWon=amount?Number(amount[1].replace(/,/g,'')):null;
+    if(depositWon!==null&&(!Number.isSafeInteger(depositWon)||depositWon<100000||depositWon>1e15))continue;
+    const afterAmount=amount?block.slice(block.indexOf(amount[1])+amount[1].length):block;
+    const dates=[...afterAmount.matchAll(/20\d{2}\s*[.\/-]\s*\d{1,2}\s*[.\/-]\s*\d{1,2}/g)]
      .map(m=>normalizePdfDate(m[0])).filter(Boolean);
-    if(tenants.some(t=>t.name===nm[1]&&t.depositWon===depositWon))continue;
-    tenants.push({name:nm[1],depositWon,occupancy:row.includes('주거 임차인')?'yes':'unknown',
+    const allDates=[...evidence.matchAll(/20\d{2}\s*[.\/-]\s*\d{1,2}\s*[.\/-]\s*\d{1,2}/g)]
+     .map(m=>normalizePdfDate(m[0])).filter(Boolean);
+    // Never manufacture a deposit or an exact-date classification from an
+    // unknown column. One unlabelled date is kept for manual review.
+    tenants.push({name,depositWon,occupancy:/주거\s*임차인/.test(evidence)?'yes':'unknown',
      moveInOn:hasDateHeaders&&dates.length>=2?dates[0]:null,
      fixedDateOn:hasDateHeaders&&dates.length>=2?dates[1]:null,
-     distributionDemand:'unknown',page:page.page,excerpt:row.slice(0,260),datesForReview:dates.slice(0,5)});
+     distributionDemand:'unknown',page:page.page,excerpt:evidence.slice(0,260),
+     datesForReview:allDates.slice(0,7)});
    }
   }
  }

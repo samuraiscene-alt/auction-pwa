@@ -24,7 +24,9 @@ function assessCourtSchedulePreflight(response,identity,snapshotDate){
   return {...fail('detail_lot_unverified'),lotDiagnostic:'lot_identity_mismatch'};
  const exactLotCount=lots.filter(r=>String(r.dspslGdsSeq??'')===identity.itemNo).length;
  if(exactLotCount!==1)
-  return {...fail('detail_lot_unverified'),lotDiagnostic:exactLotCount===0?'lot_number_missing':'lot_number_ambiguous'};
+  return {...fail('detail_lot_unverified'),
+   lotDiagnostic:exactLotCount===0?'lot_number_missing':'lot_number_ambiguous',
+   lotRows:Math.min(exactLotCount,300),totalLotRows:lots.length};
  if(!Array.isArray(history)||history.length>500)
   return fail('detail_schedule_unavailable');
  const expected=calendarDay(snapshotDate.replaceAll('-',''));

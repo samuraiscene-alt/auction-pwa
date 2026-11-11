@@ -55,6 +55,7 @@ async function main(){
     lotDiagnostic:preflight.lotDiagnostic||'not_checked',
     lotRows:Number.isInteger(preflight.lotRows)?preflight.lotRows:null,
     totalLotRows:Number.isInteger(preflight.totalLotRows)?preflight.totalLotRows:null,
+    lotRowsIdentical:typeof preflight.lotRowsIdentical==='boolean'?preflight.lotRowsIdentical:null,
     legalStatusVerified:false,rawResponseSaved:false}));
    return;
   }

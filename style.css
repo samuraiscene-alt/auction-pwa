@@ -1072,3 +1072,11 @@ html,body{
 .rights-pdf-head strong{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rights-pdf-overlay iframe{border:0;background:white;width:100%;flex:1;min-height:0}
 .rights-manual-records input[type=file]{width:100%;min-width:0;font-size:14px}
+
+/* v0.7.51: large direct-touch native iOS PDF picker; input itself receives the tap. */
+.rights-pdf-file-field{display:grid;gap:7px;min-width:0}
+.rights-pdf-file-label{font-size:14px;font-weight:600;color:#34445c}
+.rights-pdf-file-picker{position:relative;display:flex;align-items:center;justify-content:center;min-height:50px;border:1px solid #a9c8f5;border-radius:12px;background:#edf5ff;color:#175caf;font-size:15px;font-weight:750;overflow:hidden}
+.rights-pdf-file-picker input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;z-index:1;cursor:pointer;font-size:16px}
+.rights-pdf-file-picker:focus-within{outline:2px solid #347af1;outline-offset:2px}
+.rights-pdf-selected{margin:0;font-size:13px;overflow-wrap:anywhere}

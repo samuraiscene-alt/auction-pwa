@@ -13,6 +13,10 @@ sample.tenants.push({id:'t1',occupancy:'unknown',distributionDemand:'unknown',
  moveInOn:null,fixedDateOn:null,depositWon:null,documentId:'d1',notes:null,liabilityVerified:false});
 assert.equal(check(sample).valid,true);
 assert.equal(check(sample).tenantCount,1);
+const linked={...sample.documents[0],fileId:'file_doc_1'};
+assert.equal(check({...sample,documents:[linked]}).valid,true);
+assert.equal(check({...sample,documents:[{...linked,fileId:'invalid file id'}]}).valid,false);
+assert.equal(check({...sample,documents:[linked,{...linked,id:'d2',fileId:linked.fileId}]}).valid,false);
 assert.equal(check({...sample,tenants:[{...sample.tenants[0],depositWon:0}]}).valid,true);
 assert.equal(check({...sample,tenants:[{...sample.tenants[0],depositWon:-1}]}).valid,false);
 assert.equal(check({...sample,tenants:[{...sample.tenants[0],depositWon:'1000'}]}).valid,false);

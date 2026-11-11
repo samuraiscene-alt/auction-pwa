@@ -40,7 +40,11 @@ function assessCourtSchedulePreflight(response,identity,snapshotDate){
    lotDiagnostic:exactLotCount===0?'lot_number_missing':'lot_number_ambiguous',
    lotRows:Math.min(exactLotCount,300),totalLotRows:lots.length,
    lotRowsIdentical:exactLotCount>1?sameRecords:null,
-   lotRowDifference:rowDifference};
+   lotRowDifference:rowDifference,
+   multiRowReviewEligible:exactLotCount>1&&!sameRecords&&matchingLots.every(r=>
+    r&&typeof r==='object'&&!Array.isArray(r)&&
+    String(r.cortOfcCd??'')===identity.courtCode&&
+    String(r.csNo??'')===internal&&String(r.dspslGdsSeq??'')===identity.itemNo)};
  }
  if(!Array.isArray(history)||history.length>500)
   return fail('detail_schedule_unavailable');

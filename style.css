@@ -1007,3 +1007,17 @@ html,body{
 #content .auction-detail .auction-detail-ident>.muted{white-space:nowrap;font-size:13px}
 #content .auction-detail .auction-detail-ident>strong{min-width:0;max-width:100%;text-align:right;overflow-wrap:normal;word-break:keep-all;font-size:14px;line-height:1.55}
 #content .demo-catalog{margin-bottom:12px}
+
+/* v0.7.32: compact, expandable court preview in integrated search */
+#content .court-search-item{margin:0 0 7px;border:1px solid #dfe5ed;border-radius:12px;background:#fff;overflow:hidden}
+#content .court-search-item>summary{display:flex;flex-direction:column;gap:4px;position:relative;padding:12px 35px 12px 14px;cursor:pointer;list-style:none;min-width:0}
+#content .court-search-item>summary::-webkit-details-marker{display:none}
+#content .court-search-item>summary:after{content:'⌄';position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:20px;color:#667991;line-height:1}
+#content .court-search-item[open]>summary:after{content:'⌃'}
+#content .court-search-address{font-size:14px;line-height:1.45;font-weight:750;color:#23364e;overflow-wrap:anywhere}
+#content .court-search-meta{font-size:12px;line-height:1.45;color:#63758c;overflow-wrap:anywhere}
+#content .court-search-expanded{padding:0 14px 13px;border-top:1px solid #eef1f5}
+#content .court-search-expanded>div{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-top:10px;font-size:13px}
+#content .court-search-expanded>div>span{color:#63758c}
+#content .court-search-expanded>div>strong{text-align:right;color:#263b55;overflow-wrap:anywhere}
+#content .court-search-expanded>p{margin:12px 0 0;font-size:12px;line-height:1.5;color:#8a5c22}

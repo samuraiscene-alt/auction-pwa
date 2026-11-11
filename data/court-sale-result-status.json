@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "attemptedAt": "2026-11-11T03:57:41.145Z",
+  "attemptedAt": "2026-11-11T03:57:51.835Z",
   "triggerEvent": "push",
   "probeExecutionSucceeded": true,
   "observed": false,
@@ -9,6 +9,7 @@
   "failedStage": "none",
   "reason": "detail_lot_unverified",
   "schedulePreflightConfirmed": false,
+  "lotDiagnostic": "lot_number_ambiguous",
   "detailCrossChecked": false,
   "rawResultCodeMatched": false,
   "scheduleDayMatched": false,

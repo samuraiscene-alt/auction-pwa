@@ -943,7 +943,7 @@ function attachRightsEditor(){
  const propertyId=state.detail;
  const nextId=()=>('r'+Date.now().toString(36)+Math.random().toString(36).slice(2,8));
  const amount=id=>{const value=$(id).value.trim();if(!value)return null;
-  if(!/^\\d{1,16}$/.test(value))throw Error('금액은 0 이상의 원 단위 숫자만 입력하세요.');
+  if(!/^\d{1,16}$/.test(value))throw Error('금액은 0 이상의 원 단위 숫자만 입력하세요.');
   const n=Number(value);if(!Number.isSafeInteger(n)||n>1_000_000_000_000_000)throw Error('금액 범위를 확인하세요.');
   return n;};
  const submit=(collection,item)=>{const draft=currentRightsDraft(propertyId);

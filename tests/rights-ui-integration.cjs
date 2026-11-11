@@ -13,7 +13,7 @@ assert(html.includes('src="scripts/rights-liability-scenarios.js"'));
 assert(sw.includes('./scripts/rights-liability-scenarios.js'));
 assert(app.includes('function rightsScenarioMarkup(p)'));
 assert(app.includes('function attachRightsScenario()'));
-assert(app.includes('rightsScenarioMarkup(p);'));
+assert(app.includes('return rightsScenarioMarkup(p)+'));
 assert(app.includes('rights-cost-summary'));
 assert(app.includes('rights-cost-total'));
 assert(app.includes('rights-manual-records'));

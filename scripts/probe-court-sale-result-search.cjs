@@ -53,6 +53,8 @@ async function main(){
    console.log(JSON.stringify({schemaVersion:1,observed:false,reason:preflight.reason,
     schedulePreflightConfirmed:false,identityMatched:false,
     lotDiagnostic:preflight.lotDiagnostic||'not_checked',
+    lotRows:Number.isInteger(preflight.lotRows)?preflight.lotRows:null,
+    totalLotRows:Number.isInteger(preflight.totalLotRows)?preflight.totalLotRows:null,
     legalStatusVerified:false,rawResponseSaved:false}));
    return;
   }

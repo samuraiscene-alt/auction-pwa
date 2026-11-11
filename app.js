@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.42';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.43';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -969,7 +969,16 @@ function rightsScenarioMarkup(p){
   (sourced!==null?' value="'+sourced+'"':'')+' placeholder="낙찰예정가 입력" data-scenario-amount="bidWon"></label></div>'+
   sourceText+
   '<div id="rightsBidComparison" class="helper" role="status"></div>'+depositNote+
-  '<details class="auction-fold"><summary>세금·인수금·추가 비용 입력 (모르면 비워두세요)</summary>'+
+  '<details class="auction-fold"><summary>세금·인수금·추가 비용 (자동계산 지원)</summary>'+
+  '<div class="rights-tax-controls"><label for="rightsTaxMode">취득세 계산 조건'+
+  '<select class="select" id="rightsTaxMode">'+
+  '<option value="unknown">아직 몰라요</option>'+
+  '<option value="ordinary">주택 일반세율 적용 · 중과/감면 없음 확인</option>'+
+  '<option value="manual">세액을 직접 입력</option></select></label>'+
+  '<label for="rightsTaxArea">주택 전용면적'+
+  '<select class="select" id="rightsTaxArea"><option value="unknown">미확인</option>'+
+  '<option value="at_most_85">85㎡ 이하</option><option value="over_85">85㎡ 초과</option></select></label>'+
+  '<p class="helper" id="rightsTaxStatus">주택인지, 세율 조건과 면적을 확인하면 취득세·지방교육세·농어촌특별세를 참고 계산해요. 모르면 비워두세요.</p></div>'+
   '<div class="rights-scenario-fields">'+inputs.map(([key,title])=>
    '<label for="rightsCalc_'+key+'">'+title+' (원)<input class="search" id="rightsCalc_'+key+
    '" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="미확인" data-scenario-amount="'+key+'"></label>').join('')+'</div>'+
@@ -992,8 +1001,28 @@ function attachRightsScenario(){
  const knownAppraisal=Number(shell.dataset.scenarioAppraisal);
  const appraisal=Number.isSafeInteger(knownAppraisal)&&knownAppraisal>0?knownAppraisal:null;
  const comparison=$('#rightsBidComparison');
+ const taxMode=$('#rightsTaxMode'),taxArea=$('#rightsTaxArea'),taxNode=$('#rightsCalc_acquisitionTaxWon'),taxStatus=$('#rightsTaxStatus');
+ let autoTax=false;
  const calculate=()=>{
   try{
+   const bid=amount($('#rightsCalc_bidWon'));
+   if(taxMode.value==='ordinary'&&taxArea.value!=='unknown'&&bid!==null){
+    const estimate=window.RightsLiability?.estimateOrdinaryHouseAcquisitionTax?.({
+     bidWon:bid,ordinaryRateConfirmed:true,areaClass:taxArea.value});
+    if(estimate?.ok){
+     taxNode.value=String(estimate.estimatedWon);taxNode.readOnly=true;autoTax=true;
+     taxStatus.textContent='자동 참고 계산 '+prettyPrice(estimate.estimatedWon)+
+      ' (취득세 '+prettyPrice(estimate.acquisitionWon)+
+      ' + 지방교육세 '+prettyPrice(estimate.educationWon)+
+      ' + 농어촌특별세 '+prettyPrice(estimate.ruralWon)+') · 실제 세액 미확정';
+    }else{if(autoTax)taxNode.value='';taxNode.readOnly=false;autoTax=false;
+     taxStatus.textContent='취득세 자동 계산 불가 · 적용 조건을 확인하세요.';}
+   }else{
+    if(autoTax)taxNode.value='';
+    taxNode.readOnly=false;autoTax=false;
+    taxStatus.textContent=taxMode.value==='manual'?'직접 입력한 세액은 사용자 가정값입니다.':
+     '주택 일반세율과 면적 확인 전에는 취득세를 0원으로 계산하지 않아요.';
+   }
    const entries=Object.fromEntries(controls.map(node=>[node.dataset.scenarioAmount,amount(node)]));
    if(entries.bidWon===null){out.textContent='낙찰예정가를 입력해 주세요 · 총액 산정 불가';comparison.textContent='';return;}
    const engine=window.RightsLiability?.calculateLiabilityScenario;
@@ -1014,6 +1043,8 @@ function attachRightsScenario(){
   }catch(error){out.textContent='계산 불가 · '+String(error.message||'금액 오류');comparison.textContent='';}
  };
  controls.forEach(node=>node.addEventListener('input',calculate));
+ taxMode.addEventListener('change',calculate);
+ taxArea.addEventListener('change',calculate);
  calculate();
 }
 

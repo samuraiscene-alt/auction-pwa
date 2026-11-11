@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.39';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.40';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -367,7 +367,7 @@ const MAIN_TABS=['home','search','schedule','favorites','study'];
 let capitalPriceHistory=null,capitalSnapshot=null,capitalAttemptStatus=null,capitalLegalDiagnostic=null,capitalLoadStatus='unloaded',capitalLoadError='';
 let appDepth=0;
 const viewHistory=new Map();
-function snapshot(){return {page:state.page,filter:state.filter,selected:state.selected,viewMonth:state.viewMonth,calendarFavoritesOnly:state.calendarFavoritesOnly,detail:state.detail,note:state.note,search:state.search,region:state.region,minPrice:state.minPrice,maxPrice:state.maxPrice,priceUnit:state.priceUnit,detailTab:state.detailTab,favoriteSort:state.favoriteSort,favoriteType:state.favoriteType,capitalRegion:state.capitalRegion,capitalType:state.capitalType,capitalQuery:state.capitalQuery,capitalLimit:state.capitalLimit,capitalReviewDate:state.capitalReviewDate,capitalReviewStage:state.capitalReviewStage,capitalFocusId:state.capitalFocusId,editRealId:state.editRealId,noteQuery:state.noteQuery,noteSort:state.noteSort,studyCategory:state.studyCategory,noteTopicDraft:state.noteTopicDraft}}
+function snapshot(){return {page:state.page,filter:state.filter,selected:state.selected,viewMonth:state.viewMonth,calendarFavoritesOnly:state.calendarFavoritesOnly,detail:state.detail,note:state.note,search:state.search,region:state.region,minPrice:state.minPrice,maxPrice:state.maxPrice,priceUnit:state.priceUnit,detailTab:state.detailTab,favoriteSort:state.favoriteSort,favoriteType:state.favoriteType,capitalRegion:state.capitalRegion,capitalType:state.capitalType,capitalQuery:state.capitalQuery,capitalLimit:state.capitalLimit,capitalReviewDate:state.capitalReviewDate,capitalReviewStage:state.capitalReviewStage,capitalFocusId:state.capitalFocusId,editRealId:state.editRealId,rightsPropertyId:state.rightsPropertyId,noteQuery:state.noteQuery,noteSort:state.noteSort,studyCategory:state.studyCategory,noteTopicDraft:state.noteTopicDraft}}
 viewHistory.set(0,snapshot());
 history.replaceState({auctionApp:true,depth:0,view:snapshot()},'',location.pathname+location.search);
 function nav(page,extra={}){
@@ -893,9 +893,37 @@ function auctionPrebidChecklist(){
 function rightsDrafts(){
  return Array.isArray(saved.rightsDrafts)?saved.rightsDrafts:[];
 }
+// Records from an official snapshot and manual registration are associated
+// only when court NAME, case number and lot number all match exactly.
+function linkedRightsIds(id){
+ const result=[id];
+ if(capitalSnapshot?.validation?.passed!==true)return result;
+ const lots=Array.isArray(capitalSnapshot.items)?capitalSnapshot.items:[];
+ const isCourt=/^court-B\\d{6}\\|20\\d{2}타경\\d{1,10}\\|[1-9]\\d{0,3}$/.test(id);
+ if(isCourt){
+  const matching=lots.filter(x=>x.id===id&&x.id==='court-'+x.courtCode+'|'+x.caseNo+'|'+x.itemNo);
+  if(matching.length!==1)return result;
+  const lot=matching[0];
+  const reals=registeredProperties().filter(p=>p.id===realCaseId(p.court,p.case,p.itemNo||'1')&&
+   p.court===lot.courtName&&p.case===lot.caseNo&&String(p.itemNo||'1')===String(lot.itemNo));
+  if(reals.length===1)result.push(reals[0].id);
+ }else{
+  const real=registeredProperties().find(p=>p.id===id);
+  if(!real||real.id!==realCaseId(real.court,real.case,real.itemNo||'1'))return result;
+  const candidates=lots.filter(x=>x.id==='court-'+x.courtCode+'|'+x.caseNo+'|'+x.itemNo&&
+   x.courtName===real.court&&x.caseNo===real.case&&String(x.itemNo)===String(real.itemNo||'1'));
+  if(candidates.length===1)result.unshift(candidates[0].id);
+ }
+ return result;
+}
+function rightsDraftConflict(id){
+ return rightsDrafts().filter(x=>linkedRightsIds(id).includes(x.propertyId)).length>1;
+}
 function currentRightsDraft(id){
- const record=rightsDrafts().find(x=>x.propertyId===id);
- return record||window.RightsDraftSchema?.newRightsDraft(id)||null;
+ const ids=linkedRightsIds(id);
+ const existing=rightsDrafts().filter(x=>ids.includes(x.propertyId));
+ if(existing.length>1)return null; // Never silently merge two existing records.
+ return existing[0]||window.RightsDraftSchema?.newRightsDraft(ids[0])||null;
 }
 function saveRightsDraft(next){
  const validated=window.RightsDraftSchema?.validateRightsDraft(next);
@@ -907,7 +935,10 @@ function saveRightsDraft(next){
  try{write();}catch(e){if(old===undefined)delete saved.rightsDrafts;else saved.rightsDrafts=old;throw e;}
 }
 function rightsEditor(p){
- if(!p.userRegistered)return '<p class="helper">법원 수집목록은 별도 자료입니다. 직접 등록한 물건의 권리분석 기록부터 지원합니다.</p>';
+ if(!p?.id||(!p.userRegistered&&!(capitalSnapshot?.validation?.passed===true&&
+  capitalSnapshot.items?.some(x=>x.id===p.id&&x.id==='court-'+x.courtCode+'|'+x.caseNo+'|'+x.itemNo))))
+  return '<p class="status">검증된 물건번호를 확인할 수 없어 기록 입력을 중단했어요.</p>';
+ if(rightsDraftConflict(p.id))return '<div class="status">⚠ 동일 사건에 직접 등록/수집 기록이 각각 존재합니다. 자동 병합은 하지 않습니다. 별도 백업 후 기록을 검토해 주세요.</div>';
  const d=currentRightsDraft(p.id);
  if(!d)return '<p class="status">입력 검증 모듈을 불러오지 못했어요. 새로고침해 주세요.</p>';
  const docNames={registry:'등기사항증명서',sale_statement:'매각물건명세서',occupancy_report:'현황조사서',appraisal:'감정평가서',lease:'임대차 자료',other:'기타'};
@@ -915,7 +946,7 @@ function rightsEditor(p){
  const tenantRows=d.tenants.map(x=>'<li>임차인 기록 · 보증금 '+escapeHtml(x.depositWon===null?'미확인':prettyPrice(x.depositWon))+' · 전입 '+escapeHtml(x.moveInOn||'미확인')+' <button type="button" class="secondary" data-rights-remove="tenant" data-rights-id="'+escapeHtml(x.id)+'">삭제</button></li>').join('');
  const rightRows=d.rights.map(x=>'<li>권리 기록 · '+escapeHtml(x.type)+' · 접수 '+escapeHtml(x.registeredOn||'미확인')+' <button type="button" class="secondary" data-rights-remove="right" data-rights-id="'+escapeHtml(x.id)+'">삭제</button></li>').join('');
  return '<div class="divider"></div><h3>내 권리분석 자료</h3><p class="helper">수동 입력 정보이며 법원의 공식 확인이나 법률 판단이 아닙니다. 해당 물건번호별로만 저장돼요.</p>'+
- '<details class="auction-fold"><summary>＋ 서류 기록 추가</summary><form id="rightsDocumentForm" class="rights-form">'+
+ '<details class="auction-fold"><summary>＋ 서류 기록 추가</summary><form id="rightsDocumentForm" data-property-id="'+escapeHtml(p.id)+'" class="rights-form">'+
  '<label>서류 종류<select id="rightsDocType" class="select">'+Object.entries(docNames).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label>'+
  '<label>자료명·페이지·출처<input id="rightsDocRef" class="search" maxlength="220" required placeholder="예: 등기사항증명서 1쪽"></label>'+
  '<label>발급일(선택)<input type="date" id="rightsDocDate" class="search"></label>'+
@@ -940,14 +971,16 @@ function rightsEditor(p){
 }
 function attachRightsEditor(){
  const shell=$('#rightsDocumentForm');if(!shell)return;
- const propertyId=state.detail;
+ const propertyId=shell.dataset.propertyId;
+ const validContext=()=>state.page==='rights'?state.rightsPropertyId===propertyId:
+   state.page==='detail'&&state.detail===propertyId;
  const nextId=()=>('r'+Date.now().toString(36)+Math.random().toString(36).slice(2,8));
  const amount=id=>{const value=$(id).value.trim();if(!value)return null;
   if(!/^\d{1,16}$/.test(value))throw Error('금액은 0 이상의 원 단위 숫자만 입력하세요.');
   const n=Number(value);if(!Number.isSafeInteger(n)||n>1_000_000_000_000_000)throw Error('금액 범위를 확인하세요.');
   return n;};
  const submit=(collection,item)=>{const draft=currentRightsDraft(propertyId);
-  if(!draft||state.detail!==propertyId)throw Error('현재 물건을 확인하세요.');
+  if(!draft||!validContext())throw Error('현재 물건을 확인하세요.');
   const next={...draft,[collection]:[...draft[collection],item]};
   saveRightsDraft(next);render();showSavedCheck('권리자료 저장 완료');};
  shell.onsubmit=e=>{e.preventDefault();try{
@@ -967,7 +1000,9 @@ function attachRightsEditor(){
  });}catch(error){toast(error.message||'권리 저장 실패');}};
  document.querySelectorAll('[data-rights-remove]').forEach(btn=>btn.onclick=()=>{try{
   if(!confirm('선택한 기록을 삭제할까요?'))return;
-  const draft=currentRightsDraft(propertyId);const kind=btn.dataset.rightsRemove;
+  if(!validContext())throw Error('현재 물건을 확인하세요.');
+  const draft=currentRightsDraft(propertyId);if(!draft)throw Error('기록 충돌로 수정이 중단됐어요.');
+  const kind=btn.dataset.rightsRemove;
   const key={document:'documents',tenant:'tenants',right:'rights'}[kind];if(!key)throw Error('항목 오류');
   const id=btn.dataset.rightsId;
   if(key==='documents'&&(draft.tenants.some(x=>x.documentId===id)||draft.rights.some(x=>x.documentId===id)))
@@ -992,7 +1027,17 @@ function detail(){
  }
  return `<div class="card auction-detail"><div class="placeholder"><div><div style="font-size:55px">⌂</div>실제 사진 미연동<br>법원 원본 사진 연결 예정</div></div><div class="auction-card-top" style="margin-top:15px"><span class="auction-type">${escapeHtml(p.type)}</span><span class="auction-demo ${p.userRegistered?'user-record':''}">${p.userRegistered?'사용자 등록 · 법원 확인 필요':'가상 물건'}</span></div><h2 class="detailTitle">${escapeHtml(p.name)}</h2><p class="muted">${escapeHtml(p.court)} · ${escapeHtml(p.case)}</p><div class="detail-tabs" role="group" aria-label="물건 상세정보 분류">${navTabs}</div><div class="detail-tab-panel">${panel}</div>${p.userRegistered?'<button class="secondary full-secondary" type="button" id="editRealDetail">✎ 등록 정보 수정</button><button class="secondary full-secondary" type="button" id="openCourtDetail">⚖ 법원 원문에서 사건 확인 ↗</button>':''}<button class="primary detail-favorite-btn ${saved.favorites.includes(p.id)?'is-favorite':'is-not-favorite'}" id="favBtn" type="button" aria-pressed="${saved.favorites.includes(p.id)}"><span class="favorite-heart" aria-hidden="true">${saved.favorites.includes(p.id)?'♥':'♡'}</span> ${saved.favorites.includes(p.id)?'관심 해제':'관심물건 저장'}</button></div><p class="helper">${p.userRegistered?'사용자가 입력한 사건 기록입니다. 공식 자동 조회 결과가 아니며 입찰 전에 법원 경매 원본을 직접 확인하세요.':'사건번호·가격·날짜는 모두 화면 테스트용 가상 정보이며 입찰에 이용하면 안 됩니다.'}</p>`;
 }
-function rights(){return `<div class="section"><h2>권리분석 요약</h2><span class="pill risk">자료 미연동</span></div>${[['⚖','말소기준권리','등기 서류 확인 필요'],['♙','임차인','현황조사서 확인 필요'],['♧','인수 가능성','판단 전 원본 자료 필요'],['⚠','위험요약','미확인 항목이 남아 있음']].map(a=>`<div class="card line"><span style="font-size:24px;color:#3477df">${a[0]}</span><div style="flex:1"><strong>${a[1]}</strong><p class="tiny">${a[2]}</p></div><span class="arrow">›</span></div>`).join('')}<p class="helper">임차인 관련 권리와 위험도를 자동으로 판단하지 않습니다. 후속 단계에서 출처와 법률 검증 로직을 연결합니다.</p>`}
+function rights(){
+ const id=state.rightsPropertyId;
+ const record=registeredProperties().find(p=>p.id===id)||
+  (capitalSnapshot?.validation?.passed===true?capitalSnapshot.items?.find(p=>p.id===id):null);
+ if(!record)return '<div class="status">권리분석할 물건을 확인하지 못했습니다. 직접 등록 목록 또는 법원 수집목록에서 물건을 다시 선택하세요.</div>';
+ const court=record.courtName||record.court||'법원 미확인';
+ const number=record.caseNo||record.case||'';
+ return '<div class="card"><h2>권리분석 · 수동 기록</h2><p class="helper">'+escapeHtml(court)+' · '+escapeHtml(number)+' · 물건 '+escapeHtml(record.itemNo||'1')+'번</p>'+
+ '<div class="status">⚠ 원본 서류를 확인하기 전에는 선순위권리·대항력·인수금액을 판정하지 않습니다.</div>'+
+ rightsEditor(record)+'</div>';
+}
 const STUDY_CATEGORIES=[
  {id:'권리분석',icon:'⚖',desc:'등기·임차인·인수권리',topics:['등기부등본의 권리 순서 확인','말소기준권리와 인수 가능 권리 구분','임차인 점유와 보증금 관련 서류 확인']},
  {id:'경매절차',icon:'▤',desc:'사건검색부터 잔금납부',topics:['사건번호와 매각기일 확인','매각물건명세서·현황조사서 살펴보기','입찰보증금과 낙찰 후 일정 확인']},
@@ -1827,6 +1872,7 @@ function capital(){
    ${auctionFold('최저매각가 변경 이력',capitalPriceHistoryMarkup(x),'auction-fold-history')}
    ${auctionFold('입찰보증금 계산기',auctionBidCalculator(x.minimumWon,'법원 부분수집본 · 최신 가격 및 공고 확인 필요'),'auction-fold-calc')}
    ${auctionPrebidChecklist()}
+   <button type="button" class="secondary full-secondary" data-capital-rights="${escapeHtml(x.id)}">⚖ 권리분석 · 인수 가능 금액 기록</button>
    <button type="button" class="secondary full-secondary" data-capital-check="${escapeHtml(x.id)}">법원 서버에서 이 물건 재조회</button>
    <p class="helper" data-capital-result="${escapeHtml(x.id)}" aria-live="polite">재조회 전 · 법원 원문 확인 필요</p>
    <button type="button" class="secondary full-secondary" data-capital-official="1">법원 원문에서 사건 확인 ↗</button>
@@ -2187,6 +2233,14 @@ document.querySelectorAll('[data-auction-calc]').forEach(box=>{
  };
  amount.addEventListener('input',calculate);rate.addEventListener('change',calculate);
 });
+document.querySelectorAll('[data-capital-rights]').forEach(button=>button.onclick=()=>{
+ const id=button.dataset.capitalRights;
+ const item=capitalSnapshot?.items?.find(x=>x.id===id);
+ if(capitalSnapshot?.validation?.passed!==true||!item||id!=='court-'+item.courtCode+'|'+item.caseNo+'|'+item.itemNo){
+  toast('검증된 물건번호를 확인하지 못했습니다.');return;
+ }
+ nav('rights',{rightsPropertyId:id});
+});
 document.querySelectorAll('[data-capital-check]').forEach(button=>button.onclick=()=>void verifyCapitalItem(button.dataset.capitalCheck,button));
 document.querySelectorAll('[data-capital-official]').forEach(button=>button.onclick=()=>window.open(OFFICIAL_AUCTION_URL,'_blank','noopener,noreferrer'));
 if((state.page==='capital'||(state.page==='search'&&state.search.trim()))&&capitalLoadStatus==='unloaded')void loadCapital();
@@ -2454,7 +2508,7 @@ if($('#applyAdvanced'))$('#applyAdvanced').onclick=()=>{
 };
 if($('#resetAdvanced'))$('#resetAdvanced').onclick=()=>{state.region='전체';state.filter='전체';state.search='';state.minPrice='';state.maxPrice='';state.priceUnit='원';render();};
 if($('#specialBack'))$('#specialBack').onclick=()=>goBack();if($('#openCourtDetail'))$('#openCourtDetail').onclick=()=>window.open(OFFICIAL_AUCTION_URL,'_blank','noopener');
-if($('#favBtn'))$('#favBtn').onclick=()=>{const wasSaved=saved.favorites.includes(state.detail);saved.favorites=wasSaved?saved.favorites.filter(i=>i!==state.detail):[...saved.favorites,state.detail];write();render();toast(wasSaved?'관심물건에서 해제했어요.':'관심물건에 저장했어요.');};document.querySelectorAll('[data-detail-tab]').forEach(btn=>btn.onclick=()=>{state.detailTab=btn.dataset.detailTab;render();});if($('#rightsBtn'))$('#rightsBtn').onclick=()=>nav('rights');attachRightsEditor();if($('#noteSearchForm')){
+if($('#favBtn'))$('#favBtn').onclick=()=>{const wasSaved=saved.favorites.includes(state.detail);saved.favorites=wasSaved?saved.favorites.filter(i=>i!==state.detail):[...saved.favorites,state.detail];write();render();toast(wasSaved?'관심물건에서 해제했어요.':'관심물건에 저장했어요.');};document.querySelectorAll('[data-detail-tab]').forEach(btn=>btn.onclick=()=>{state.detailTab=btn.dataset.detailTab;render();});if($('#rightsBtn'))$('#rightsBtn').onclick=()=>nav('rights',{rightsPropertyId:state.detail});attachRightsEditor();if($('#noteSearchForm')){
  const form=$('#noteSearchForm'),input=$('#noteSearchInput');
  let composing=false;
  input.addEventListener('compositionstart',()=>composing=true);

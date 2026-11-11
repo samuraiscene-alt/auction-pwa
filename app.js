@@ -1212,6 +1212,77 @@ function attachRightsEditor(){
   submit('documents',{id:nextId(),type:$('#rightsDocType').value,source:'user_entry',
    issuedOn:$('#rightsDocDate').value||null,checkedOn:null,reference:ref,officiallyVerified:false});
  }catch(error){toast(error.message||'서류 저장 실패');}};
+
+ const pdfForm=$('#rightsPdfForm');
+ if(pdfForm)pdfForm.onsubmit=async e=>{
+  e.preventDefault();
+  const button=$('#rightsPdfSave'),status=$('#rightsPdfStatus');
+  const file=$('#rightsPdfInput')?.files?.[0],type=$('#rightsPdfType')?.value;
+  if(!file){status.textContent='PDF 파일을 선택해 주세요.';return;}
+  if(file.size<=0||file.size>MAX_RIGHTS_PDF_BYTES){status.textContent='8MB 이하 PDF만 등록할 수 있어요.';return;}
+  if(file.type!=='application/pdf'&&!/\.pdf$/i.test(file.name)){
+   status.textContent='PDF 파일만 등록할 수 있어요.';return;
+  }
+  if(!validContext()){status.textContent='물건 화면이 변경됐어요. 다시 선택해 주세요.';return;}
+  button.disabled=true;status.textContent='PDF 원본의 사건번호를 검사하는 중…';
+  try{
+   const magic=new Uint8Array(await file.slice(0,1024).arrayBuffer());
+   const signature=String.fromCharCode(...magic);
+   if(!signature.includes('%PDF-'))throw Error('유효한 PDF 파일인지 확인해 주세요.');
+   const inspected=await readAuctionPdfFields(file);
+   const id=linkedRightsIds(propertyId);
+   const record=registeredProperties().find(p=>id.includes(p.id))||
+    (capitalSnapshot?.validation?.passed===true?capitalSnapshot.items?.find(p=>id.includes(p.id)):null);
+   if(!record||!validContext())throw Error('현재 경매물건을 다시 확인해 주세요.');
+   const expectedCase=record.case||record.caseNo;
+   const expectedCourt=record.court||record.courtName;
+   if(!inspected.fields.caseNum)throw Error('PDF에서 사건번호를 확인할 수 없어요. 원본 PDF의 글자를 확인해 주세요.');
+   if(inspected.fields.caseNum!==expectedCase)throw Error('다른 사건의 PDF입니다. 현재 사건에 연결하지 않았어요.');
+   if(inspected.fields.court&&inspected.fields.court!==expectedCourt)
+    throw Error('PDF의 법원이 현재 사건과 달라 연결하지 않았어요.');
+   const itemNo=String(Number(record.itemNo||'1'));
+   if(inspected.itemNos.length&&
+      (inspected.itemNos.length!==1||inspected.itemNos[0]!==itemNo))
+    throw Error('PDF에 표시된 물건번호가 다르거나 여러 건이에요. 해당 물건의 PDF를 확인하세요.');
+   const lotWarning=inspected.itemNos.length?'물건번호 '+itemNo+'도 문서에서 발견됐어요.':
+    'PDF에서 물건번호는 자동으로 확인되지 않았어요. 현재 물건 '+itemNo+'번의 서류인지 직접 확인해야 합니다.';
+   if(!confirm('원본 PDF 검사 결과\n\n법원: '+expectedCourt+
+     '\n사건: '+expectedCase+'\n'+lotWarning+
+     '\n파일: '+file.name+
+     '\n\n이 PDF를 해당 물건의 근거서류로 보관할까요?\n문서 진위·권리관계는 확인되지 않습니다.')) {
+    status.textContent='PDF 보관을 취소했어요.';return;
+   }
+   if(!validContext())throw Error('물건 화면이 변경됐어요. 다시 선택해 주세요.');
+   const draft=currentRightsDraft(propertyId);
+   if(!draft)throw Error('물건 기록을 찾지 못했어요.');
+   if(draft.documents.length>=40)throw Error('근거서류는 최대 40개까지 등록할 수 있어요.');
+   const docId=nextId(),fileId=attachmentId();
+   const blob=new File([await file.arrayBuffer()],file.name,{type:'application/pdf'});
+   const stored={id:fileId,noteId:-1,rightsPropertyId:draft.propertyId,rightsDocId:docId,
+    name:file.name.slice(0,180),type:'application/pdf',size:blob.size,
+    data:await readFileAsDataUrl(blob)};
+   const documentRow={id:docId,type,source:'user_upload',
+    issuedOn:$('#rightsPdfIssueDate').value||null,checkedOn:null,
+    reference:stored.name,fileId,officiallyVerified:false};
+   await rightsPdfPut(stored);
+   try{saveRightsDraft({...draft,documents:[...draft.documents,documentRow]});}
+   catch(error){try{await rightsPdfDelete(fileId);}catch{}throw error;}
+   if(validContext()){render();showSavedCheck('근거 PDF 보관 완료');}
+  }catch(error){if(status.isConnected)status.textContent='PDF 연결 실패: '+String(error.message||error);}
+  finally{if(button.isConnected)button.disabled=false;}
+ };
+ document.querySelectorAll('[data-rights-openpdf]').forEach(button=>button.onclick=async()=>{
+  try{
+   const draft=currentRightsDraft(propertyId);
+   const doc=draft?.documents.find(x=>x.id===button.dataset.rightsOpenpdf);
+   if(!validContext()||!doc?.fileId)throw Error('이 물건에 연결된 PDF를 찾을 수 없어요.');
+   const file=await rightsPdfGet(doc.fileId);
+   if(!file||file.rightsPropertyId!==draft.propertyId||file.rightsDocId!==doc.id)
+    throw Error('원본 PDF가 없거나 다른 사건에 연결돼 있어요. 백업 상태를 확인하세요.');
+   openRightsPdfViewer(file);
+  }catch(error){toast('PDF 열기 실패: '+String(error.message||error));}
+ });
+
  $('#rightsTenantForm').onsubmit=e=>{e.preventDefault();try{submit('tenants',{
   id:nextId(),occupancy:$('#rightsTenantOccupancy').value,distributionDemand:$('#rightsTenantDemand').value,
   moveInOn:$('#rightsTenantMove').value||null,fixedDateOn:null,depositWon:amount('#rightsTenantDeposit'),
@@ -1419,7 +1490,10 @@ async function readAuctionPdfFields(file){
   }
   const text=lines.join('\n');
   if(text.trim().length<12)throw Error('스캔 PDF는 글자 인식(OCR)이 필요해요.');
-  return {fields:extractCourtFields(text),readPages:Math.min(15,pdf.numPages),totalPages:pdf.numPages};
+  const itemNos=[...new Set([...text.matchAll(/(?:물건\s*번호)\s*[:：]?\s*([1-9]\d{0,3})/g)]
+   .map(m=>String(Number(m[1]))))];
+  return {fields:extractCourtFields(text),itemNos,
+   readPages:Math.min(15,pdf.numPages),totalPages:pdf.numPages};
  }finally{await pdf.destroy();}
 }
 

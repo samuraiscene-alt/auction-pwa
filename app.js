@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.55';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.56';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -1337,16 +1337,23 @@ function attachRightsEditor(){
    if(facts?.caseNos.length!==1||facts.caseNos[0]!==propertyId.split('|')[1]||
     facts.itemNos.length>1||(facts.itemNos.length===1&&facts.itemNos[0]!==propertyId.split('|')[2]))
     throw Error('사건번호나 물건번호를 판독·대조하지 못했어요. 기존 저장 자료는 그대로예요.');
+   const invalidAutoRows=draft.tenants.filter(t=>t.documentId===doc.id&&
+    /^(?:일자|날짜|작성일자|신청일자|전입일자|등록일자|배당요구일자)$/.test(t.name||'')&&
+    /^PDF .*자동 추출/.test(t.notes||''));
    const candidates=facts.tenants.filter(t=>!draft.tenants.some(x=>x.name===t.name&&x.depositWon===t.depositWon));
    const add=candidates.slice(0,Math.max(0,100-draft.tenants.length)).map(t=>({id:nextId(),name:t.name,
     occupancy:t.occupancy,distributionDemand:'unknown',moveInOn:t.moveInOn,fixedDateOn:t.fixedDateOn,
     depositWon:t.depositWon,documentId:doc.id,notes:'PDF '+t.page+'쪽 자동 추출 · 원본 대조 필요',liabilityVerified:false}));
    const type=facts.documentType||doc.type;
-   if(!confirm('PDF 다시 분석 결과\n종류: '+type+'\n임차인 후보 '+facts.tenants.length+'명 (새로 입력 '+add.length+'명)\n주의사항 '+facts.warnings.length+'개'+
+   const typeName={sale_statement:'매각물건명세서',occupancy_report:'현황조사서',registry:'등기사항증명서',appraisal:'감정평가서'}[type]||type;
+   if(!confirm('PDF 다시 분석 결과\n종류: '+typeName+'\n임차인 후보 '+facts.tenants.length+'명 (새로 입력 '+add.length+'명)\n잘못 인식한 자동 기록 정리 '+invalidAutoRows.length+'건\n주의사항 '+facts.warnings.length+'개'+
     (inspected.ocrError?'\nOCR 오류: '+inspected.ocrError:'')+'\n\n원본과 대조하여 저장할까요?'))return;
    if(!validContext()||currentRightsDraft(propertyId)!==draft&&JSON.stringify(currentRightsDraft(propertyId))!==JSON.stringify(draft))throw Error('편집 도중 기록이 변경됐어요.');
    const updated=draft.documents.map(x=>x.id===doc.id?{...x,type,observations:facts.warnings}:x);
-   saveRightsDraft({...draft,documents:updated,tenants:[...draft.tenants,...add]});render();showSavedCheck('PDF 분석 저장 완료');
+   const invalidIds=new Set(invalidAutoRows.map(x=>x.id));
+   saveRightsDraft({...draft,documents:updated,
+    tenants:[...draft.tenants.filter(x=>!invalidIds.has(x.id)),...add]});
+   render();showSavedCheck('PDF 분석 저장 완료');
   }catch(err){toast('PDF 재분석 실패: '+String(err.message||err));}
   finally{if(button.isConnected){button.disabled=false;button.textContent=label;}}
  });

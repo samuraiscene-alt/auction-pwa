@@ -28,10 +28,14 @@ function assessCourtSchedulePreflight(response,identity,snapshotDate){
   // Only inspect bounded shape/identity; never record row values or raw payloads.
   // Equal JSON representations indicate duplicated records, not legal equivalence.
   const sameRecords=exactLotCount>1&&matchingLots.every(r=>JSON.stringify(r)===JSON.stringify(matchingLots[0]));
+  const firstKeys=exactLotCount>1?Object.keys(matchingLots[0]).sort().join('|'):'';
+  const sameFields=exactLotCount>1&&matchingLots.every(r=>Object.keys(r).sort().join('|')===firstKeys);
+  const rowDifference=exactLotCount<2?'not_checked':sameRecords?'identical':sameFields?'values_differ':'fields_differ';
   return {...fail('detail_lot_unverified'),
    lotDiagnostic:exactLotCount===0?'lot_number_missing':'lot_number_ambiguous',
    lotRows:Math.min(exactLotCount,300),totalLotRows:lots.length,
-   lotRowsIdentical:exactLotCount>1?sameRecords:null};
+   lotRowsIdentical:exactLotCount>1?sameRecords:null,
+   lotRowDifference:rowDifference};
  }
  if(!Array.isArray(history)||history.length>500)
   return fail('detail_schedule_unavailable');

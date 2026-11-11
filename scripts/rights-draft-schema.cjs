@@ -67,4 +67,6 @@ function newRightsDraft(propertyId){
  if(!propertyOK(propertyId))throw Error('invalid_property_id');
  return result;
 }
-module.exports={newRightsDraft,validateRightsDraft};
+const RightsDraftSchema={newRightsDraft,validateRightsDraft};
+if(typeof module!=='undefined'&&module.exports)module.exports=RightsDraftSchema;
+if(typeof window!=='undefined')window.RightsDraftSchema=RightsDraftSchema;

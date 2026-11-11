@@ -1046,3 +1046,13 @@ html,body{
 .rights-tax-controls select{width:100%;min-height:44px}
 .rights-tax-controls .helper{margin:0}
 .rights-scenario input[readonly]{background:#f1f5fa;color:#34445c}
+
+/* v0.7.44 cost-first compact beginner layout. */
+.rights-cost-summary{display:grid;margin:14px 0;border-top:1px solid #dfe5f0}
+.rights-cost-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 1px;border-bottom:1px solid #e7ecf3;font-size:15px}
+.rights-cost-row strong{text-align:right;font-size:14px;color:#556780;font-weight:650}
+.rights-cost-total{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#eef3fb;border-radius:14px;padding:16px 13px;margin:12px 0;font-size:14px;font-weight:700}
+.rights-cost-total strong{text-align:right;font-size:19px;color:#264f93;overflow-wrap:anywhere}
+.rights-cost-disclaimer{margin:12px 0 0;font-size:13px!important}
+.rights-cost-settings,.rights-manual-records{margin-top:14px}
+@media(max-width:390px){.rights-cost-row{font-size:14px}.rights-cost-row strong{font-size:13px}}

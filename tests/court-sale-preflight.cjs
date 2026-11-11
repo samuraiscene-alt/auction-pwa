@@ -34,9 +34,16 @@ for(const [lots,diagnostic] of [
  if(diagnostic==='lot_number_ambiguous'){
   assert.equal(checked.lotRows,2);
   assert.equal(checked.totalLotRows,2);
+  assert.equal(checked.lotRowsIdentical,true);
  }
  assert.equal(checked.legalStatusVerified,false);
 }
+const differentComponents=check({...detail,data:{...detail.data,
+ dlt_dspslGdsDspslObjctLst:[lot,{...lot,componentMarker:'different'}]}},id,'2026-11-10');
+assert.equal(differentComponents.lotDiagnostic,'lot_number_ambiguous');
+assert.equal(differentComponents.lotRows,2);
+assert.equal(differentComponents.lotRowsIdentical,false);
+assert.equal(differentComponents.legalStatusVerified,false);
 assert.equal(check(detail,id,'2026-02-29').confirmed,false);
 assert.equal(check(detail,id,'2026-11-10').reason,'snapshot_schedule_corresponds_to_official_detail');
 console.log('PASS: fresh official schedule preflight gate rejects changed/ambiguous/unverified dates');

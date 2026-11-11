@@ -428,7 +428,7 @@ function showSavedCheck(message='저장 완료'){
  saveCheckTimer=setTimeout(()=>overlay.classList.remove('visible'),1450);
 }
 function backupSummary(data,attachments){
- return '관심물건 '+(data.favorites.length+(data.courtFavorites?.length||0))+'개 · 노트 '+data.notes.length+'개 · 직접 등록 사건 '+(data.realProperties?.length||0)+'개 · 첨부파일 '+attachments.length+'개 · 권리분석 '+(data.rightsDrafts?.length||0)+'건';
+ return '관심물건 '+(data.favorites.length+(data.courtFavorites?.length||0))+'개 · 노트 '+data.notes.length+'개 · 직접 등록 사건 '+(data.realProperties?.length||0)+'개 · 첨부파일 '+attachments.length+'개 (권리 원본 PDF '+attachments.filter(x=>x.noteId===-1).length+'개 포함) · 권리분석 '+(data.rightsDrafts?.length||0)+'건';
 }
 const MAIN_TABS=['home','search','schedule','favorites','study'];
 let capitalPriceHistory=null,capitalSnapshot=null,capitalAttemptStatus=null,capitalLegalDiagnostic=null,capitalLoadStatus='unloaded',capitalLoadError='';

@@ -22,11 +22,17 @@ function assessCourtSchedulePreflight(response,identity,snapshotDate){
   return {...fail('detail_lot_unverified'),lotDiagnostic:'lot_list_invalid'};
  if(!lots.every(r=>r&&String(r.cortOfcCd??'')===identity.courtCode&&String(r.csNo??'')===internal))
   return {...fail('detail_lot_unverified'),lotDiagnostic:'lot_identity_mismatch'};
- const exactLotCount=lots.filter(r=>String(r.dspslGdsSeq??'')===identity.itemNo).length;
- if(exactLotCount!==1)
+ const matchingLots=lots.filter(r=>String(r.dspslGdsSeq??'')===identity.itemNo);
+ const exactLotCount=matchingLots.length;
+ if(exactLotCount!==1){
+  // Only inspect bounded shape/identity; never record row values or raw payloads.
+  // Equal JSON representations indicate duplicated records, not legal equivalence.
+  const sameRecords=exactLotCount>1&&matchingLots.every(r=>JSON.stringify(r)===JSON.stringify(matchingLots[0]));
   return {...fail('detail_lot_unverified'),
    lotDiagnostic:exactLotCount===0?'lot_number_missing':'lot_number_ambiguous',
-   lotRows:Math.min(exactLotCount,300),totalLotRows:lots.length};
+   lotRows:Math.min(exactLotCount,300),totalLotRows:lots.length,
+   lotRowsIdentical:exactLotCount>1?sameRecords:null};
+ }
  if(!Array.isArray(history)||history.length>500)
   return fail('detail_schedule_unavailable');
  const expected=calendarDay(snapshotDate.replaceAll('-',''));

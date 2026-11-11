@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.46';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.47';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -2007,10 +2007,11 @@ function capital(){
    <button type="button" class="secondary full-secondary" data-capital-rights="${escapeHtml(x.id)}">⚖ 권리분석 · 인수 가능 금액 기록</button>
    <button type="button" class="secondary full-secondary" data-capital-check="${escapeHtml(x.id)}">법원 서버에서 이 물건 재조회</button>
    <p class="helper" data-capital-result="${escapeHtml(x.id)}" aria-live="polite">재조회 전 · 법원 원문 확인 필요</p>
-   <div class="court-official-jump"><p class="helper">법원 원문 대조 · ${escapeHtml(x.courtName)} / ${escapeHtml(x.caseNo)} / 물건 ${escapeHtml(x.itemNo)}번</p>
-   <button type="button" class="secondary full-secondary" data-capital-official="${escapeHtml(x.id)}">사건번호 복사하고 법원검색 열기 ↗</button>
-   <button type="button" class="secondary full-secondary" data-capital-copy="${escapeHtml(x.id)}">사건번호만 복사</button>
-   <p class="helper">법원 경매사건검색으로 이동합니다. 사건번호 자동 입력·상세 직행은 아직 지원하지 않습니다.</p></div>
+   <div class="court-official-jump"><p class="helper">법원 원문 확인 · ${escapeHtml(x.courtName)} / 물건 ${escapeHtml(x.itemNo)}번</p>
+   <div class="status">법원 검색창에서 <strong>연도 ${escapeHtml(x.caseNo.slice(0,4))}</strong> 선택 · <strong>타경번호 ${escapeHtml(x.caseNo.split('타경')[1])}</strong> 붙여넣기</div>
+   <button type="button" class="secondary full-secondary" data-capital-official="${escapeHtml(x.id)}">타경번호 복사하고 법원검색 열기 ↗</button>
+   <button type="button" class="secondary full-secondary" data-capital-copy="${escapeHtml(x.id)}">타경번호만 복사</button>
+   <p class="helper">법원 사이트의 연도 선택은 자동으로 변경되지 않습니다. 상세 사건으로 바로 이동하는 기능도 아직 지원하지 않습니다.</p></div>
   </div>`;
 
  };
@@ -2378,8 +2379,9 @@ document.querySelectorAll('[data-capital-rights]').forEach(button=>button.onclic
 });
 document.querySelectorAll('[data-capital-check]').forEach(button=>button.onclick=()=>void verifyCapitalItem(button.dataset.capitalCheck,button));
 function copyCapitalCaseNumber(value){
- const safe=/^20\d{2}타경\d{1,10}$/.test(value);
- if(!safe)return Promise.resolve(false);
+ const match=/^20\d{2}타경(\d{1,10})$/.exec(value);
+ if(!match)return Promise.resolve(false);
+ value=match[1];
  if(navigator.clipboard?.writeText){
   try{return navigator.clipboard.writeText(value).then(()=>true,()=>fallbackCopyCapitalCase(value));}
   catch{return Promise.resolve(fallbackCopyCapitalCase(value));}
@@ -2398,8 +2400,8 @@ const capitalLotByButton=id=>capitalSnapshot?.validation?.passed===true?
 document.querySelectorAll('[data-capital-copy]').forEach(button=>button.onclick=()=>{
  const item=capitalLotByButton(button.dataset.capitalCopy);
  if(!item){toast('물건번호를 확인할 수 없어요.');return;}
- void copyCapitalCaseNumber(item.caseNo).then(ok=>toast(ok?'사건번호 복사 완료 · '+item.caseNo:
-  '복사할 사건번호: '+item.caseNo));
+ void copyCapitalCaseNumber(item.caseNo).then(ok=>toast(ok?'타경번호 '+item.caseNo.split('타경')[1]+' 복사 완료 · 연도 '+item.caseNo.slice(0,4)+' 선택':
+  '복사 실패 · 타경번호 '+item.caseNo.split('타경')[1]));
 });
 document.querySelectorAll('[data-capital-official]').forEach(button=>button.onclick=()=>{
  const item=capitalLotByButton(button.dataset.capitalOfficial);
@@ -2410,8 +2412,8 @@ document.querySelectorAll('[data-capital-official]').forEach(button=>button.oncl
  // rather than awaiting the clipboard Promise (mobile popup blockers).
  const copy=copyCapitalCaseNumber(item.caseNo);
  window.open(url.href,'_blank','noopener,noreferrer');
- void copy.then(ok=>{if(ok)toast('사건번호 복사 완료 · 법원 검색창에 붙여넣기');
-  else toast('복사 실패 · 사건번호 '+item.caseNo);});
+ void copy.then(ok=>{if(ok)toast('타경번호 복사 완료 · 연도 '+item.caseNo.slice(0,4)+' 선택');
+  else toast('복사 실패 · 타경번호 '+item.caseNo.split('타경')[1]);});
 });
 if((state.page==='capital'||(state.page==='search'&&state.search.trim()))&&capitalLoadStatus==='unloaded')void loadCapital();
 if($('#officialUsageLarge')){

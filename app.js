@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.34';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.35';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -133,20 +133,27 @@ function applyAppUpdate(){
  location.replace(url.pathname+url.search+url.hash);
 }
 async function confirmAppliedUpdate(){
- const sessionKey='auction_update_confirmation_v1',durableKey='auction_update_confirmation_v2';
- let raw='';
- try{raw=localStorage.getItem(durableKey)||sessionStorage.getItem(sessionKey)||'';}catch{
-  try{raw=sessionStorage.getItem(sessionKey)||'';}catch{}
- }
- if(!raw)return;
- let expected='',createdAt=0;
+ // Compare the running app, server version and previous installed version.
+ // Durable storage survives iOS home-screen navigation; URL fallback handles a new web-app session.
+ const sessionKey='auction_update_confirmation_v1';
+ const durableKey='auction_update_confirmation_v2';
+ const lastKey='auction_last_running_version_v1';
+ const valid=v=>/^\d+\.\d+\.\d+$/.test(v);
+ let previous='',pending='',urlTarget='';
  try{
-  const marker=JSON.parse(raw);
-  expected=String(marker.version||'');
-  createdAt=Number(marker.createdAt)||0;
- }catch{expected=raw;} // Older versions stored a plain target version in sessionStorage.
- if(!/^\d+\.\d+\.\d+$/.test(expected)||expected!==APP_VERSION)return;
- if(createdAt&&(createdAt>Date.now()+60000||Date.now()-createdAt>30*60*1000))return;
+  previous=localStorage.getItem(lastKey)||'';
+  pending=localStorage.getItem(durableKey)||sessionStorage.getItem(sessionKey)||'';
+ }catch{
+  try{pending=sessionStorage.getItem(sessionKey)||'';}catch{}
+ }
+ try{urlTarget=new URL(location.href).searchParams.get('app_update')||'';}catch{}
+ let target='';
+ try{target=String(JSON.parse(pending).version||'');}catch{target=pending;}
+ // Record the currently running version without modifying auction, note or attachment data.
+ try{localStorage.setItem(lastKey,APP_VERSION);}catch{}
+ const versionChanged=valid(previous)&&newerAppVersion(APP_VERSION,previous);
+ const requested=(valid(target)&&target===APP_VERSION)||(valid(urlTarget)&&urlTarget===APP_VERSION);
+ if(!versionChanged&&!requested)return;
  try{
   const response=await fetch('./VERSION.txt?check='+Date.now(),{cache:'no-store'});
   if(!response.ok)return;
@@ -154,8 +161,25 @@ async function confirmAppliedUpdate(){
   if(actual!==APP_VERSION)return;
   try{localStorage.removeItem(durableKey);}catch{}
   try{sessionStorage.removeItem(sessionKey);}catch{}
-  showSavedCheck('업데이트 완료');
- }catch{}
+  // Remove the navigation token to prevent a repeated success message on normal launches.
+  if(urlTarget===APP_VERSION){
+   try{
+    const clean=new URL(location.href);
+    clean.searchParams.delete('app_update');
+    history.replaceState(history.state,'',clean.pathname+clean.search+clean.hash);
+   }catch{}
+  }
+  // Home-screen PWA may be suspended while the replacement document is starting.
+  if(document.visibilityState==='hidden'){
+   document.addEventListener('visibilitychange',function onVisible(){
+    if(document.visibilityState!=='visible')return;
+    document.removeEventListener('visibilitychange',onVisible);
+    showSavedCheck('업데이트 완료');
+   });
+  }else{
+   showSavedCheck('업데이트 완료');
+  }
+ }catch(error){console.warn('Update confirmation deferred:',error);}
 }
 function initUpdateMonitoring(){
  window.addEventListener('online',()=>inspectAppUpdate(false));

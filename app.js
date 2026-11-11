@@ -2378,7 +2378,7 @@ document.querySelectorAll('[data-capital-rights]').forEach(button=>button.onclic
 });
 document.querySelectorAll('[data-capital-check]').forEach(button=>button.onclick=()=>void verifyCapitalItem(button.dataset.capitalCheck,button));
 function copyCapitalCaseNumber(value){
- const safe=/^20\\d{2}타경\\d{1,10}$/.test(value);
+ const safe=/^20\d{2}타경\d{1,10}$/.test(value);
  if(!safe)return Promise.resolve(false);
  if(navigator.clipboard?.writeText){
   try{return navigator.clipboard.writeText(value).then(()=>true,()=>fallbackCopyCapitalCase(value));}

@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.32';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.33';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -123,10 +123,25 @@ function applyAppUpdate(){
  }
  if(!updateState.available){void inspectAppUpdate(true);return;}
  // A fresh navigation URL avoids reusing an old HTML navigation cache.
- // No localStorage, IndexedDB, cookies or personal records are cleared.
+ // Keep a one-shot confirmation marker without touching saved auctions or notes.
+ try{sessionStorage.setItem('auction_update_confirmation_v1',updateState.latest);}catch{}
  const url=new URL(location.href);
  url.searchParams.set('app_update',updateState.latest);
  location.replace(url.pathname+url.search+url.hash);
+}
+async function confirmAppliedUpdate(){
+ const key='auction_update_confirmation_v1';
+ let expected='';
+ try{expected=sessionStorage.getItem(key)||'';}catch{return;}
+ if(!/^\\d+\\.\\d+\\.\\d+$/.test(expected)||expected!==APP_VERSION)return;
+ try{
+  const response=await fetch('./VERSION.txt?check='+Date.now(),{cache:'no-store'});
+  if(!response.ok)return;
+  const actual=(await response.text()).trim().split(/\\s+/)[0];
+  if(actual!==APP_VERSION)return;
+  sessionStorage.removeItem(key);
+  showSavedCheck('업데이트 완료');
+ }catch{}
 }
 function initUpdateMonitoring(){
  window.addEventListener('online',()=>inspectAppUpdate(false));
@@ -2409,4 +2424,4 @@ if($('#import'))$('#import').onchange=async event=>{
   render();showSavedCheck('복원 완료');
  }catch(err){toast('복원 실패: '+(err.message||'파일을 확인해 주세요.'));}
  finally{event.target.value='';}
-}}render();initGestureNavigation();if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});initUpdateMonitoring();
+}}render();initGestureNavigation();if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});initUpdateMonitoring();void confirmAppliedUpdate();

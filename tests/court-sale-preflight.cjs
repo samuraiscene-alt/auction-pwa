@@ -36,6 +36,7 @@ for(const [lots,diagnostic] of [
   assert.equal(checked.totalLotRows,2);
   assert.equal(checked.lotRowsIdentical,true);
   assert.equal(checked.lotRowDifference,'identical');
+  assert.equal(checked.multiRowReviewEligible,false);
  }
  assert.equal(checked.legalStatusVerified,false);
 }
@@ -45,6 +46,7 @@ assert.equal(differentComponents.lotDiagnostic,'lot_number_ambiguous');
 assert.equal(differentComponents.lotRows,2);
 assert.equal(differentComponents.lotRowsIdentical,false);
 assert.equal(differentComponents.lotRowDifference,'fields_differ');
+assert.equal(differentComponents.multiRowReviewEligible,true);
 assert.equal(differentComponents.legalStatusVerified,false);
 const differentValues=check({...detail,data:{...detail.data,
  dlt_dspslGdsDspslObjctLst:[lot,{...lot,dspslGdsSeq:'1',componentMarker:undefined}]}},id,'2026-11-10');

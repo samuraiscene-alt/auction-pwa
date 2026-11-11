@@ -14,6 +14,12 @@ assert.equal(good.crossChecked,true);
 assert.equal(good.legalStatusVerified,false);
 assert.equal(good.legalStatus,null);
 assert(!JSON.stringify(good).includes('PRIVATE'));
+const multiComponent={...detail,data:{...detail.data,
+ dlt_dspslGdsDspslObjctLst:[{...lot,component:'A'},{...lot,component:'B'}]}};
+assert.equal(compare(search,multiComponent,id,'2026-11-10').crossChecked,true);
+const reOrderedDuplicate={...detail,data:{...detail.data,
+ dlt_dspslGdsDspslObjctLst:[lot,{dspslGdsSeq:'1',csNo:lot.csNo,cortOfcCd:lot.cortOfcCd}]}};
+assert.equal(compare(search,reOrderedDuplicate,id,'2026-11-10').crossChecked,false);
 for(const [s,d] of [
  [{...search,data:{dlt_srchResult:[]}},detail],
  [{...search,data:{dlt_srchResult:[result,result]}},detail],

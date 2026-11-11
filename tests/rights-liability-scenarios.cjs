@@ -18,4 +18,16 @@ assert.equal(calc({bidWon:350000000,assumedLiabilityWon:'0',fees}).ok,false);
 assert.equal(calc({bidWon:350000000,assumedLiabilityWon:100000000,fees:{...fees,evictionWon:'0'}}).ok,false);
 assert.equal(calc({bidWon:350000000,assumedLiabilityWon:0,fees}).totalConfirmed,false);
 assert.equal(calc({bidWon:350000000,assumedLiabilityWon:0,fees}).scenarioTotalWon,370000000);
+
+const tax=require('../scripts/rights-liability-scenarios.cjs').estimateOrdinaryHouseAcquisitionTax;
+const ordinary=(bidWon,areaClass='at_most_85')=>tax({bidWon,ordinaryRateConfirmed:true,areaClass});
+assert.equal(tax({bidWon:350000000}).ok,false);
+assert.equal(ordinary(350000000,'unknown').ok,false);
+assert.equal(ordinary(350000000).estimatedWon,3850000);
+assert.equal(ordinary(600000000,'over_85').estimatedWon,7800000);
+assert.equal(ordinary(750000000).estimatedWon,16500000);
+assert.equal(ordinary(900000000,'over_85').estimatedWon,31500000);
+assert.equal(ordinary(1000000000).estimatedWon,33000000);
+assert.equal(ordinary(350000000).confirmedTax,false);
+
 console.log('PASS rights financial scenario arithmetic and unknown/assumed amount safeguards');

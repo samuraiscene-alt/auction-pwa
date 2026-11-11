@@ -39,6 +39,10 @@ jobs:
           node tests/rights-draft-schema.cjs
           node tests/rights-ui-integration.cjs
           node tests/rights-linked-records.cjs
+      - name: Probe two real auction cases using live official bridge (diagnostic only)
+        continue-on-error: true
+        timeout-minutes: 1
+        run: node scripts/probe-live-court-case.cjs
       - uses: actions/configure-pages@v5
         with:
           enablement: true

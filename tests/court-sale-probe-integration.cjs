@@ -56,6 +56,37 @@ async function simulate({details=freshDetail,search=result,fail=false}={}){
  assert.equal(good.report.scheduleDayMatched,true);
  assert.equal(good.exitCode,0);
 
+ // Two distinct components with one lot number must remain intact and
+ // still allow exactly one schedule/result cross-check (not a legal verdict).
+ const components=structuredClone(freshDetail);
+ components.data.dlt_dspslGdsDspslObjctLst=[
+  {...lot,component:'land'},{...lot,component:'building'}
+ ];
+ const multi=await simulate({details:components});
+ assert.equal(multi.calls.length,2);
+ assert.equal(multi.report.schedulePreflightConfirmed,true);
+ assert.equal(multi.report.multiComponentLot,true);
+ assert.equal(multi.report.detailCrossChecked,true);
+ assert.equal(multi.report.legalStatusVerified,false);
+
+ // A true duplicated row must fail closed before any sale-result request.
+ const duplicates=structuredClone(freshDetail);
+ duplicates.data.dlt_dspslGdsDspslObjctLst=[{...lot},{...lot}];
+ const dup=await simulate({details:duplicates});
+ assert.equal(dup.calls.length,1);
+ assert.equal(dup.report.reason,'detail_lot_unverified');
+ assert.equal(dup.report.lotRowsIdentical,true);
+ assert.equal(dup.report.legalStatusVerified,false);
+
+ // Two distinct components do not override an ambiguous sale-date history.
+ const doubleSchedule=structuredClone(components);
+ doubleSchedule.data.dlt_rletCsGdsDtsDxdyInf.push(
+  {...doubleSchedule.data.dlt_rletCsGdsDtsDxdyInf[0]});
+ const ambiguous=await simulate({details:doubleSchedule});
+ assert.equal(ambiguous.calls.length,1);
+ assert.equal(ambiguous.report.reason,'schedule_day_not_unique');
+ assert.equal(ambiguous.report.legalStatusVerified,false);
+
  const shifted=structuredClone(freshDetail);
  shifted.data.dlt_rletCsGdsDtsDxdyInf[0].dxdyYmd='20261117';
  const stale=await simulate({details:shifted});

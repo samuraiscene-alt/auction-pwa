@@ -1,5 +1,5 @@
-const CACHE='auction-shell-v0753';
-const ASSETS=['./','./index.html','./style.css','./app.js','./scripts/rights-draft-schema.js','./scripts/rights-liability-scenarios.js','./scripts/rights-source-checklist.js','./scripts/rights-pdf-facts.js','./data/court-live-test-case.json','./VERSION.txt','./data/court-verification-plan.json','./data/capital-price-history.json','./manifest.webmanifest','./icon.svg','./auction-ios-icon-v077.png','./assets/auction-menu-v077.webp','./assets/auction-nav-v078.webp','./assets/auction-search-actions-v079.webp','./assets/auction-study-categories-v080.webp'];
+const CACHE='auction-shell-v0754';
+const ASSETS=['./','./index.html','./style.css','./app.js','./scripts/rights-draft-schema.js','./scripts/rights-liability-scenarios.js','./scripts/rights-source-checklist.js','./scripts/rights-pdf-facts.js','./scripts/rights-pdf-ocr.js','./data/court-live-test-case.json','./VERSION.txt','./data/court-verification-plan.json','./data/capital-price-history.json','./manifest.webmanifest','./icon.svg','./auction-ios-icon-v077.png','./assets/auction-menu-v077.webp','./assets/auction-nav-v078.webp','./assets/auction-search-actions-v079.webp','./assets/auction-study-categories-v080.webp'];
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });

@@ -2409,8 +2409,7 @@ document.querySelectorAll('[data-capital-official]').forEach(button=>button.oncl
  // Start clipboard work during the original user gesture and open immediately,
  // rather than awaiting the clipboard Promise (mobile popup blockers).
  const copy=copyCapitalCaseNumber(item.caseNo);
- const opened=window.open(url.href,'_blank','noopener,noreferrer');
- if(!opened)toast('법원 창이 열리지 않으면 브라우저 팝업 설정을 확인해 주세요.');
+ window.open(url.href,'_blank','noopener,noreferrer');
  void copy.then(ok=>{if(ok)toast('사건번호 복사 완료 · 법원 검색창에 붙여넣기');
   else toast('복사 실패 · 사건번호 '+item.caseNo);});
 });

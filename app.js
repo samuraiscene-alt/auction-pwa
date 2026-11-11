@@ -133,11 +133,11 @@ async function confirmAppliedUpdate(){
  const key='auction_update_confirmation_v1';
  let expected='';
  try{expected=sessionStorage.getItem(key)||'';}catch{return;}
- if(!/^\\d+\\.\\d+\\.\\d+$/.test(expected)||expected!==APP_VERSION)return;
+ if(!/^\d+\.\d+\.\d+$/.test(expected)||expected!==APP_VERSION)return;
  try{
   const response=await fetch('./VERSION.txt?check='+Date.now(),{cache:'no-store'});
   if(!response.ok)return;
-  const actual=(await response.text()).trim().split(/\\s+/)[0];
+  const actual=(await response.text()).trim().split(/\s+/)[0];
   if(actual!==APP_VERSION)return;
   sessionStorage.removeItem(key);
   showSavedCheck('업데이트 완료');

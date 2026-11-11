@@ -1300,9 +1300,9 @@ function attachRightsEditor(){
     matchMethod:manualMatch?'user_compared':'pdf_text',observations:warnings};
    const added=tenants.filter(t=>!draft.tenants.some(x=>x.name===t.name&&x.depositWon===t.depositWon))
     .slice(0,Math.max(0,100-draft.tenants.length)).map(t=>({id:nextId(),name:t.name,
-     occupancy:t.occupancy,distributionDemand:'unknown',moveInOn:null,fixedDateOn:null,
+     occupancy:t.occupancy,distributionDemand:'unknown',moveInOn:t.moveInOn,fixedDateOn:t.fixedDateOn,
      depositWon:t.depositWon,documentId:docId,
-     notes:('PDF '+t.page+'쪽에서 자동 추출. 날짜 열은 원본 대조 필요: '+t.datesForReview.join(', ')).slice(0,1000),liabilityVerified:false}));
+     notes:('PDF '+t.page+'쪽 자동 추출 · 날짜 및 점유 열은 원본 대조 전 미검증: '+t.datesForReview.join(', ')).slice(0,1000),liabilityVerified:false}));
    await rightsPdfPut(stored);
    try{saveRightsDraft({...draft,documents:[...draft.documents,documentRow],tenants:[...draft.tenants,...added]});}
    catch(error){try{await rightsPdfDelete(fileId);}catch{}throw error;}

@@ -8,11 +8,13 @@ assert.equal(empty.length,6);
 assert(empty.every(x=>x.verified===false&&x.status==='unverified'&&x.legalConclusion===null&&x.assumedLiabilityWon===null));
 assert(empty.every(x=>x.recordedCount===0));
 const docs=['registry','sale_statement','occupancy_report','appraisal','lease','other'].map((type,i)=>({
- id:'d'+i,type,source:'user_upload',officiallyVerified:false
+ id:'d'+i,type,fileId:'file'+i,source:'user_upload',officiallyVerified:false
 }));
 const full=evidenceChecklist({documents:docs});
 assert(full.every(x=>x.recordedCount===x.neededCount));
 assert(full.every(x=>!x.verified&&x.assumedLiabilityWon===null));
 assert.equal(DOC_NAMES.registry,'등기사항증명서');
+assert.equal(evidenceChecklist({documents:[{type:'registry',source:'user_entry'}]})[1].recordedCount,0);
+assert.equal(evidenceChecklist({documents:[{type:'registry',source:'user_upload'}]})[1].recordedCount,0);
 assert.equal(evidenceChecklist({documents:[{type:'registry',source:'bad'}]})[1].recordedCount,0);
 console.log('PASS six evidence checklists never infer rights or liabilities from stored documents');

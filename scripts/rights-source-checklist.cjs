@@ -24,6 +24,25 @@ function evidenceChecklist(draft){
    status:'unverified',verified:false,legalConclusion:null,assumedLiabilityWon:null};
  });
 }
-const RightsSourceChecklist={ROWS,DOC_NAMES,evidenceChecklist};
+
+function verifyPdfCaseIdentity(expected,observed){
+ const caseNo=expected?.caseNo,court=expected?.court,itemNo=String(expected?.itemNo||'');
+ const extracted=observed?.fields||{},lots=Array.isArray(observed?.itemNos)?observed.itemNos:[];
+ const fail=(reason)=>({ok:false,reason,caseMatched:false,legalVerified:false});
+ if(typeof caseNo!=='string'||!/^20\d{2}타경\d{1,10}$/.test(caseNo)||
+    typeof court!=='string'||!court||!/^[1-9]\d{0,3}$/.test(itemNo))
+  return fail('invalid_expected_identity');
+ if(!extracted.caseNum)return fail('case_number_unreadable');
+ if(extracted.caseNum!==caseNo)return fail('different_case_number');
+ if(extracted.court&&extracted.court!==court)return fail('different_court');
+ if(lots.some(x=>typeof x!=='string'||!/^[1-9]\d{0,3}$/.test(x))||
+    (lots.length>0&&(lots.length!==1||lots[0]!==itemNo)))
+  return fail('different_or_multiple_lots');
+ return {ok:true,reason:'case_number_matched_only',caseMatched:true,
+  courtTextMatched:extracted.court===court,lotTextMatched:lots.length===1,
+  legalVerified:false,officialSourceVerified:false};
+}
+
+const RightsSourceChecklist={ROWS,DOC_NAMES,evidenceChecklist,verifyPdfCaseIdentity};
 if(typeof module!=='undefined'&&module.exports)module.exports=RightsSourceChecklist;
 if(typeof window!=='undefined')window.RightsSourceChecklist=RightsSourceChecklist;

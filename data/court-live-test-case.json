@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "kind": "official_bridge_verified_test_case",
+  "caseId": "court-B000210|2025타경103685|1",
+  "courtCode": "B000210",
+  "courtName": "서울중앙지방법원",
+  "caseNo": "2025타경103685",
+  "itemNo": "1",
+  "appraisalWon": 255000000,
+  "minimumWon": 204000000,
+  "saleDate": "2026-11-19",
+  "verification": {
+    "route": "/item",
+    "source": "courtauction.go.kr",
+    "bridge": "joon-auction-court.samuraiscene.workers.dev",
+    "verified": true,
+    "exactIdentity": true,
+    "checkedAt": "2026-11-11T08:24:32Z",
+    "githubRunId": 42986731779,
+    "legalStatusVerified": false,
+    "sourceDocumentsVerified": false
+  },
+  "supplemental": {
+    "address": "서울특별시 중구 신당동 432-1979 명경아트빌 3층301호",
+    "addressSource": "https://www.linkro.co/auctions/44be10e4-d77f-4348-9d95-e67dcd3f81de",
+    "addressOfficiallyVerified": false,
+    "propertyType": "아파트",
+    "propertyTypeSource": "https://www.linkro.co/auctions/44be10e4-d77f-4348-9d95-e67dcd3f81de",
+    "propertyTypeOfficiallyVerified": false
+  },
+  "notes": "A real live court bridge identity/price/date response, not a legally confirmed current sale status. Refresh official source and check documents prior to bidding."
+}

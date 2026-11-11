@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.45';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.46';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -2008,9 +2008,9 @@ function capital(){
    <button type="button" class="secondary full-secondary" data-capital-check="${escapeHtml(x.id)}">법원 서버에서 이 물건 재조회</button>
    <p class="helper" data-capital-result="${escapeHtml(x.id)}" aria-live="polite">재조회 전 · 법원 원문 확인 필요</p>
    <div class="court-official-jump"><p class="helper">법원 원문 대조 · ${escapeHtml(x.courtName)} / ${escapeHtml(x.caseNo)} / 물건 ${escapeHtml(x.itemNo)}번</p>
-   <button type="button" class="secondary full-secondary" data-capital-copy="${escapeHtml(x.id)}">사건번호 복사</button>
-   <button type="button" class="secondary full-secondary" data-capital-official="1">법원 경매사건검색 바로 열기 ↗</button>
-   <p class="helper">사건별 상세 바로가기 주소가 확인되지 않아 검색 화면으로 연결해요. 복사한 사건번호와 법원을 확인하세요.</p></div>
+   <button type="button" class="secondary full-secondary" data-capital-official="${escapeHtml(x.id)}">사건번호 복사하고 법원검색 열기 ↗</button>
+   <button type="button" class="secondary full-secondary" data-capital-copy="${escapeHtml(x.id)}">사건번호만 복사</button>
+   <p class="helper">법원 경매사건검색으로 이동합니다. 사건번호 자동 입력·상세 직행은 아직 지원하지 않습니다.</p></div>
   </div>`;
 
  };
@@ -2377,28 +2377,42 @@ document.querySelectorAll('[data-capital-rights]').forEach(button=>button.onclic
  nav('rights',{rightsPropertyId:id});
 });
 document.querySelectorAll('[data-capital-check]').forEach(button=>button.onclick=()=>void verifyCapitalItem(button.dataset.capitalCheck,button));
-document.querySelectorAll('[data-capital-copy]').forEach(button=>button.onclick=async()=>{
- const item=capitalSnapshot?.validation?.passed===true?capitalSnapshot.items?.find(x=>x.id===button.dataset.capitalCopy):null;
- if(!item){toast('물건번호를 확인할 수 없어요.');return;}
- const value=item.caseNo;
- try{
-  if(!navigator.clipboard?.writeText)throw Error('clipboard_unavailable');
-  await navigator.clipboard.writeText(value);
-  toast('사건번호 복사 완료 · '+item.caseNo);
- }catch(error){
-  const input=document.createElement('input');
-  input.value=value;input.setAttribute('readonly','');
-  input.style.position='fixed';input.style.opacity='0';document.body.append(input);input.select();
-  try{if(document.execCommand('copy'))toast('사건번호 복사 완료 · '+item.caseNo);
-   else toast('사건번호: '+item.caseNo);}
-  catch{toast('사건번호: '+item.caseNo);}
-  finally{input.remove();}
+function copyCapitalCaseNumber(value){
+ const safe=/^20\\d{2}타경\\d{1,10}$/.test(value);
+ if(!safe)return Promise.resolve(false);
+ if(navigator.clipboard?.writeText){
+  try{return navigator.clipboard.writeText(value).then(()=>true,()=>fallbackCopyCapitalCase(value));}
+  catch{return Promise.resolve(fallbackCopyCapitalCase(value));}
  }
+ return Promise.resolve(fallbackCopyCapitalCase(value));
+}
+function fallbackCopyCapitalCase(value){
+ const input=document.createElement('input');
+ input.value=value;input.readOnly=true;
+ input.style.position='fixed';input.style.opacity='0';
+ document.body.append(input);input.select();
+ try{return document.execCommand('copy')===true;}catch{return false;}finally{input.remove();}
+}
+const capitalLotByButton=id=>capitalSnapshot?.validation?.passed===true?
+ capitalSnapshot.items?.find(x=>x.id===id&&x.id==='court-'+x.courtCode+'|'+x.caseNo+'|'+x.itemNo):null;
+document.querySelectorAll('[data-capital-copy]').forEach(button=>button.onclick=()=>{
+ const item=capitalLotByButton(button.dataset.capitalCopy);
+ if(!item){toast('물건번호를 확인할 수 없어요.');return;}
+ void copyCapitalCaseNumber(item.caseNo).then(ok=>toast(ok?'사건번호 복사 완료 · '+item.caseNo:
+  '복사할 사건번호: '+item.caseNo));
 });
 document.querySelectorAll('[data-capital-official]').forEach(button=>button.onclick=()=>{
+ const item=capitalLotByButton(button.dataset.capitalOfficial);
+ if(!item){toast('물건번호를 확인할 수 없어요.');return;}
  const url=new URL(OFFICIAL_CASE_SEARCH_URL);
  if(url.origin!=='https://www.courtauction.go.kr')return;
- window.open(url.href,'_blank','noopener,noreferrer');
+ // Start clipboard work during the original user gesture and open immediately,
+ // rather than awaiting the clipboard Promise (mobile popup blockers).
+ const copy=copyCapitalCaseNumber(item.caseNo);
+ const opened=window.open(url.href,'_blank','noopener,noreferrer');
+ if(!opened)toast('법원 창이 열리지 않으면 브라우저 팝업 설정을 확인해 주세요.');
+ void copy.then(ok=>{if(ok)toast('사건번호 복사 완료 · 법원 검색창에 붙여넣기');
+  else toast('복사 실패 · 사건번호 '+item.caseNo);});
 });
 if((state.page==='capital'||(state.page==='search'&&state.search.trim()))&&capitalLoadStatus==='unloaded')void loadCapital();
 if($('#officialUsageLarge')){

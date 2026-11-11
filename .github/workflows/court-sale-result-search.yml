@@ -83,6 +83,7 @@ jobs:
             failedStage:['connect','response','json','evaluate','detail_preflight','sale_search'].includes(d.failedStage)?d.failedStage:'none',
             reason:typeof d.reason==='string'&&/^[a-z_]{1,40}$/.test(d.reason)?d.reason:'unknown',
             schedulePreflightConfirmed:d.schedulePreflightConfirmed===true,
+            multiComponentLot:d.schedulePreflightConfirmed===true&&d.multiComponentLot===true,
             lotDiagnostic:['lot_list_invalid','lot_identity_mismatch','lot_number_missing','lot_number_ambiguous'].includes(d.lotDiagnostic)?d.lotDiagnostic:'not_checked',
             lotRows:d.reason==='detail_lot_unverified'&&Number.isInteger(d.lotRows)&&d.lotRows>=0&&d.lotRows<=300?d.lotRows:null,
             totalLotRows:d.reason==='detail_lot_unverified'&&Number.isInteger(d.totalLotRows)&&d.totalLotRows>=0&&d.totalLotRows<=300?d.totalLotRows:null,
@@ -96,7 +97,7 @@ jobs:
               'raw_code_cross_checked','sale_result_identity_not_matched','unverified_response',
               'invalid_structure','result_identity_not_unique','internal_case_not_linked',
               'inconsistent_detail_lots','detail_lot_not_unique','result_schedule_day_missing',
-              'schedule_not_unique','result_code_not_confirmed','result_schedule_not_target_date'
+              'contradictory_result_dates','schedule_not_unique','result_code_not_confirmed','result_schedule_not_target_date'
             ].includes(d.detailCrossCheckReason)?d.detailCrossCheckReason:'not_checked',
             identityMatched:exact,exactDisplayLotRows:Number.isInteger(d.exactDisplayLotRows)?Math.min(d.exactDisplayLotRows,50):0,
             rowCount:Number.isInteger(d.rowCount)?Math.min(d.rowCount,50):null,

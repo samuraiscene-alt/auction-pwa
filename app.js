@@ -257,7 +257,8 @@ function verifyRightsPdfAttachment(file){
   typeof file.rightsDocId==='string'&&/^[A-Za-z0-9_-]{1,36}$/.test(file.rightsDocId)&&
   file.type==='application/pdf'&&typeof file.name==='string'&&file.name.length<=180&&
   Number.isSafeInteger(file.size)&&file.size>0&&file.size<=MAX_RIGHTS_PDF_BYTES&&
-  typeof file.data==='string'&&file.data.startsWith('data:application/pdf;base64,');
+  typeof file.data==='string'&&file.data.startsWith('data:application/pdf;base64,')&&
+  file.data.length<=Math.ceil(MAX_RIGHTS_PDF_BYTES*4/3)+128;
 }
 async function rightsPdfPut(file){
  if(!verifyRightsPdfAttachment(file))throw Error('권리 원본 PDF 형식 오류');
@@ -1137,11 +1138,11 @@ function rightsEvidenceMarkup(d){
   '<h3>한눈에 보는 권리분석</h3>'+
   '<p class="helper">6가지 항목 모두 원본 검토 전에는 미확인이에요. 등록된 서류가 있어도 법적 결론이 확인된 것은 아니에요.</p>'+
   rows.map(row=>'<details class="rights-evidence-row"><summary><span>'+escapeHtml(row.label)+
-   '</span><strong>미확인 · 원본 '+row.recordedCount+'/'+row.neededCount+'종 기록</strong></summary>'+
+   '</span><strong>미확인 · PDF '+row.recordedCount+'/'+row.neededCount+'종 등록</strong></summary>'+
    '<div class="rights-evidence-docs"><strong>확인할 원본</strong>'+
    row.required.map(type=>'<div class="rights-evidence-source">'+
     '<span>'+escapeHtml(module.DOC_NAMES[type])+'</span><span>'+
-    (row.recorded.includes(type)?'자료 기록됨 · 진위 미검증':'원본 필요')+
+    (row.recorded.includes(type)?'PDF 등록 · 진위 미검증':'원본 PDF 필요')+
     '</span></div>').join('')+
    '<p class="helper">여기 표시된 것은 서류 등록 현황이지, '+escapeHtml(row.label)+
    '의 권리 성립·소멸·인수 여부를 판정한 결과가 아닙니다.</p></div></details>').join('')+
@@ -1302,7 +1303,9 @@ function attachRightsEditor(){
   const id=btn.dataset.rightsId;
   if(key==='documents'&&(draft.tenants.some(x=>x.documentId===id)||draft.rights.some(x=>x.documentId===id)))
    throw Error('다른 기록에서 참조하는 서류입니다. 연결 기록을 먼저 삭제하세요.');
+  const removedDoc=key==='documents'?draft.documents.find(x=>x.id===id):null;
   saveRightsDraft({...draft,[key]:draft[key].filter(x=>x.id!==id)});
+  if(removedDoc?.fileId)void rightsPdfDelete(removedDoc.fileId).catch(()=>toast('원본 PDF 파일 정리를 확인해 주세요.'));
   render();showSavedCheck('권리자료 변경 완료');
  }catch(error){toast(error.message||'삭제 실패');}});
 }
@@ -3016,6 +3019,11 @@ if($('#import'))$('#import').onchange=async event=>{
   const backedQuickMenu=hasQuickMenu?payload.preferences.quickMenu:null;
   if(hasQuickMenu&&(!Array.isArray(backedQuickMenu)||new Set(backedQuickMenu).size!==backedQuickMenu.length||backedQuickMenu.some(id=>!QUICK_MENU_ITEMS.some(item=>item.id===id))))throw Error('빠른 메뉴 백업 데이터 오류');
   if(!Array.isArray(attachments)||attachments.some(x=>!verifyAttachment(x)))throw Error('첨부파일 형식 오류');
+  const rightsPdfMap=new Map(attachments.filter(x=>x.noteId===-1).map(x=>[x.id,x]));
+  if((payload.data.rightsDrafts||[]).some(d=>d.documents.some(doc=>doc.fileId&&
+    (!rightsPdfMap.has(doc.fileId)||rightsPdfMap.get(doc.fileId).rightsPropertyId!==d.propertyId||
+     rightsPdfMap.get(doc.fileId).rightsDocId!==doc.id))))
+   throw Error('권리분석 원본 PDF가 백업에 누락됐거나 다른 물건의 파일입니다.');
   const before=await allAttachments();
   const destination=payload.data;
   if(!Array.isArray(destination.realProperties))destination.realProperties=[];

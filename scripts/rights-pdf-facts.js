@@ -41,7 +41,7 @@ function parseCourtPdfFacts(pages,selectedType){
  // A tenant is a person listed in the occupancy table, not merely a person
  // whose deposit is known. Court PDF cells can span multiple visual lines.
  if(selectedType==='sale_statement'||documentType==='sale_statement'||selectedType==='occupancy_report'){
-  const skip=/^(?:주거|임차인|현황조사|권리신고|점유자|보증금|성명|구분|부분|정보출처|임대차기간|확정일자|차임|요구여부|비고란|전입신고일자|부동산|최선순위|사건번호)$/;
+  const skip=/^(?:주거|임차인|현황조사|권리신고|점유자|보증금|성명|구분|부분|정보출처|임대차기간|확정일자|차임|요구여부|비고|비고란|전입신고일자|부동산|최선순위|사건번호)$/;
   for(const page of source){
    const table=page.text.match(/점\s*유\s*자|점유자/);
    if(!table)continue;

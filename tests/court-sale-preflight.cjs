@@ -48,8 +48,10 @@ assert.equal(differentComponents.multiComponentLot,true);
 assert.equal(differentComponents.legalStatusVerified,false);
 const differentValues=check({...detail,data:{...detail.data,
  dlt_dspslGdsDspslObjctLst:[lot,{...lot,dspslGdsSeq:'1',componentMarker:undefined}]}},id,'2026-11-10');
-assert.equal(differentValues.confirmed,true);
-assert.equal(differentValues.multiComponentLot,true);
+// Undefined-only differences disappear from serialized court data: fail closed.
+assert.equal(differentValues.confirmed,false);
+assert.equal(differentValues.lotDiagnostic,'lot_number_ambiguous');
+assert.equal(differentValues.legalStatusVerified,false);
 const sameKeysDifferentValues=check({...detail,data:{...detail.data,
  dlt_dspslGdsDspslObjctLst:[{...lot,componentMarker:'A'},{...lot,componentMarker:'B'}]}},id,'2026-11-10');
 assert.equal(sameKeysDifferentValues.confirmed,true);

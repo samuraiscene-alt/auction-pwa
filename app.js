@@ -1166,7 +1166,7 @@ function rightsEditor(p){
  '<details class="auction-fold"><summary>＋ 원본 PDF 가져오기 · 사건번호 확인</summary>'+
  '<form id="rightsPdfForm" class="rights-form">'+
  '<label>원본 종류<select id="rightsPdfType" class="select">'+Object.entries(docNames).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label>'+
- '<label>내 파일에서 PDF 선택<input type="file" accept=".pdf,application/pdf" id="rightsPdfInput"></label>'+
+ '<div class="rights-pdf-file-field"><span class="rights-pdf-file-label">내 파일에서 PDF 선택</span><div class="rights-pdf-file-picker"><span aria-hidden="true">📄 파일 앱에서 PDF 선택</span><input type="file" accept=".pdf,application/pdf" id="rightsPdfInput" aria-label="PDF 파일 선택"></div><p class="helper rights-pdf-selected" id="rightsPdfFilename" aria-live="polite">선택된 파일 없음</p></div>'+
  '<label>발급일(선택)<input type="date" id="rightsPdfIssueDate" class="search"></label>'+
  '<button type="submit" class="primary" id="rightsPdfSave">사건번호 확인 후 PDF 보관</button>'+
  '<p class="helper" id="rightsPdfStatus" aria-live="polite">8MB 이하 · 사건번호를 읽을 수 있는 PDF만 연결합니다. 같은 사건이라도 물건번호는 사용자가 원본을 대조해야 합니다. 원본 파일은 기기와 전체 백업에 보관해요.</p>'+
@@ -1223,6 +1223,14 @@ function attachRightsEditor(){
  }catch(error){toast(error.message||'서류 저장 실패');}};
 
  const pdfForm=$('#rightsPdfForm');
+ const pdfInput=$('#rightsPdfInput');
+ if(pdfInput)pdfInput.onchange=()=>{
+  const chosen=pdfInput.files?.[0];
+  const filename=$('#rightsPdfFilename');
+  if(filename)filename.textContent=chosen?'선택한 PDF: '+chosen.name:'선택된 파일 없음';
+  const status=$('#rightsPdfStatus');
+  if(status&&chosen)status.textContent='PDF를 선택했어요. 아래 보관 버튼을 눌러 사건번호를 검사하세요.';
+ };
  if(pdfForm)pdfForm.onsubmit=async e=>{
   e.preventDefault();
   const button=$('#rightsPdfSave'),status=$('#rightsPdfStatus');

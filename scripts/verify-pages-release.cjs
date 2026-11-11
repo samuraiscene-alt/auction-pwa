@@ -17,7 +17,9 @@ function verifyRelease(){
  assert(html.includes('href="style.css"'),'index does not load stylesheet');
  assert(html.includes('src="scripts/rights-draft-schema.js"'),'rights draft browser validator not loaded');
  assert(sw.includes('./scripts/rights-draft-schema.js'),'rights draft validator not offline cached');
- for(const path of ['index.html','app.js','style.css','sw.js','scripts/rights-draft-schema.js','manifest.webmanifest',
+ assert(html.includes('src="scripts/rights-liability-scenarios.js"'),'scenario browser engine not loaded');
+ assert(sw.includes('./scripts/rights-liability-scenarios.js'),'scenario engine not offline cached');
+ for(const path of ['index.html','app.js','style.css','sw.js','scripts/rights-draft-schema.js','scripts/rights-liability-scenarios.js','manifest.webmanifest',
   'data/capital-court-pilot.json','data/capital-court-status.json','data/court-sale-result-status.json',
   'auction-ios-icon-v077.png','assets/auction-menu-v077.webp','assets/auction-nav-v078.webp',
   'assets/auction-search-actions-v079.webp','assets/auction-study-categories-v080.webp'])

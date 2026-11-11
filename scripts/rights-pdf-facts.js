@@ -41,7 +41,7 @@ function parseCourtPdfFacts(pages,selectedType){
  // A tenant is a person listed in the occupancy table, not merely a person
  // whose deposit is known. Court PDF cells can span multiple visual lines.
  if(selectedType==='sale_statement'||documentType==='sale_statement'||selectedType==='occupancy_report'){
-  const skip=/^(?:주거|임차인|현황조사|권리신고|점유자|보증금|성명|구분|부분|정보출처|임대차기간|확정일자|차임|요구여부|비고|비고란|전입신고일자|부동산|최선순위|사건번호)$/;
+  const skip=/^(?:주거|임차인|현황조사|권리신고|점유자|보증금|성명|구분|부분|정보출처|임대차기간|확정일자|차임|요구여부|비고|비고란|일자|작성일자|신청일자|전입일자|등록일자|배당요구일자|전입신고일자|부동산|최선순위|사건번호)$/;
   for(const page of source){
    const table=page.text.match(/점\s*유\s*자|점유자/);
    if(!table)continue;
@@ -52,7 +52,7 @@ function parseCourtPdfFacts(pages,selectedType){
    const anchors=[];
    for(let i=0;i<rows.length;i++){
     const m=rows[i].match(/^([가-힣]{2,4})(?=\s|$)/);
-    if(!m||skip.test(m[1]))continue;
+    if(!m||skip.test(m[1])||/(?:일자|날짜|금액|번호|내용|기간|관계|여부|현황|구분|조사|사건|매각|신고|신청)$/.test(m[1]))continue;
     // Require independent table evidence, including for rows with no deposit.
     const nearby=rows.slice(Math.max(0,i-3),Math.min(rows.length,i+5)).join(' ');
     if(!/(?:주거|임차인|현황조사|권리신고)/.test(nearby))continue;

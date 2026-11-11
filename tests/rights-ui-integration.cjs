@@ -129,7 +129,7 @@ assert.deepEqual(four.tenants.map(t=>t.moveInOn),['2000-03-17','2010-05-03','200
 assert.equal(four.tenants[2].fixedDateOn,null);
 assert.equal(four.tenants[3].fixedDateOn,null);
 assert.equal(four.caseNos[0],'2023타경5787');
-const columnHeading=courtTable.replace('점유자 성 명', '점유자 성 명\\n일자');
+const columnHeading=courtTable.replace('점유자 성 명', '점유자 성 명\n일자');
 const withoutFalseName=facts.parseCourtPdfFacts([columnHeading],'sale_statement');
 assert.deepEqual(withoutFalseName.tenants.map(t=>t.name),['김광순','송상규','이범희','임동영']);
 assert(app.includes('invalidAutoRows'));

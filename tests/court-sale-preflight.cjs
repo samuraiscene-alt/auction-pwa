@@ -46,14 +46,16 @@ assert.equal(differentComponents.lotDiagnostic,'lot_number_ambiguous');
 assert.equal(differentComponents.lotRows,2);
 assert.equal(differentComponents.lotRowsIdentical,false);
 assert.equal(differentComponents.lotRowDifference,'fields_differ');
-assert.equal(differentComponents.multiRowReviewEligible,true);
+assert.equal(differentComponents.confirmed,true);
+assert.equal(differentComponents.multiComponentLot,true);
 assert.equal(differentComponents.legalStatusVerified,false);
 const differentValues=check({...detail,data:{...detail.data,
  dlt_dspslGdsDspslObjctLst:[lot,{...lot,dspslGdsSeq:'1',componentMarker:undefined}]}},id,'2026-11-10');
 assert.equal(differentValues.lotRowDifference,'fields_differ');
 const sameKeysDifferentValues=check({...detail,data:{...detail.data,
  dlt_dspslGdsDspslObjctLst:[{...lot,componentMarker:'A'},{...lot,componentMarker:'B'}]}},id,'2026-11-10');
-assert.equal(sameKeysDifferentValues.lotRowDifference,'values_differ');
+assert.equal(sameKeysDifferentValues.confirmed,true);
+assert.equal(sameKeysDifferentValues.multiComponentLot,true);
 assert.equal(sameKeysDifferentValues.legalStatusVerified,false);
 const reorderedKeys=check({...detail,data:{...detail.data,
  dlt_dspslGdsDspslObjctLst:[lot,{

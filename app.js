@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.33';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.34';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -124,22 +124,36 @@ function applyAppUpdate(){
  if(!updateState.available){void inspectAppUpdate(true);return;}
  // A fresh navigation URL avoids reusing an old HTML navigation cache.
  // Keep a one-shot confirmation marker without touching saved auctions or notes.
- try{sessionStorage.setItem('auction_update_confirmation_v1',updateState.latest);}catch{}
+ const confirmation=JSON.stringify({version:updateState.latest,createdAt:Date.now()});
+ try{sessionStorage.setItem('auction_update_confirmation_v1',confirmation);}catch{}
+ // iOS standalone PWA may start a new session after navigation.
+ try{localStorage.setItem('auction_update_confirmation_v2',confirmation);}catch{}
  const url=new URL(location.href);
  url.searchParams.set('app_update',updateState.latest);
  location.replace(url.pathname+url.search+url.hash);
 }
 async function confirmAppliedUpdate(){
- const key='auction_update_confirmation_v1';
- let expected='';
- try{expected=sessionStorage.getItem(key)||'';}catch{return;}
+ const sessionKey='auction_update_confirmation_v1',durableKey='auction_update_confirmation_v2';
+ let raw='';
+ try{raw=localStorage.getItem(durableKey)||sessionStorage.getItem(sessionKey)||'';}catch{
+  try{raw=sessionStorage.getItem(sessionKey)||'';}catch{}
+ }
+ if(!raw)return;
+ let expected='',createdAt=0;
+ try{
+  const marker=JSON.parse(raw);
+  expected=String(marker.version||'');
+  createdAt=Number(marker.createdAt)||0;
+ }catch{expected=raw;} // Older versions stored a plain target version in sessionStorage.
  if(!/^\d+\.\d+\.\d+$/.test(expected)||expected!==APP_VERSION)return;
+ if(createdAt&&(createdAt>Date.now()+60000||Date.now()-createdAt>30*60*1000))return;
  try{
   const response=await fetch('./VERSION.txt?check='+Date.now(),{cache:'no-store'});
   if(!response.ok)return;
   const actual=(await response.text()).trim().split(/\s+/)[0];
   if(actual!==APP_VERSION)return;
-  sessionStorage.removeItem(key);
+  try{localStorage.removeItem(durableKey);}catch{}
+  try{sessionStorage.removeItem(sessionKey);}catch{}
   showSavedCheck('업데이트 완료');
  }catch{}
 }

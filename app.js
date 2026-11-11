@@ -975,7 +975,7 @@ function attachRightsScenario(){
    if(!result.ok)throw Error('입력 금액을 확인하세요: '+result.reason);
    const format=n=>escapeHtml(prettyPrice(n));
    out.textContent=result.scenarioTotalWon===null?
-    '확인된 입력금액 부분합계 '+prettyPrice(result.partialWon)+
+    '입력된 낙찰가·비용 부분합계 '+prettyPrice(result.partialWon)+
     ' · 가정 포함 소계 '+prettyPrice(result.scenarioSubtotalWon)+
     ' · 미입력 '+result.missingFields.length+'항목 · 총액 산정 불가':
     '입력값 가정 시나리오 총부담액 '+prettyPrice(result.scenarioTotalWon)+

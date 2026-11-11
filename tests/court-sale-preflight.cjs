@@ -53,6 +53,12 @@ const sameKeysDifferentValues=check({...detail,data:{...detail.data,
  dlt_dspslGdsDspslObjctLst:[{...lot,componentMarker:'A'},{...lot,componentMarker:'B'}]}},id,'2026-11-10');
 assert.equal(sameKeysDifferentValues.lotRowDifference,'values_differ');
 assert.equal(sameKeysDifferentValues.legalStatusVerified,false);
+const reorderedKeys=check({...detail,data:{...detail.data,
+ dlt_dspslGdsDspslObjctLst:[lot,{
+  dspslGdsSeq:'1',csNo:'20250130000953',cortOfcCd:'B000210'
+ }]}},id,'2026-11-10');
+assert.equal(reorderedKeys.lotRowDifference,'identical');
+assert.equal(reorderedKeys.legalStatusVerified,false);
 assert.equal(check(detail,id,'2026-02-29').confirmed,false);
 assert.equal(check(detail,id,'2026-11-10').reason,'snapshot_schedule_corresponds_to_official_detail');
 console.log('PASS: fresh official schedule preflight gate rejects changed/ambiguous/unverified dates');

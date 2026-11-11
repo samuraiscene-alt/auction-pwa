@@ -30,6 +30,7 @@ function parseCourtPdfFacts(pages,type){
   warnings.push({label,page:page.page,excerpt:page.text.slice(from,to).replace(/\s+/g,' ').trim().slice(0,220)});
  }
  const tenants=[];
+ const hasDateHeaders=/전입\s*신고/.test(all)&&/확정\s*일자/.test(all);
  if(type==='sale_statement'||type==='occupancy_report'){
   for(const p of source){
    const rows=p.text.split(/\n+/).map(s=>s.replace(/\s+/g,' ').trim()).filter(Boolean);
@@ -47,7 +48,8 @@ function parseCourtPdfFacts(pages,type){
     // Dates after the deposit may belong to different columns. Never guess their meanings.
     const duplicate=tenants.some(t=>t.name===name[1]&&t.depositWon===won);
     if(!duplicate)tenants.push({name:name[1],depositWon:won,occupancy:'yes',
-     moveInOn:null,fixedDateOn:null,distributionDemand:'unknown',
+     moveInOn:hasDateHeaders&&dates.length>=2?dates[0]:null,
+     fixedDateOn:hasDateHeaders&&dates.length>=2?dates[1]:null,distributionDemand:'unknown',
      page:p.page,excerpt:row.slice(0,320),datesForReview:dates.slice(0,6)});
    }
   }

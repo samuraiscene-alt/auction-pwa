@@ -1129,6 +1129,25 @@ function attachRightsScenario(){
  calculate();
 }
 
+function rightsEvidenceMarkup(d){
+ const module=window.RightsSourceChecklist;
+ if(!module?.evidenceChecklist)return '<p class="status">6개 권리분석 근거서류 목록을 불러오지 못했어요.</p>';
+ const rows=module.evidenceChecklist(d);
+ return '<section class="rights-evidence" aria-label="한눈에 보는 권리분석">'+
+  '<h3>한눈에 보는 권리분석</h3>'+
+  '<p class="helper">6가지 항목 모두 원본 검토 전에는 미확인이에요. 등록된 서류가 있어도 법적 결론이 확인된 것은 아니에요.</p>'+
+  rows.map(row=>'<details class="rights-evidence-row"><summary><span>'+escapeHtml(row.label)+
+   '</span><strong>미확인 · 원본 '+row.recordedCount+'/'+row.neededCount+'종 기록</strong></summary>'+
+   '<div class="rights-evidence-docs"><strong>확인할 원본</strong>'+
+   row.required.map(type=>'<div class="rights-evidence-source">'+
+    '<span>'+escapeHtml(module.DOC_NAMES[type])+'</span><span>'+
+    (row.recorded.includes(type)?'자료 기록됨 · 진위 미검증':'원본 필요')+
+    '</span></div>').join('')+
+   '<p class="helper">여기 표시된 것은 서류 등록 현황이지, '+escapeHtml(row.label)+
+   '의 권리 성립·소멸·인수 여부를 판정한 결과가 아닙니다.</p></div></details>').join('')+
+  '</section>';
+}
+
 function rightsEditor(p){
  if(!p?.id||(!p.userRegistered&&!(capitalSnapshot?.validation?.passed===true&&
   capitalSnapshot.items?.some(x=>x.id===p.id&&x.id==='court-'+x.courtCode+'|'+x.caseNo+'|'+x.itemNo))))
@@ -1137,12 +1156,20 @@ function rightsEditor(p){
  const d=currentRightsDraft(p.id);
  if(!d)return '<p class="status">입력 검증 모듈을 불러오지 못했어요. 새로고침해 주세요.</p>';
  const docNames={registry:'등기사항증명서',sale_statement:'매각물건명세서',occupancy_report:'현황조사서',appraisal:'감정평가서',lease:'임대차 자료',other:'기타'};
- const docRows=d.documents.map(x=>'<li>'+escapeHtml(docNames[x.type]||x.type)+' · '+escapeHtml(x.reference||'자료명 미입력')+' ('+escapeHtml(x.issuedOn||'발급일 미확인')+') <button type="button" class="secondary" data-rights-remove="document" data-rights-id="'+escapeHtml(x.id)+'">삭제</button></li>').join('');
+ const docRows=d.documents.map(x=>'<li>'+escapeHtml(docNames[x.type]||x.type)+' · '+escapeHtml(x.reference||'자료명 미입력')+' ('+escapeHtml(x.issuedOn||'발급일 미확인')+') '+(x.fileId?'<button type="button" class="secondary" data-rights-openpdf="'+escapeHtml(x.id)+'">원본 PDF 열기</button>':'<small>서류 정보만 기록됨 · 원본 없음</small>')+' <button type="button" class="secondary" data-rights-remove="document" data-rights-id="'+escapeHtml(x.id)+'">삭제</button></li>').join('');
  const tenantRows=d.tenants.map(x=>'<li>임차인 기록 · 보증금 '+escapeHtml(x.depositWon===null?'미확인':prettyPrice(x.depositWon))+' · 전입 '+escapeHtml(x.moveInOn||'미확인')+' <button type="button" class="secondary" data-rights-remove="tenant" data-rights-id="'+escapeHtml(x.id)+'">삭제</button></li>').join('');
  const rightRows=d.rights.map(x=>'<li>권리 기록 · '+escapeHtml(x.type)+' · 접수 '+escapeHtml(x.registeredOn||'미확인')+' <button type="button" class="secondary" data-rights-remove="right" data-rights-id="'+escapeHtml(x.id)+'">삭제</button></li>').join('');
- return rightsScenarioMarkup(p)+
+ return rightsEvidenceMarkup(d)+rightsScenarioMarkup(p)+
  '<details class="auction-fold rights-manual-records"><summary>권리자료 직접 기록 · 서류 '+d.documents.length+'건 · 임차인 '+d.tenants.length+'건 · 등기 '+d.rights.length+'건</summary>'+
- '<p class="helper">확인한 자료가 있을 때만 기록하세요.</p>'+
+ '<p class="helper">자료는 사용자 기기에만 저장됩니다. PDF를 등록해도 자동 법률판정은 하지 않습니다.</p>'+
+ '<details class="auction-fold"><summary>＋ 원본 PDF 가져오기 · 사건번호 확인</summary>'+
+ '<form id="rightsPdfForm" class="rights-form">'+
+ '<label>원본 종류<select id="rightsPdfType" class="select">'+Object.entries(docNames).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label>'+
+ '<label>내 파일에서 PDF 선택<input type="file" accept=".pdf,application/pdf" id="rightsPdfInput" required></label>'+
+ '<label>발급일(선택)<input type="date" id="rightsPdfIssueDate" class="search"></label>'+
+ '<button type="submit" class="primary" id="rightsPdfSave">사건번호 확인 후 PDF 보관</button>'+
+ '<p class="helper" id="rightsPdfStatus" aria-live="polite">8MB 이하 · 사건번호를 읽을 수 있는 PDF만 연결합니다. 같은 사건이라도 물건번호는 사용자가 원본을 대조해야 합니다. 원본 파일은 기기와 전체 백업에 보관해요.</p>'+
+ '</form></details>'+
  '<details class="auction-fold"><summary>＋ 서류 기록 추가</summary><form id="rightsDocumentForm" data-property-id="'+escapeHtml(p.id)+'" class="rights-form">'+
  '<label>서류 종류<select id="rightsDocType" class="select">'+Object.entries(docNames).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label>'+
  '<label>자료명·페이지·출처<input id="rightsDocRef" class="search" maxlength="220" required placeholder="예: 등기사항증명서 1쪽"></label>'+

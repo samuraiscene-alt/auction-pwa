@@ -35,6 +35,7 @@ for(const [lots,diagnostic] of [
   assert.equal(checked.lotRows,2);
   assert.equal(checked.totalLotRows,2);
   assert.equal(checked.lotRowsIdentical,true);
+  assert.equal(checked.lotRowDifference,'identical');
  }
  assert.equal(checked.legalStatusVerified,false);
 }
@@ -43,7 +44,15 @@ const differentComponents=check({...detail,data:{...detail.data,
 assert.equal(differentComponents.lotDiagnostic,'lot_number_ambiguous');
 assert.equal(differentComponents.lotRows,2);
 assert.equal(differentComponents.lotRowsIdentical,false);
+assert.equal(differentComponents.lotRowDifference,'fields_differ');
 assert.equal(differentComponents.legalStatusVerified,false);
+const differentValues=check({...detail,data:{...detail.data,
+ dlt_dspslGdsDspslObjctLst:[lot,{...lot,dspslGdsSeq:'1',componentMarker:undefined}]}},id,'2026-11-10');
+assert.equal(differentValues.lotRowDifference,'fields_differ');
+const sameKeysDifferentValues=check({...detail,data:{...detail.data,
+ dlt_dspslGdsDspslObjctLst:[{...lot,componentMarker:'A'},{...lot,componentMarker:'B'}]}},id,'2026-11-10');
+assert.equal(sameKeysDifferentValues.lotRowDifference,'values_differ');
+assert.equal(sameKeysDifferentValues.legalStatusVerified,false);
 assert.equal(check(detail,id,'2026-02-29').confirmed,false);
 assert.equal(check(detail,id,'2026-11-10').reason,'snapshot_schedule_corresponds_to_official_detail');
 console.log('PASS: fresh official schedule preflight gate rejects changed/ambiguous/unverified dates');

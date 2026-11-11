@@ -899,7 +899,7 @@ function linkedRightsIds(id){
  const result=[id];
  if(capitalSnapshot?.validation?.passed!==true)return result;
  const lots=Array.isArray(capitalSnapshot.items)?capitalSnapshot.items:[];
- const isCourt=/^court-B\\d{6}\\|20\\d{2}타경\\d{1,10}\\|[1-9]\\d{0,3}$/.test(id);
+ const isCourt=/^court-B\d{6}\|20\d{2}타경\d{1,10}\|[1-9]\d{0,3}$/.test(id);
  if(isCourt){
   const matching=lots.filter(x=>x.id===id&&x.id==='court-'+x.courtCode+'|'+x.caseNo+'|'+x.itemNo);
   if(matching.length!==1)return result;

@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.40';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.41';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -934,6 +934,58 @@ function saveRightsDraft(next){
  saved.rightsDrafts=nextRows;
  try{write();}catch(e){if(old===undefined)delete saved.rightsDrafts;else saved.rightsDrafts=old;throw e;}
 }
+
+function rightsScenarioMarkup(){
+ const inputs=[
+  ['bidWon','낙찰예정가 (원)'],
+  ['assumedLiabilityWon','인수 가정액 (원)'],
+  ['acquisitionTaxWon','취득세 가정액 (원)'],
+  ['registrationWon','등기·법무비 가정액 (원)'],
+  ['evictionWon','명도비 가정액 (원)'],
+  ['otherWon','기타비용 가정액 (원)']
+ ];
+ return '<section class="rights-scenario"><h3>총부담금액 시나리오 계산기</h3>'+
+  '<p class="helper">입력한 가정 금액으로만 계산합니다. 임차인 보증금·등기채권액을 실제 인수금으로 자동 반영하지 않습니다.</p>'+
+  '<div class="rights-scenario-fields">'+inputs.map(([key,title])=>
+   '<label for="rightsCalc_'+key+'">'+title+'<input class="search" id="rightsCalc_'+key+'" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="미확인 · 공란" data-scenario-amount="'+key+'"></label>').join('')+'</div>'+
+  '<p class="helper">모든 비용은 원 단위로 입력하세요. 0원을 알고 있을 때만 숫자 0을 입력하고, 모르면 공란으로 두세요.</p>'+
+  '<div id="rightsScenarioResult" class="rights-scenario-result" role="status" aria-live="polite">낙찰예정가 입력 전 · 총액 산정 불가</div>'+
+  '<p class="helper">이 계산 결과는 저장되지 않습니다. 자동 법률판정이나 배당·인수금 확정 결과가 아닙니다.</p></section>';
+}
+function attachRightsScenario(){
+ const out=$('#rightsScenarioResult');if(!out)return;
+ const controls=[...document.querySelectorAll('[data-scenario-amount]')];
+ const parse=node=>{
+  const text=node.value.trim();
+  if(!text)return null;
+  if(!/^\\d{1,16}$/.test(text))throw Error('금액은 0 이상의 원 단위 숫자만 입력하세요.');
+  const n=Number(text);
+  if(!Number.isSafeInteger(n)||n>1_000_000_000_000_000)throw Error('금액 범위가 올바르지 않습니다.');
+  return n;
+ };
+ const calculate=()=>{
+  try{
+   const entries=Object.fromEntries(controls.map(node=>[node.dataset.scenarioAmount,parse(node)]));
+   if(entries.bidWon===null){out.textContent='낙찰예정가 입력 전 · 총액 산정 불가';return;}
+   const engine=window.RightsLiability?.calculateLiabilityScenario;
+   if(typeof engine!=='function')throw Error('계산 기능을 불러오지 못했습니다. 새로고침해 주세요.');
+   const result=engine({bidWon:entries.bidWon,assumedLiabilityWon:entries.assumedLiabilityWon,
+    fees:{acquisitionTaxWon:entries.acquisitionTaxWon,registrationWon:entries.registrationWon,
+     evictionWon:entries.evictionWon,otherWon:entries.otherWon}});
+   if(!result.ok)throw Error('입력 금액을 확인하세요: '+result.reason);
+   const format=n=>escapeHtml(prettyPrice(n));
+   out.textContent=result.scenarioTotalWon===null?
+    '확인된 입력금액 부분합계 '+prettyPrice(result.partialWon)+
+    ' · 가정 포함 소계 '+prettyPrice(result.scenarioSubtotalWon)+
+    ' · 미입력 '+result.missingFields.length+'항목 · 총액 산정 불가':
+    '입력값 가정 시나리오 총부담액 '+prettyPrice(result.scenarioTotalWon)+
+    ' · 실제 인수 여부 미확인';
+  }catch(error){out.textContent='계산 불가 · '+String(error.message||'금액 오류');}
+ };
+ controls.forEach(node=>node.addEventListener('input',calculate));
+ calculate();
+}
+
 function rightsEditor(p){
  if(!p?.id||(!p.userRegistered&&!(capitalSnapshot?.validation?.passed===true&&
   capitalSnapshot.items?.some(x=>x.id===p.id&&x.id==='court-'+x.courtCode+'|'+x.caseNo+'|'+x.itemNo))))
@@ -967,7 +1019,7 @@ function rightsEditor(p){
  '<label>근거서류<select id="rightsRightDoc" class="select"><option value="">미확인</option>'+d.documents.map(x=>'<option value="'+escapeHtml(x.id)+'">'+escapeHtml(docNames[x.type]||x.type)+'</option>').join('')+'</select></label>'+
  '<button class="primary" type="submit">권리 기록 저장</button></form></details>'+
  '<ul class="rights-record-list">'+(rightRows||'<li>등록된 등기권리 기록 없음</li>')+'</ul>'+
- '<p class="status">⚠ 선순위·대항력·인수보증금 자동 판정은 아직 지원하지 않습니다. 확인되지 않은 인수금액은 0원이 아니라 산정 불가입니다.</p>';
+ '<p class="status">⚠ 선순위·대항력·인수보증금 자동 판정은 아직 지원하지 않습니다. 확인되지 않은 인수금액은 0원이 아니라 산정 불가입니다.</p>'+rightsScenarioMarkup();
 }
 function attachRightsEditor(){
  const shell=$('#rightsDocumentForm');if(!shell)return;
@@ -2508,7 +2560,7 @@ if($('#applyAdvanced'))$('#applyAdvanced').onclick=()=>{
 };
 if($('#resetAdvanced'))$('#resetAdvanced').onclick=()=>{state.region='전체';state.filter='전체';state.search='';state.minPrice='';state.maxPrice='';state.priceUnit='원';render();};
 if($('#specialBack'))$('#specialBack').onclick=()=>goBack();if($('#openCourtDetail'))$('#openCourtDetail').onclick=()=>window.open(OFFICIAL_AUCTION_URL,'_blank','noopener');
-if($('#favBtn'))$('#favBtn').onclick=()=>{const wasSaved=saved.favorites.includes(state.detail);saved.favorites=wasSaved?saved.favorites.filter(i=>i!==state.detail):[...saved.favorites,state.detail];write();render();toast(wasSaved?'관심물건에서 해제했어요.':'관심물건에 저장했어요.');};document.querySelectorAll('[data-detail-tab]').forEach(btn=>btn.onclick=()=>{state.detailTab=btn.dataset.detailTab;render();});if($('#rightsBtn'))$('#rightsBtn').onclick=()=>nav('rights',{rightsPropertyId:state.detail});attachRightsEditor();if($('#noteSearchForm')){
+if($('#favBtn'))$('#favBtn').onclick=()=>{const wasSaved=saved.favorites.includes(state.detail);saved.favorites=wasSaved?saved.favorites.filter(i=>i!==state.detail):[...saved.favorites,state.detail];write();render();toast(wasSaved?'관심물건에서 해제했어요.':'관심물건에 저장했어요.');};document.querySelectorAll('[data-detail-tab]').forEach(btn=>btn.onclick=()=>{state.detailTab=btn.dataset.detailTab;render();});if($('#rightsBtn'))$('#rightsBtn').onclick=()=>nav('rights',{rightsPropertyId:state.detail});attachRightsEditor();attachRightsScenario();if($('#noteSearchForm')){
  const form=$('#noteSearchForm'),input=$('#noteSearchInput');
  let composing=false;
  input.addEventListener('compositionstart',()=>composing=true);

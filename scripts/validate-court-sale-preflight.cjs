@@ -36,16 +36,19 @@ function assessCourtSchedulePreflight(response,identity,snapshotDate){
   const firstKeys=exactLotCount>1?JSON.stringify(Object.keys(matchingLots[0]).sort()):'';
   const sameFields=exactLotCount>1&&matchingLots.every(r=>JSON.stringify(Object.keys(r).sort())===firstKeys);
   const rowDifference=exactLotCount<2?'not_checked':sameRecords?'identical':sameFields?'values_differ':'fields_differ';
-  return {...fail('detail_lot_unverified'),
+  const eligible=exactLotCount>1&&!sameRecords&&matchingLots.every(r=>
+    r&&typeof r==='object'&&!Array.isArray(r)&&
+    String(r.cortOfcCd??'')===identity.courtCode&&
+    String(r.csNo??'')===internal&&String(r.dspslGdsSeq??'')===identity.itemNo);
+  if(!eligible)return {...fail('detail_lot_unverified'),
    lotDiagnostic:exactLotCount===0?'lot_number_missing':'lot_number_ambiguous',
    lotRows:Math.min(exactLotCount,300),totalLotRows:lots.length,
    lotRowsIdentical:exactLotCount>1?sameRecords:null,
-   lotRowDifference:rowDifference,
-   multiRowReviewEligible:exactLotCount>1&&!sameRecords&&matchingLots.every(r=>
-    r&&typeof r==='object'&&!Array.isArray(r)&&
-    String(r.cortOfcCd??'')===identity.courtCode&&
-    String(r.csNo??'')===internal&&String(r.dspslGdsSeq??'')===identity.itemNo)};
+   lotRowDifference:rowDifference,multiRowReviewEligible:false};
+  // Multiple distinct detail components may belong to ONE sale lot.
+  // Continue only to the independent, exact-date schedule check below.
  }
+
  if(!Array.isArray(history)||history.length>500)
   return fail('detail_schedule_unavailable');
  const expected=calendarDay(snapshotDate.replaceAll('-',''));
@@ -60,6 +63,6 @@ function assessCourtSchedulePreflight(response,identity,snapshotDate){
  // Identical day repeated can mean multiple sale sessions: not yet verified.
  if(days.filter(d=>d===expected).length!==1)return fail('schedule_day_not_unique');
  return {confirmed:true,reason:'snapshot_schedule_corresponds_to_official_detail',
-  legalStatusVerified:false};
+  multiComponentLot:exactLotCount>1,legalStatusVerified:false};
 }
 module.exports={assessCourtSchedulePreflight};

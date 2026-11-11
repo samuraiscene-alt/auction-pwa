@@ -958,7 +958,7 @@ function attachRightsScenario(){
  const parse=node=>{
   const text=node.value.trim();
   if(!text)return null;
-  if(!/^\\d{1,16}$/.test(text))throw Error('금액은 0 이상의 원 단위 숫자만 입력하세요.');
+  if(!/^\d{1,16}$/.test(text))throw Error('금액은 0 이상의 원 단위 숫자만 입력하세요.');
   const n=Number(text);
   if(!Number.isSafeInteger(n)||n>1_000_000_000_000_000)throw Error('금액 범위가 올바르지 않습니다.');
   return n;

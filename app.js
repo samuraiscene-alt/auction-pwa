@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.41';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.42';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -935,52 +935,83 @@ function saveRightsDraft(next){
  try{write();}catch(e){if(old===undefined)delete saved.rightsDrafts;else saved.rightsDrafts=old;throw e;}
 }
 
-function rightsScenarioMarkup(){
+function rightsScenarioMarkup(p){
+ const sourced=!!p?.userRegistered?
+  (Number.isSafeInteger(p.minWon)&&p.minWon>0?p.minWon:null):
+  (capitalSnapshot?.validation?.passed===true&&Number.isSafeInteger(p?.minimumWon)&&p.minimumWon>0?p.minimumWon:null);
+ const appraisal=p?.userRegistered?p.valueWon:p?.appraisalWon;
+ const knownAppraisal=Number.isSafeInteger(appraisal)&&appraisal>0?appraisal:null;
+ const draft=currentRightsDraft(p.id);
+ const tenants=Array.isArray(draft?.tenants)?draft.tenants:[];
+ const deposits=tenants.filter(x=>Number.isSafeInteger(x.depositWon)&&x.depositWon>=0);
+ const totalDeposits=deposits.reduce((a,x)=>a+x.depositWon,0);
+ const depositNote=tenants.length?
+  '<p class="helper">입력된 임차인 '+tenants.length+'명 · 보증금 확인 입력 '+deposits.length+'명'+
+  (deposits.length&&Number.isSafeInteger(totalDeposits)?' · 입력된 보증금 합계 '+escapeHtml(prettyPrice(totalDeposits)):'')+
+  ' · 이 합계는 낙찰자가 인수할 금액이 아닙니다.</p>':'';
  const inputs=[
-  ['bidWon','낙찰예정가 (원)'],
-  ['assumedLiabilityWon','인수 가정액 (원)'],
-  ['acquisitionTaxWon','취득세 가정액 (원)'],
-  ['registrationWon','등기·법무비 가정액 (원)'],
-  ['evictionWon','명도비 가정액 (원)'],
-  ['otherWon','기타비용 가정액 (원)']
+  ['assumedLiabilityWon','인수 가정액'],
+  ['acquisitionTaxWon','취득세'],
+  ['registrationWon','등기·법무비'],
+  ['evictionWon','명도비'],
+  ['otherWon','기타비용']
  ];
- return '<section class="rights-scenario"><h3>총부담금액 시나리오 계산기</h3>'+
-  '<p class="helper">입력한 가정 금액으로만 계산합니다. 임차인 보증금·등기채권액을 실제 인수금으로 자동 반영하지 않습니다.</p>'+
+ const sourceText=sourced!==null?
+  '<p class="helper">저장된 '+(p.userRegistered?'직접 등록':'법원 부분수집')+' 최저매각가 '+escapeHtml(prettyPrice(sourced))+
+  '를 낙찰예정가의 시작값으로 불러왔어요. 실제 입찰가나 최신 법원가격으로 확정된 값이 아니므로 수정할 수 있어요.</p>':
+  '<p class="helper">확인 가능한 최저매각가가 없어 낙찰예정가를 직접 입력해야 해요.</p>';
+ return '<section class="rights-scenario" data-scenario-property="'+escapeHtml(p.id)+'"'+
+  (sourced!==null?' data-scenario-minimum="'+sourced+'"':'')+
+  (knownAppraisal!==null?' data-scenario-appraisal="'+knownAppraisal+'"':'')+'>'+
+  '<h3>낙찰 예상 부담금</h3><p class="helper">자동으로 불러올 수 있는 물건가격은 불러오고, 금액을 바꾸면 합계도 바로 갱신됩니다.</p>'+
+  '<div class="rights-scenario-fields"><label for="rightsCalc_bidWon">낙찰예정가 (원)'+
+  '<input class="search" id="rightsCalc_bidWon" inputmode="numeric" pattern="[0-9]*" autocomplete="off"'+
+  (sourced!==null?' value="'+sourced+'"':'')+' placeholder="낙찰예정가 입력" data-scenario-amount="bidWon"></label></div>'+
+  sourceText+
+  '<div id="rightsBidComparison" class="helper" role="status"></div>'+depositNote+
+  '<details class="auction-fold"><summary>세금·인수금·추가 비용 입력 (모르면 비워두세요)</summary>'+
   '<div class="rights-scenario-fields">'+inputs.map(([key,title])=>
-   '<label for="rightsCalc_'+key+'">'+title+'<input class="search" id="rightsCalc_'+key+'" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="미확인 · 공란" data-scenario-amount="'+key+'"></label>').join('')+'</div>'+
-  '<p class="helper">모든 비용은 원 단위로 입력하세요. 0원을 알고 있을 때만 숫자 0을 입력하고, 모르면 공란으로 두세요.</p>'+
-  '<div id="rightsScenarioResult" class="rights-scenario-result" role="status" aria-live="polite">낙찰예정가 입력 전 · 총액 산정 불가</div>'+
-  '<p class="helper">이 계산 결과는 저장되지 않습니다. 자동 법률판정이나 배당·인수금 확정 결과가 아닙니다.</p></section>';
+   '<label for="rightsCalc_'+key+'">'+title+' (원)<input class="search" id="rightsCalc_'+key+
+   '" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="미확인" data-scenario-amount="'+key+'"></label>').join('')+'</div>'+
+  '<p class="helper">인수액은 선순위권리·배당 검증 전에는 자동 산정하지 않아요. 취득세도 주택 수·취득 조건을 확인하기 전에는 임의로 계산하지 않아요.</p></details>'+
+  '<div id="rightsScenarioResult" class="rights-scenario-result" role="status" aria-live="polite">계산 중</div>'+
+  '<p class="helper">법률적 안전 여부와 실제 인수금은 미확인입니다. 계산 입력값은 저장되지 않습니다.</p></section>';
 }
 function attachRightsScenario(){
- const out=$('#rightsScenarioResult');if(!out)return;
- const controls=[...document.querySelectorAll('[data-scenario-amount]')];
- const parse=node=>{
-  const text=node.value.trim();
-  if(!text)return null;
-  if(!/^\d{1,16}$/.test(text))throw Error('금액은 0 이상의 원 단위 숫자만 입력하세요.');
-  const n=Number(text);
-  if(!Number.isSafeInteger(n)||n>1_000_000_000_000_000)throw Error('금액 범위가 올바르지 않습니다.');
+ const shell=document.querySelector('[data-scenario-property]');
+ const out=$('#rightsScenarioResult');if(!out||!shell)return;
+ const controls=[...shell.querySelectorAll('[data-scenario-amount]')];
+ const amount=parseNode=>{const raw=parseNode.value.trim();
+  if(!raw)return null;
+  if(!/^\\d{1,16}$/.test(raw))throw Error('금액은 0 이상의 원 단위 숫자만 입력하세요.');
+  const n=Number(raw);if(!Number.isSafeInteger(n)||n>1_000_000_000_000_000)throw Error('금액 범위를 확인하세요.');
   return n;
  };
+ const initial=Number(shell.dataset.scenarioMinimum);
+ const minimum=Number.isSafeInteger(initial)&&initial>0?initial:null;
+ const knownAppraisal=Number(shell.dataset.scenarioAppraisal);
+ const appraisal=Number.isSafeInteger(knownAppraisal)&&knownAppraisal>0?knownAppraisal:null;
+ const comparison=$('#rightsBidComparison');
  const calculate=()=>{
   try{
-   const entries=Object.fromEntries(controls.map(node=>[node.dataset.scenarioAmount,parse(node)]));
-   if(entries.bidWon===null){out.textContent='낙찰예정가 입력 전 · 총액 산정 불가';return;}
+   const entries=Object.fromEntries(controls.map(node=>[node.dataset.scenarioAmount,amount(node)]));
+   if(entries.bidWon===null){out.textContent='낙찰예정가를 입력해 주세요 · 총액 산정 불가';comparison.textContent='';return;}
    const engine=window.RightsLiability?.calculateLiabilityScenario;
-   if(typeof engine!=='function')throw Error('계산 기능을 불러오지 못했습니다. 새로고침해 주세요.');
+   if(typeof engine!=='function')throw Error('계산 기능을 불러오지 못했습니다.');
    const result=engine({bidWon:entries.bidWon,assumedLiabilityWon:entries.assumedLiabilityWon,
     fees:{acquisitionTaxWon:entries.acquisitionTaxWon,registrationWon:entries.registrationWon,
      evictionWon:entries.evictionWon,otherWon:entries.otherWon}});
-   if(!result.ok)throw Error('입력 금액을 확인하세요: '+result.reason);
-   const format=n=>escapeHtml(prettyPrice(n));
+   if(!result.ok)throw Error('금액을 확인해 주세요: '+result.reason);
+   const info=[];
+   if(minimum!==null){const delta=entries.bidWon-minimum;
+    info.push('최저매각가 대비 '+(delta>=0?'+':'−')+prettyPrice(Math.abs(delta)));}
+   if(appraisal!==null)info.push('감정가 대비 '+Math.round(entries.bidWon/appraisal*1000)/10+'%');
+   comparison.textContent=info.join(' · ')+' · 가격 비교일 뿐 입찰 적정성 판단은 아닙니다.';
    out.textContent=result.scenarioTotalWon===null?
-    '입력된 낙찰가·비용 부분합계 '+prettyPrice(result.partialWon)+
-    ' · 가정 포함 소계 '+prettyPrice(result.scenarioSubtotalWon)+
-    ' · 미입력 '+result.missingFields.length+'항목 · 총액 산정 불가':
-    '입력값 가정 시나리오 총부담액 '+prettyPrice(result.scenarioTotalWon)+
-    ' · 실제 인수 여부 미확인';
-  }catch(error){out.textContent='계산 불가 · '+String(error.message||'금액 오류');}
+    '현재 입력된 금액 합계 '+prettyPrice(result.scenarioSubtotalWon)+
+    ' · 추가 확인 '+result.missingFields.length+'항목 · 실제 총액 산정 불가':
+    '입력값 기준 예상 부담액 '+prettyPrice(result.scenarioTotalWon)+' · 실제 인수 여부 미확인';
+  }catch(error){out.textContent='계산 불가 · '+String(error.message||'금액 오류');comparison.textContent='';}
  };
  controls.forEach(node=>node.addEventListener('input',calculate));
  calculate();
@@ -1019,7 +1050,7 @@ function rightsEditor(p){
  '<label>근거서류<select id="rightsRightDoc" class="select"><option value="">미확인</option>'+d.documents.map(x=>'<option value="'+escapeHtml(x.id)+'">'+escapeHtml(docNames[x.type]||x.type)+'</option>').join('')+'</select></label>'+
  '<button class="primary" type="submit">권리 기록 저장</button></form></details>'+
  '<ul class="rights-record-list">'+(rightRows||'<li>등록된 등기권리 기록 없음</li>')+'</ul>'+
- '<p class="status">⚠ 선순위·대항력·인수보증금 자동 판정은 아직 지원하지 않습니다. 확인되지 않은 인수금액은 0원이 아니라 산정 불가입니다.</p>'+rightsScenarioMarkup();
+ '<p class="status">⚠ 선순위·대항력·인수보증금 자동 판정은 아직 지원하지 않습니다. 확인되지 않은 인수금액은 0원이 아니라 산정 불가입니다.</p>'+rightsScenarioMarkup(p);
 }
 function attachRightsEditor(){
  const shell=$('#rightsDocumentForm');if(!shell)return;

@@ -1056,3 +1056,19 @@ html,body{
 .rights-cost-disclaimer{margin:12px 0 0;font-size:13px!important}
 .rights-cost-settings,.rights-manual-records{margin-top:14px}
 @media(max-width:390px){.rights-cost-row{font-size:14px}.rights-cost-row strong{font-size:13px}}
+
+/* v0.7.50: original PDF checklist with fail-closed six category statuses */
+.rights-evidence{display:grid;gap:8px;margin:10px 0 18px}
+.rights-evidence h3{margin:4px 0;font-size:18px}
+.rights-evidence-row{background:#f6f8fc;border:1px solid #e4e9f2;border-radius:13px;overflow:hidden}
+.rights-evidence-row>summary{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:14px 12px;cursor:pointer;font-weight:700;list-style:none}
+.rights-evidence-row>summary::-webkit-details-marker{display:none}
+.rights-evidence-row>summary strong{font-size:12px;font-weight:600;color:#64748b;text-align:right}
+.rights-evidence-docs{border-top:1px solid #e1e8f1;padding:13px}
+.rights-evidence-source{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px dashed #e2e6ee;font-size:13px}
+.rights-evidence-source span:last-child{color:#68768d;text-align:right}
+.rights-pdf-overlay{position:fixed;z-index:99998;inset:0;background:#eef1f6;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+.rights-pdf-head{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:15px}
+.rights-pdf-head strong{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rights-pdf-overlay iframe{border:0;background:white;width:100%;flex:1;min-height:0}
+.rights-manual-records input[type=file]{width:100%;min-width:0;font-size:14px}

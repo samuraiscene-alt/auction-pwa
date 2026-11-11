@@ -37,6 +37,7 @@ jobs:
           node tests/court-favorites.cjs
           node tests/rights-liability-scenarios.cjs
           node tests/rights-draft-schema.cjs
+          node tests/rights-source-checklist.cjs
           node tests/rights-ui-integration.cjs
           node tests/rights-linked-records.cjs
       - name: Probe two real auction cases using live official bridge (diagnostic only)

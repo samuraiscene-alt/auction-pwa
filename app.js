@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.47';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.48';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -2171,9 +2171,14 @@ async function loadCapital(force=false){
 function official(){
  const records=registeredProperties().slice().reverse();
  const editing=records.find(p=>p.id===state.editRealId)||null;
+ const liveTestHTML='<div class="court-live-test"><strong>✓ 실제 법원 조회 성공 물건 테스트</strong>'+
+  '<p class="helper">서울중앙지방법원 · 2025타경103685 · 물건 1번 · 최저가 2억 400만원 · 2026-11-19</p>'+
+  '<p class="helper">사건번호·가격·기일의 법원 조회가 성공한 사례예요. 저장 전 최신 자료를 다시 조회합니다.</p>'+
+  '<button type="button" class="secondary full-secondary" id="loadLiveCourtTest">실제 사건 등록 테스트</button>'+
+  '<p id="liveCourtTestStatus" class="helper" role="status">자동 저장하지 않아요. 확인 후 아래 사건 등록을 눌러 주세요.</p></div>';
  return `<div class="card official-intro"><strong>대한민국 법원경매정보</strong><p class="helper">법원 공식 사이트에서 물건을 검색해 사건번호와 매각기일·가격을 확인하세요. 현재 서울중앙지방법원 사건번호 확인과 물건번호별 정보 가져오기를 지원해요. 조회된 정보를 법원 원문과 대조한 뒤 등록하세요.</p><button type="button" class="primary" id="openOfficialCourt">⚖ 법원경매정보 열기 ↗</button><p class="helper">공식 사이트에서 확인한 사건만 아래에 직접 등록해 주세요. 직접 입력값은 법원 검증 완료 표시가 아닙니다.</p></div>
  <form class="card official-form" id="officialRecordForm">
- <strong>${editing?'경매사건 등록 정보 수정':'실제 경매사건 직접 등록'}</strong>${editing?'<p class="helper">법원·사건번호·물건번호는 같은 기록을 유지하기 위해 변경할 수 없습니다. 가격·매각기일·주소·분류는 수정할 수 있어요.</p>':''}
+ <strong>${editing?'경매사건 등록 정보 수정':'실제 경매사건 직접 등록'}</strong>${editing?'':liveTestHTML}${editing?'<p class="helper">법원·사건번호·물건번호는 같은 기록을 유지하기 위해 변경할 수 없습니다. 가격·매각기일·주소·분류는 수정할 수 있어요.</p>':''}
  <div class="court-pdf-import"><label class="official-pdf-label" for="officialPdfInput">▤ 법원 PDF로 정보 자동 입력</label><input type="file" id="officialPdfInput" accept="application/pdf,.pdf" hidden><p class="helper" id="officialPdfStatus">법원 사이트에서 저장한 텍스트 PDF를 선택하세요. 확실한 정보만 추출하며 등록 전에 검토해야 해요.</p></div>
  <label class="label" for="officialCourt">담당 법원</label><input class="search" id="officialCourt" required maxlength="100" placeholder="예: 서울중앙지방법원">
  <label class="label" for="officialCase">사건번호</label><input class="search" id="officialCase" required placeholder="예: 2025타경12345" inputmode="text">
@@ -2469,6 +2474,30 @@ if($('#officialUsageLarge')){
  }
 }
 
+if($('#loadLiveCourtTest'))$('#loadLiveCourtTest').onclick=async()=>{
+ const button=$('#loadLiveCourtTest'),status=$('#liveCourtTestStatus');
+ if(state.page!=='official'||state.editRealId){status.textContent='새 사건 등록 화면에서만 이용할 수 있어요.';return;}
+ button.disabled=true;status.textContent='테스트 사건 정보를 확인하는 중…';
+ try{
+  const response=await fetch('./data/court-live-test-case.json',{cache:'no-store'});
+  if(!response.ok)throw Error('테스트 사건 정보 불러오기 실패');
+  const test=await response.json();
+  if(test?.schemaVersion!==1||test.kind!=='official_bridge_verified_test_case'||
+    test.courtCode!=='B000210'||test.courtName!=='서울중앙지방법원'||
+    test.caseNo!=='2025타경103685'||test.itemNo!=='1'||
+    test.verification?.verified!==true||test.verification?.exactIdentity!==true)
+   throw Error('테스트 사건 식별정보 확인 실패');
+  const court=$('#officialCourt'),caseNumber=$('#officialCase'),itemNo=$('#officialItemNo');
+  if(!court||!caseNumber||!itemNo)throw Error('등록 입력화면이 없습니다.');
+  if(court.value.trim()||caseNumber.value.trim()||itemNo.value.trim())
+   throw Error('현재 입력된 법원·사건번호·물건번호를 비운 뒤 다시 눌러 주세요.');
+  court.value=test.courtName;caseNumber.value=test.caseNo;itemNo.value=test.itemNo;
+  status.textContent='시험사건을 불러왔어요. 이제 법원 서버로 다시 조회합니다.';
+  $('#fetchOfficialItem').click();
+  court.scrollIntoView({behavior:'smooth',block:'center'});
+ }catch(error){status.textContent='준비 실패: '+String(error.message||error);}
+ finally{button.disabled=false;}
+};
 if($('#fetchOfficialItem'))$('#fetchOfficialItem').onclick=async()=>{
  const button=$('#fetchOfficialItem'),status=$('#fetchOfficialItemStatus');
  const courtInput=$('#officialCourt'),caseInput=$('#officialCase'),itemInput=$('#officialItemNo');

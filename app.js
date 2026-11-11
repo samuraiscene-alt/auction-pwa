@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.43';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.44';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -963,13 +963,20 @@ function rightsScenarioMarkup(p){
  return '<section class="rights-scenario" data-scenario-property="'+escapeHtml(p.id)+'"'+
   (sourced!==null?' data-scenario-minimum="'+sourced+'"':'')+
   (knownAppraisal!==null?' data-scenario-appraisal="'+knownAppraisal+'"':'')+'>'+
-  '<h3>낙찰 예상 부담금</h3><p class="helper">자동으로 불러올 수 있는 물건가격은 불러오고, 금액을 바꾸면 합계도 바로 갱신됩니다.</p>'+
+  '<h3>낙찰 예상 비용</h3><p class="helper">현재 확인된 금액과 필요한 확인 사항을 먼저 보여줘요.</p>'+
   '<div class="rights-scenario-fields"><label for="rightsCalc_bidWon">낙찰예정가 (원)'+
   '<input class="search" id="rightsCalc_bidWon" inputmode="numeric" pattern="[0-9]*" autocomplete="off"'+
   (sourced!==null?' value="'+sourced+'"':'')+' placeholder="낙찰예정가 입력" data-scenario-amount="bidWon"></label></div>'+
-  sourceText+
-  '<div id="rightsBidComparison" class="helper" role="status"></div>'+depositNote+
-  '<details class="auction-fold"><summary>세금·인수금·추가 비용 (자동계산 지원)</summary>'+
+  '<div id="rightsBidComparison" class="helper" role="status"></div>'+
+  '<div class="rights-cost-summary" aria-label="비용 현황">'+
+  '<div class="rights-cost-row"><span>취득세 및 부가세</span><strong id="rightsCostTax">조건 확인 필요</strong></div>'+
+  '<div class="rights-cost-row"><span>등기·법무비</span><strong id="rightsCostRegistration">예상액 미확인</strong></div>'+
+  '<div class="rights-cost-row"><span>인수 가능 금액</span><strong id="rightsCostLiability">권리 확인 필요</strong></div>'+
+  '<div class="rights-cost-row"><span>명도비·기타비용</span><strong id="rightsCostOther">금액 미확인</strong></div></div>'+
+  '<div class="rights-cost-total"><span>현재 입력된 금액 합계</span><strong id="rightsCostTotal">계산 중</strong></div>'+
+  '<div id="rightsScenarioResult" class="helper" role="status" aria-live="polite">계산 중</div>'+
+  '<details class="auction-fold rights-cost-settings"><summary>비용 자동계산·직접 수정</summary>'+
+  sourceText+depositNote+
   '<div class="rights-tax-controls"><label for="rightsTaxMode">취득세 계산 조건'+
   '<select class="select" id="rightsTaxMode">'+
   '<option value="unknown">아직 몰라요</option>'+
@@ -982,9 +989,9 @@ function rightsScenarioMarkup(p){
   '<div class="rights-scenario-fields">'+inputs.map(([key,title])=>
    '<label for="rightsCalc_'+key+'">'+title+' (원)<input class="search" id="rightsCalc_'+key+
    '" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="미확인" data-scenario-amount="'+key+'"></label>').join('')+'</div>'+
-  '<p class="helper">인수액은 선순위권리·배당 검증 전에는 자동 산정하지 않아요. 취득세도 주택 수·취득 조건을 확인하기 전에는 임의로 계산하지 않아요.</p></details>'+
-  '<div id="rightsScenarioResult" class="rights-scenario-result" role="status" aria-live="polite">계산 중</div>'+
-  '<p class="helper">법률적 안전 여부와 실제 인수금은 미확인입니다. 계산 입력값은 저장되지 않습니다.</p></section>';
+  '</details>'+
+
+  '<p class="helper rights-cost-disclaimer">권리·인수금은 원본 검증 전 미확정 · 입력 금액은 저장되지 않아요.</p></section>';
 }
 function attachRightsScenario(){
  const shell=document.querySelector('[data-scenario-property]');
@@ -1001,6 +1008,8 @@ function attachRightsScenario(){
  const knownAppraisal=Number(shell.dataset.scenarioAppraisal);
  const appraisal=Number.isSafeInteger(knownAppraisal)&&knownAppraisal>0?knownAppraisal:null;
  const comparison=$('#rightsBidComparison');
+ const costTax=$('#rightsCostTax'),costRegistration=$('#rightsCostRegistration');
+ const costLiability=$('#rightsCostLiability'),costOther=$('#rightsCostOther'),costTotal=$('#rightsCostTotal');
  const taxMode=$('#rightsTaxMode'),taxArea=$('#rightsTaxArea'),taxNode=$('#rightsCalc_acquisitionTaxWon'),taxStatus=$('#rightsTaxStatus');
  let autoTax=false;
  const calculate=()=>{
@@ -1024,23 +1033,29 @@ function attachRightsScenario(){
      '주택 일반세율과 면적 확인 전에는 취득세를 0원으로 계산하지 않아요.';
    }
    const entries=Object.fromEntries(controls.map(node=>[node.dataset.scenarioAmount,amount(node)]));
-   if(entries.bidWon===null){out.textContent='낙찰예정가를 입력해 주세요 · 총액 산정 불가';comparison.textContent='';return;}
+   if(entries.bidWon===null){out.textContent='낙찰예정가를 입력해 주세요 · 총액 산정 불가';comparison.textContent='';costTotal.textContent='미확인';return;}
    const engine=window.RightsLiability?.calculateLiabilityScenario;
    if(typeof engine!=='function')throw Error('계산 기능을 불러오지 못했습니다.');
    const result=engine({bidWon:entries.bidWon,assumedLiabilityWon:entries.assumedLiabilityWon,
     fees:{acquisitionTaxWon:entries.acquisitionTaxWon,registrationWon:entries.registrationWon,
      evictionWon:entries.evictionWon,otherWon:entries.otherWon}});
    if(!result.ok)throw Error('금액을 확인해 주세요: '+result.reason);
+   const display=(value,missing)=>value===null?missing:prettyPrice(value);
+   costTax.textContent=display(entries.acquisitionTaxWon,'조건 확인 필요');
+   costRegistration.textContent=display(entries.registrationWon,'예상액 미확인');
+   costLiability.textContent=display(entries.assumedLiabilityWon,'권리 확인 필요');
+   const extra=[entries.evictionWon,entries.otherWon];
+   costOther.textContent=extra.every(v=>v!==null)?prettyPrice(extra[0]+extra[1]):'금액 미확인';
+   costTotal.textContent=prettyPrice(result.scenarioSubtotalWon);
    const info=[];
    if(minimum!==null){const delta=entries.bidWon-minimum;
     info.push('최저매각가 대비 '+(delta>=0?'+':'−')+prettyPrice(Math.abs(delta)));}
    if(appraisal!==null)info.push('감정가 대비 '+Math.round(entries.bidWon/appraisal*1000)/10+'%');
    comparison.textContent=info.join(' · ')+' · 가격 비교일 뿐 입찰 적정성 판단은 아닙니다.';
    out.textContent=result.scenarioTotalWon===null?
-    '현재 입력된 금액 합계 '+prettyPrice(result.scenarioSubtotalWon)+
-    ' · 추가 확인 '+result.missingFields.length+'항목 · 실제 총액 산정 불가':
-    '입력값 기준 예상 부담액 '+prettyPrice(result.scenarioTotalWon)+' · 실제 인수 여부 미확인';
-  }catch(error){out.textContent='계산 불가 · '+String(error.message||'금액 오류');comparison.textContent='';}
+    '미확인 '+result.missingFields.length+'항목 제외 · 실제 총액 산정 불가':
+    '입력값 기준 가정 비용 · 실제 인수 여부 미확인';
+  }catch(error){out.textContent='계산 불가 · '+String(error.message||'금액 오류');comparison.textContent='';costTotal.textContent='계산 불가';}
  };
  controls.forEach(node=>node.addEventListener('input',calculate));
  taxMode.addEventListener('change',calculate);
@@ -1059,13 +1074,15 @@ function rightsEditor(p){
  const docRows=d.documents.map(x=>'<li>'+escapeHtml(docNames[x.type]||x.type)+' · '+escapeHtml(x.reference||'자료명 미입력')+' ('+escapeHtml(x.issuedOn||'발급일 미확인')+') <button type="button" class="secondary" data-rights-remove="document" data-rights-id="'+escapeHtml(x.id)+'">삭제</button></li>').join('');
  const tenantRows=d.tenants.map(x=>'<li>임차인 기록 · 보증금 '+escapeHtml(x.depositWon===null?'미확인':prettyPrice(x.depositWon))+' · 전입 '+escapeHtml(x.moveInOn||'미확인')+' <button type="button" class="secondary" data-rights-remove="tenant" data-rights-id="'+escapeHtml(x.id)+'">삭제</button></li>').join('');
  const rightRows=d.rights.map(x=>'<li>권리 기록 · '+escapeHtml(x.type)+' · 접수 '+escapeHtml(x.registeredOn||'미확인')+' <button type="button" class="secondary" data-rights-remove="right" data-rights-id="'+escapeHtml(x.id)+'">삭제</button></li>').join('');
- return '<div class="divider"></div><h3>내 권리분석 자료</h3><p class="helper">수동 입력 정보이며 법원의 공식 확인이나 법률 판단이 아닙니다. 해당 물건번호별로만 저장돼요.</p>'+
+ return rightsScenarioMarkup(p)+
+ '<details class="auction-fold rights-manual-records"><summary>권리자료 직접 기록 · 서류 '+d.documents.length+'건 · 임차인 '+d.tenants.length+'건 · 등기 '+d.rights.length+'건</summary>'+
+ '<p class="helper">확인한 자료가 있을 때만 기록하세요.</p>'+
  '<details class="auction-fold"><summary>＋ 서류 기록 추가</summary><form id="rightsDocumentForm" data-property-id="'+escapeHtml(p.id)+'" class="rights-form">'+
  '<label>서류 종류<select id="rightsDocType" class="select">'+Object.entries(docNames).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label>'+
  '<label>자료명·페이지·출처<input id="rightsDocRef" class="search" maxlength="220" required placeholder="예: 등기사항증명서 1쪽"></label>'+
  '<label>발급일(선택)<input type="date" id="rightsDocDate" class="search"></label>'+
  '<button class="primary" type="submit">서류 기록 저장</button></form></details>'+
- '<ul class="rights-record-list">'+(docRows||'<li>등록된 서류 기록 없음</li>')+'</ul>'+
+ (docRows?'<ul class="rights-record-list">'+docRows+'</ul>':'')+
  '<details class="auction-fold"><summary>＋ 임차인 정보 추가</summary><form id="rightsTenantForm" class="rights-form">'+
  '<label>보증금(원, 미확인 시 공란)<input id="rightsTenantDeposit" class="search" inputmode="numeric" placeholder="미확인"></label>'+
  '<label>전입일(선택)<input type="date" id="rightsTenantMove" class="search"></label>'+
@@ -1073,15 +1090,15 @@ function rightsEditor(p){
  '<label>배당요구<select id="rightsTenantDemand" class="select"><option value="unknown">미확인</option><option value="yes">요구(사용자 기록)</option><option value="no">미요구(사용자 기록)</option></select></label>'+
  '<label>근거서류<select id="rightsTenantDoc" class="select"><option value="">미확인</option>'+d.documents.map(x=>'<option value="'+escapeHtml(x.id)+'">'+escapeHtml(docNames[x.type]||x.type)+'</option>').join('')+'</select></label>'+
  '<button class="primary" type="submit">임차인 기록 저장</button></form></details>'+
- '<ul class="rights-record-list">'+(tenantRows||'<li>등록된 임차인 기록 없음</li>')+'</ul>'+
+ (tenantRows?'<ul class="rights-record-list">'+tenantRows+'</ul>':'')+
  '<details class="auction-fold"><summary>＋ 등기 권리 추가</summary><form id="rightsRightForm" class="rights-form">'+
  '<label>권리 종류<select id="rightsRightType" class="select"><option value="mortgage">근저당</option><option value="seizure">압류</option><option value="provisional_seizure">가압류</option><option value="ownership">소유권</option><option value="leasehold">임차권등기</option><option value="provisional_registration">가등기</option><option value="injunction">가처분</option><option value="other">기타</option></select></label>'+
  '<label>접수일(선택)<input type="date" id="rightsRightDate" class="search"></label>'+
  '<label>권리 금액(원, 미확인 시 공란)<input id="rightsRightAmount" class="search" inputmode="numeric"></label>'+
  '<label>근거서류<select id="rightsRightDoc" class="select"><option value="">미확인</option>'+d.documents.map(x=>'<option value="'+escapeHtml(x.id)+'">'+escapeHtml(docNames[x.type]||x.type)+'</option>').join('')+'</select></label>'+
  '<button class="primary" type="submit">권리 기록 저장</button></form></details>'+
- '<ul class="rights-record-list">'+(rightRows||'<li>등록된 등기권리 기록 없음</li>')+'</ul>'+
- '<p class="status">⚠ 선순위·대항력·인수보증금 자동 판정은 아직 지원하지 않습니다. 확인되지 않은 인수금액은 0원이 아니라 산정 불가입니다.</p>'+rightsScenarioMarkup(p);
+ (rightRows?'<ul class="rights-record-list">'+rightRows+'</ul>':'')+
+ '</details>';
 }
 function attachRightsEditor(){
  const shell=$('#rightsDocumentForm');if(!shell)return;
@@ -1149,7 +1166,7 @@ function rights(){
  const court=record.courtName||record.court||'법원 미확인';
  const number=record.caseNo||record.case||'';
  return '<div class="card"><h2>권리분석 · 수동 기록</h2><p class="helper">'+escapeHtml(court)+' · '+escapeHtml(number)+' · 물건 '+escapeHtml(record.itemNo||'1')+'번</p>'+
- '<div class="status">⚠ 원본 서류를 확인하기 전에는 선순위권리·대항력·인수금액을 판정하지 않습니다.</div>'+
+ '<p class="helper">원본 서류 검증 전에는 권리·인수금이 미확정이에요.</p>'+
  rightsEditor(record)+'</div>';
 }
 const STUDY_CATEGORIES=[

@@ -88,6 +88,7 @@ jobs:
             totalLotRows:d.reason==='detail_lot_unverified'&&Number.isInteger(d.totalLotRows)&&d.totalLotRows>=0&&d.totalLotRows<=300?d.totalLotRows:null,
             lotRowsIdentical:d.reason==='detail_lot_unverified'&&d.lotDiagnostic==='lot_number_ambiguous'&&typeof d.lotRowsIdentical==='boolean'?d.lotRowsIdentical:null,
             lotRowDifference:d.reason==='detail_lot_unverified'&&['identical','values_differ','fields_differ'].includes(d.lotRowDifference)?d.lotRowDifference:'not_checked',
+            multiRowReviewEligible:d.reason==='detail_lot_unverified'&&d.multiRowReviewEligible===true,
             detailCrossChecked:exact&&d.detailCrossChecked===true,
             rawResultCodeMatched:exact&&d.detailCrossChecked===true&&d.rawResultCodeMatched===true,
             scheduleDayMatched:exact&&d.detailCrossChecked===true&&d.scheduleDayMatched===true,

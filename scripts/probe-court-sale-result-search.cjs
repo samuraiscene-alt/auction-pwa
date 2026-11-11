@@ -52,6 +52,7 @@ async function main(){
   if(!preflight.confirmed){
    console.log(JSON.stringify({schemaVersion:1,observed:false,reason:preflight.reason,
     schedulePreflightConfirmed:false,identityMatched:false,
+    lotDiagnostic:preflight.lotDiagnostic||'not_checked',
     legalStatusVerified:false,rawResponseSaved:false}));
    return;
   }

@@ -84,6 +84,8 @@ jobs:
             reason:typeof d.reason==='string'&&/^[a-z_]{1,40}$/.test(d.reason)?d.reason:'unknown',
             schedulePreflightConfirmed:d.schedulePreflightConfirmed===true,
             lotDiagnostic:['lot_list_invalid','lot_identity_mismatch','lot_number_missing','lot_number_ambiguous'].includes(d.lotDiagnostic)?d.lotDiagnostic:'not_checked',
+            lotRows:d.reason==='detail_lot_unverified'&&Number.isInteger(d.lotRows)&&d.lotRows>=0&&d.lotRows<=300?d.lotRows:null,
+            totalLotRows:d.reason==='detail_lot_unverified'&&Number.isInteger(d.totalLotRows)&&d.totalLotRows>=0&&d.totalLotRows<=300?d.totalLotRows:null,
             detailCrossChecked:exact&&d.detailCrossChecked===true,
             rawResultCodeMatched:exact&&d.detailCrossChecked===true&&d.rawResultCodeMatched===true,
             scheduleDayMatched:exact&&d.detailCrossChecked===true&&d.scheduleDayMatched===true,

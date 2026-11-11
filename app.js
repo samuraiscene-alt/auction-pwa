@@ -2010,7 +2010,7 @@ function capital(){
    <div class="court-official-jump"><p class="helper">법원 원문 대조 · ${escapeHtml(x.courtName)} / ${escapeHtml(x.caseNo)} / 물건 ${escapeHtml(x.itemNo)}번</p>
    <button type="button" class="secondary full-secondary" data-capital-copy="${escapeHtml(x.id)}">사건번호 복사</button>
    <button type="button" class="secondary full-secondary" data-capital-official="1">법원 경매사건검색 바로 열기 ↗</button>
-   <p class="helper">법원 사이트가 사건별 바로가기를 제공하지 않아 검색 화면으로 연결해요. 복사한 사건번호와 법원을 확인하세요.</p></div>
+   <p class="helper">사건별 상세 바로가기 주소가 확인되지 않아 검색 화면으로 연결해요. 복사한 사건번호와 법원을 확인하세요.</p></div>
   </div>`;
 
  };

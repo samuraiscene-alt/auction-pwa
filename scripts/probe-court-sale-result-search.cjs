@@ -57,6 +57,7 @@ async function main(){
     totalLotRows:Number.isInteger(preflight.totalLotRows)?preflight.totalLotRows:null,
     lotRowsIdentical:typeof preflight.lotRowsIdentical==='boolean'?preflight.lotRowsIdentical:null,
     lotRowDifference:preflight.lotRowDifference||'not_checked',
+    multiRowReviewEligible:preflight.multiRowReviewEligible===true,
     legalStatusVerified:false,rawResponseSaved:false}));
    return;
   }

@@ -83,6 +83,7 @@ jobs:
             failedStage:['connect','response','json','evaluate','detail_preflight','sale_search'].includes(d.failedStage)?d.failedStage:'none',
             reason:typeof d.reason==='string'&&/^[a-z_]{1,40}$/.test(d.reason)?d.reason:'unknown',
             schedulePreflightConfirmed:d.schedulePreflightConfirmed===true,
+            lotDiagnostic:['lot_list_invalid','lot_identity_mismatch','lot_number_missing','lot_number_ambiguous'].includes(d.lotDiagnostic)?d.lotDiagnostic:'not_checked',
             detailCrossChecked:exact&&d.detailCrossChecked===true,
             rawResultCodeMatched:exact&&d.detailCrossChecked===true&&d.rawResultCodeMatched===true,
             scheduleDayMatched:exact&&d.detailCrossChecked===true&&d.scheduleDayMatched===true,

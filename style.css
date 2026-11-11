@@ -1039,3 +1039,10 @@ html,body{
 .rights-scenario-fields input{width:100%;min-width:0;box-sizing:border-box;font-size:16px}
 .rights-scenario-result{border-radius:14px;background:#f1f5fc;border:1px solid #dce4f3;padding:16px;margin:14px 0;font-size:15px;font-weight:650;line-height:1.6;overflow-wrap:anywhere}
 @media(max-width:370px){.rights-scenario-fields{grid-template-columns:1fr}}
+
+/* v0.7.43: compact, explicit tax-eligibility controls on the rights page. */
+.rights-tax-controls{display:grid;gap:10px;padding:12px 0}
+.rights-tax-controls label{display:grid;gap:6px;font-size:14px;font-weight:600}
+.rights-tax-controls select{width:100%;min-height:44px}
+.rights-tax-controls .helper{margin:0}
+.rights-scenario input[readonly]{background:#f1f5fa;color:#34445c}

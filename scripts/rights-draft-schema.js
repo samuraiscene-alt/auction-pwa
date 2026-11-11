@@ -39,9 +39,13 @@ function validateRightsDraft(x){
  for(const d of x.documents){
   if(!DOC_TYPES.has(d.type)||!['user_upload','user_entry'].includes(d.source)||
      !nullable(d.issuedOn,dateOK)||!nullable(d.checkedOn,dateOK)||
-     !nullable(d.reference,v=>str(v,220))||d.officiallyVerified!==false)
+     !nullable(d.reference,v=>str(v,220))||
+     (d.fileId!==undefined&&(!str(d.fileId,90)||!/^[a-zA-Z0-9_-]+$/.test(d.fileId)))||
+     d.officiallyVerified!==false)
    return fail('invalid_document');
  }
+ const fileIds=x.documents.filter(d=>d.fileId).map(d=>d.fileId);
+ if(new Set(fileIds).size!==fileIds.length)return fail('duplicate_file_reference');
  const docIds=new Set(x.documents.map(d=>d.id));
  const validDocId=v=>v===null||docIds.has(v);
  for(const r of x.rights){

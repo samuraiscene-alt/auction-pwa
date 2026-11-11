@@ -1237,14 +1237,16 @@ function attachRightsEditor(){
    if(!record||!validContext())throw Error('현재 경매물건을 다시 확인해 주세요.');
    const expectedCase=record.case||record.caseNo;
    const expectedCourt=record.court||record.courtName;
-   if(!inspected.fields.caseNum)throw Error('PDF에서 사건번호를 확인할 수 없어요. 원본 PDF의 글자를 확인해 주세요.');
-   if(inspected.fields.caseNum!==expectedCase)throw Error('다른 사건의 PDF입니다. 현재 사건에 연결하지 않았어요.');
-   if(inspected.fields.court&&inspected.fields.court!==expectedCourt)
-    throw Error('PDF의 법원이 현재 사건과 달라 연결하지 않았어요.');
    const itemNo=String(Number(record.itemNo||'1'));
-   if(inspected.itemNos.length&&
-      (inspected.itemNos.length!==1||inspected.itemNos[0]!==itemNo))
-    throw Error('PDF에 표시된 물건번호가 다르거나 여러 건이에요. 해당 물건의 PDF를 확인하세요.');
+   const verified=window.RightsSourceChecklist?.verifyPdfCaseIdentity?.({
+    court:expectedCourt,caseNo:expectedCase,itemNo},inspected);
+   if(!verified?.ok){
+    const why={case_number_unreadable:'PDF에서 사건번호를 읽을 수 없어요.',
+     different_case_number:'PDF 사건번호가 현재 사건과 달라요.',
+     different_court:'PDF 법원이 현재 사건과 달라요.',
+     different_or_multiple_lots:'PDF에 다른 물건번호 또는 여러 물건번호가 나와요.'};
+    throw Error(why[verified?.reason]||'PDF 법원·사건·물건번호를 확인하지 못했어요.');
+   }
    const lotWarning=inspected.itemNos.length?'물건번호 '+itemNo+'도 문서에서 발견됐어요.':
     'PDF에서 물건번호는 자동으로 확인되지 않았어요. 현재 물건 '+itemNo+'번의 서류인지 직접 확인해야 합니다.';
    if(!confirm('원본 PDF 검사 결과\n\n법원: '+expectedCourt+

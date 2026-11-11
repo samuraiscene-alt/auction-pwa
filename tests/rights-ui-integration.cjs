@@ -109,4 +109,16 @@ assert(app.includes("court.source!=='courtauction.go.kr'"));
 assert(app.includes('data/court-live-test-case.json'));
 assert(app.includes("$('#fetchOfficialItem').click()"));
 assert(app.includes('자동 저장하지 않아요'));
+const facts=require('../scripts/rights-pdf-facts.js');
+const sample=['서울중앙지방법원 매각물건명세서 사건 2023타경5787 매각물건번호 1 전입신고일자 확정일자',
+ '김광순 제1층 가운데 방 권리신고 주거 임차인 2008.10.24.- 35,000,000 2000.03.17. 2008.10.24.',
+ '송상규 1층 방 1칸 권리신고 주거 임차인 2010.05.02. 30,000,000 2010.05.03. 2010.05.03.',
+ '비고 매각에서 제외되는 제시 외 건물. 법정지상권 성립여부 불분명'].join('\\n');
+const parsed=facts.parseCourtPdfFacts([sample],'registry');
+assert.equal(parsed.documentType,'sale_statement');
+assert.equal(parsed.caseNos[0],'2023타경5787');
+assert.equal(parsed.itemNos[0],'1');
+assert.equal(parsed.tenants.length,2);
+assert.equal(parsed.tenants[0].fixedDateOn,'2008-10-24');
+assert.equal(parsed.warnings.length,3);
 console.log('PASS rights editor wiring, guarded backup, browser schema and reference integrity');

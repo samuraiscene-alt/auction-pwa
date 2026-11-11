@@ -27,9 +27,14 @@ function assessCourtSchedulePreflight(response,identity,snapshotDate){
  if(exactLotCount!==1){
   // Only inspect bounded shape/identity; never record row values or raw payloads.
   // Equal JSON representations indicate duplicated records, not legal equivalence.
-  const sameRecords=exactLotCount>1&&matchingLots.every(r=>JSON.stringify(r)===JSON.stringify(matchingLots[0]));
-  const firstKeys=exactLotCount>1?Object.keys(matchingLots[0]).sort().join('|'):'';
-  const sameFields=exactLotCount>1&&matchingLots.every(r=>Object.keys(r).sort().join('|')===firstKeys);
+  // Compare canonical representations so JSON property ordering does not
+  // create a false "different component" diagnostic.
+  const canonical=x=>JSON.stringify(x,(_key,value)=>
+   value&&typeof value==='object'&&!Array.isArray(value)?
+    Object.fromEntries(Object.entries(value).sort(([a],[b])=>a.localeCompare(b))):value);
+  const sameRecords=exactLotCount>1&&matchingLots.every(r=>canonical(r)===canonical(matchingLots[0]));
+  const firstKeys=exactLotCount>1?JSON.stringify(Object.keys(matchingLots[0]).sort()):'';
+  const sameFields=exactLotCount>1&&matchingLots.every(r=>JSON.stringify(Object.keys(r).sort())===firstKeys);
   const rowDifference=exactLotCount<2?'not_checked':sameRecords?'identical':sameFields?'values_differ':'fields_differ';
   return {...fail('detail_lot_unverified'),
    lotDiagnostic:exactLotCount===0?'lot_number_missing':'lot_number_ambiguous',

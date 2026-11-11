@@ -17,7 +17,7 @@ function evidenceChecklist(draft){
  const documents=Array.isArray(draft?.documents)?draft.documents:[];
  return ROWS.map(row=>{
   const recorded=row.required.filter(type=>documents.some(doc=>doc?.type===type&&
-   (doc.source==='user_upload'||doc.source==='user_entry')));
+   doc.source==='user_upload'&&typeof doc.fileId==='string'&&doc.fileId.length>0));
   const missing=row.required.filter(type=>!recorded.includes(type));
   // Recording a document, including a PDF upload, is NOT legal or official verification.
   return {...row,recorded,missing,recordedCount:recorded.length,neededCount:row.required.length,

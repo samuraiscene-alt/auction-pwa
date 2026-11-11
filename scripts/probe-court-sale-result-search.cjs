@@ -80,12 +80,14 @@ async function main(){
   const evidence=analyzeSaleResultSearch(body,id);
   if(evidence.identityMatched!==true){
    console.log(JSON.stringify({schemaVersion:1,...evidence,schedulePreflightConfirmed:true,
+    multiComponentLot:preflight.multiComponentLot===true,
     detailCrossChecked:false,detailCrossCheckReason:'sale_result_identity_not_matched'}));
    return;
   }
   const compared=compareSaleSearchWithDetail(body,detail,id,snapshotSaleDate);
   console.log(JSON.stringify({schemaVersion:1,...evidence,
    schedulePreflightConfirmed:true,
+   multiComponentLot:preflight.multiComponentLot===true,
    detailCrossChecked:compared.crossChecked===true,
    detailCrossCheckReason:compared.reason,
    rawResultCodeMatched:compared.rawResultCodeMatched===true,

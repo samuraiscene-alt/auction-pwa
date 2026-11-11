@@ -37,6 +37,7 @@ jobs:
           node tests/court-favorites.cjs
           node tests/rights-liability-scenarios.cjs
           node tests/rights-draft-schema.cjs
+          node tests/rights-ui-integration.cjs
       - uses: actions/configure-pages@v5
         with:
           enablement: true

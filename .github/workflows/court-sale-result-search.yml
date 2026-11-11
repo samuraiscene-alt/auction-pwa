@@ -1,10 +1,10 @@
 name: Official court sale result search - bounded diagnostic
 on:
   workflow_dispatch:
-  # Single intended UTC date: 2026-11-11 00:30 = KST 09:30.
-  # GitHub cron is recurring; the explicit year/day gate below prevents later runs.
+  # Three bounded post-sale diagnostics: 2026-11-12, 14, 16 at 09:30 KST.
+  # Exact-year/day gate below prevents annual repetition.
   schedule:
-    - cron: '30 0 11 11 *'
+    - cron: '30 0 12,14,16 11 *'
   push:
     branches: [main]
     paths:
@@ -44,8 +44,8 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
         run: |
-          if [ "$EVENT_NAME" = "schedule" ] && [ "$(TZ=Asia/Seoul date +%F)" != "2026-11-11" ]; then
-            printf '%s\n' '{"schemaVersion":1,"observed":false,"reason":"outside_one_time_scheduled_date","legalStatusVerified":false,"rawResponseSaved":false}' > /tmp/court-sale-result.json
+          if [ "$EVENT_NAME" = "schedule" ] && [[ ! " 2026-11-12 2026-11-14 2026-11-16 " =~ " $(TZ=Asia/Seoul date +%F) " ]]; then
+            printf '%s\n' '{"schemaVersion":1,"observed":false,"reason":"outside_bounded_scheduled_dates","legalStatusVerified":false,"rawResponseSaved":false}' > /tmp/court-sale-result.json
             printf '0\n' > /tmp/court-sale-probe-exit.txt
           else
             set +e

@@ -1030,3 +1030,12 @@ html,body{
 .rights-record-list{margin:8px 0 14px;padding-left:22px;font-size:14px;line-height:1.6;overflow-wrap:anywhere}
 .rights-record-list li{margin:7px 0}
 .rights-record-list .secondary{min-height:32px;margin-left:7px;padding:3px 10px}
+
+/* v0.7.41 rights scenario calculator within the existing rights panel. */
+.rights-scenario{margin-top:22px;padding-top:14px;border-top:1px solid #e1e7f0}
+.rights-scenario h3{margin:6px 0 10px}
+.rights-scenario-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.rights-scenario-fields label{display:grid;gap:6px;min-width:0;font-size:13px;font-weight:600;color:#34445c}
+.rights-scenario-fields input{width:100%;min-width:0;box-sizing:border-box;font-size:16px}
+.rights-scenario-result{border-radius:14px;background:#f1f5fc;border:1px solid #dce4f3;padding:16px;margin:14px 0;font-size:15px;font-weight:650;line-height:1.6;overflow-wrap:anywhere}
+@media(max-width:370px){.rights-scenario-fields{grid-template-columns:1fr}}

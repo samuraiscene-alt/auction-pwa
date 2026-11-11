@@ -1166,7 +1166,7 @@ function rightsEditor(p){
  '<details class="auction-fold"><summary>＋ 원본 PDF 가져오기 · 사건번호 확인</summary>'+
  '<form id="rightsPdfForm" class="rights-form">'+
  '<label>원본 종류<select id="rightsPdfType" class="select">'+Object.entries(docNames).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label>'+
- '<label>내 파일에서 PDF 선택<input type="file" accept=".pdf,application/pdf" id="rightsPdfInput" required></label>'+
+ '<label>내 파일에서 PDF 선택<input type="file" accept=".pdf,application/pdf" id="rightsPdfInput"></label>'+
  '<label>발급일(선택)<input type="date" id="rightsPdfIssueDate" class="search"></label>'+
  '<button type="submit" class="primary" id="rightsPdfSave">사건번호 확인 후 PDF 보관</button>'+
  '<p class="helper" id="rightsPdfStatus" aria-live="polite">8MB 이하 · 사건번호를 읽을 수 있는 PDF만 연결합니다. 같은 사건이라도 물건번호는 사용자가 원본을 대조해야 합니다. 원본 파일은 기기와 전체 백업에 보관해요.</p>'+
@@ -1227,12 +1227,13 @@ function attachRightsEditor(){
   e.preventDefault();
   const button=$('#rightsPdfSave'),status=$('#rightsPdfStatus');
   const file=$('#rightsPdfInput')?.files?.[0],type=$('#rightsPdfType')?.value;
-  if(!file){status.textContent='PDF 파일을 선택해 주세요.';return;}
-  if(file.size<=0||file.size>MAX_RIGHTS_PDF_BYTES){status.textContent='8MB 이하 PDF만 등록할 수 있어요.';return;}
+  const fail=message=>{status.textContent=message;toast(message);};
+  if(!file){fail('PDF 파일을 먼저 선택해 주세요.');$('#rightsPdfInput')?.focus();return;}
+  if(file.size<=0||file.size>MAX_RIGHTS_PDF_BYTES){fail('8MB 이하 PDF만 등록할 수 있어요.');return;}
   if(file.type!=='application/pdf'&&!/\.pdf$/i.test(file.name)){
-   status.textContent='PDF 파일만 등록할 수 있어요.';return;
+   fail('PDF 파일만 등록할 수 있어요.');return;
   }
-  if(!validContext()){status.textContent='물건 화면이 변경됐어요. 다시 선택해 주세요.';return;}
+  if(!validContext()){fail('물건 화면이 변경됐어요. 다시 선택해 주세요.');return;}
   button.disabled=true;status.textContent='PDF 원본의 사건번호를 검사하는 중…';
   try{
    const magic=new Uint8Array(await file.slice(0,1024).arrayBuffer());
@@ -1279,7 +1280,7 @@ function attachRightsEditor(){
    try{saveRightsDraft({...draft,documents:[...draft.documents,documentRow]});}
    catch(error){try{await rightsPdfDelete(fileId);}catch{}throw error;}
    if(validContext()){render();showSavedCheck('근거 PDF 보관 완료');}
-  }catch(error){if(status.isConnected)status.textContent='PDF 연결 실패: '+String(error.message||error);}
+  }catch(error){fail('PDF 연결 실패: '+String(error.message||error));}
   finally{if(button.isConnected)button.disabled=false;}
  };
  document.querySelectorAll('[data-rights-openpdf]').forEach(button=>button.onclick=async()=>{

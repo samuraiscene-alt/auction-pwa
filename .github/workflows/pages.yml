@@ -38,6 +38,7 @@ jobs:
           node tests/rights-liability-scenarios.cjs
           node tests/rights-draft-schema.cjs
           node tests/rights-ui-integration.cjs
+          node tests/rights-linked-records.cjs
       - uses: actions/configure-pages@v5
         with:
           enablement: true

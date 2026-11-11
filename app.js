@@ -1173,7 +1173,7 @@ function rightsEditor(p){
  '<div class="rights-pdf-file-field"><span class="rights-pdf-file-label">내 파일에서 PDF 선택</span><div class="rights-pdf-file-picker"><span aria-hidden="true">📄 파일 앱에서 PDF 선택</span><input type="file" accept=".pdf,application/pdf" id="rightsPdfInput" aria-label="PDF 파일 선택"></div><p class="helper rights-pdf-selected" id="rightsPdfFilename" aria-live="polite">선택된 파일 없음</p></div>'+
  '<label>발급일(선택)<input type="date" id="rightsPdfIssueDate" class="search"></label>'+
  '<button type="submit" class="primary" id="rightsPdfSave">사건번호 확인 후 PDF 보관</button>'+
- '<p class="helper" id="rightsPdfStatus" aria-live="polite">8MB 이하 · 사건번호를 읽을 수 있는 PDF만 연결합니다. 같은 사건이라도 물건번호는 사용자가 원본을 대조해야 합니다. 원본 파일은 기기와 전체 백업에 보관해요.</p>'+
+ '<p class="helper" id="rightsPdfStatus" aria-live="polite">8MB 이하 PDF를 선택하세요. 문자 판독이 안 되는 스캔 PDF는 사건·물건번호를 직접 확인하여 수동 대조로 보관할 수 있어요. 인식된 내용도 원본과 비교해야 합니다.</p>'+
  '</form></details>'+
  '<details class="auction-fold"><summary>＋ 서류 기록 추가</summary><form id="rightsDocumentForm" data-property-id="'+escapeHtml(p.id)+'" class="rights-form">'+
  '<label>서류 종류<select id="rightsDocType" class="select">'+Object.entries(docNames).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label>'+
@@ -1282,7 +1282,7 @@ function attachRightsEditor(){
    if(!confirm('원본 PDF 검사 결과\n\n법원: '+expectedCourt+
      '\n사건: '+expectedCase+'\n'+lotWarning+
      '\n파일: '+file.name+'\n임차인 자동추출 후보: '+tenants.length+'명\n주의사항: '+warnings.map(w=>w.label).join(', ')+
-     '\n\n이 PDF를 해당 물건의 근거서류로 보관할까요?\n문서 진위·권리관계는 확인되지 않습니다.')) {
+     '\n\n확인하면 읽힌 임차인 후보와 주의 문구도 함께 기록합니다.\n확정일자·전입일은 열별 검증 전이므로 자동 확정하지 않습니다.\n법적 인수 여부도 미확정입니다.')) {
     status.textContent='PDF 보관을 취소했어요.';return;
    }
    if(!validContext())throw Error('물건 화면이 변경됐어요. 다시 선택해 주세요.');
@@ -1537,7 +1537,7 @@ async function readAuctionPdfFields(file){
     .map(item=>item.str).join(' ')).join('\n'));
   }
   const text=lines.join('\n');
-  if(text.trim().length<12)throw Error('스캔 PDF는 글자 인식(OCR)이 필요해요.');
+  if(text.trim().length<12)console.warn('스캔 PDF: 텍스트 부족, 수동 사건번호 대조가 필요합니다.');
   const itemNos=[...new Set([...text.matchAll(/(?:물건\s*번호)\s*[:：]?\s*([1-9]\d{0,3})/g)]
    .map(m=>String(Number(m[1]))))];
   const facts=window.RightsPdfFacts?.parseCourtPdfFacts?.(lines,'sale_statement');

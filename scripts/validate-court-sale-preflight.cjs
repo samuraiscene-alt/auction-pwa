@@ -16,10 +16,15 @@ function assessCourtSchedulePreflight(response,identity,snapshotDate){
  const internal=String(base?.csNo??'');
  if(!/^\d{8,20}$/.test(internal)||String(base?.cortOfcCd??'')!==identity.courtCode)
   return fail('detail_identity_unverified');
- if(!Array.isArray(lots)||lots.length<1||lots.length>300||
-    !lots.every(r=>r&&String(r.cortOfcCd??'')===identity.courtCode&&String(r.csNo??'')===internal)||
-    lots.filter(r=>String(r.dspslGdsSeq??'')===identity.itemNo).length!==1)
-  return fail('detail_lot_unverified');
+ // Distinguish an absent lot from a mismatched or ambiguous lot without
+ // reporting any case identity, address, name, or raw court response.
+ if(!Array.isArray(lots)||lots.length<1||lots.length>300)
+  return {...fail('detail_lot_unverified'),lotDiagnostic:'lot_list_invalid'};
+ if(!lots.every(r=>r&&String(r.cortOfcCd??'')===identity.courtCode&&String(r.csNo??'')===internal))
+  return {...fail('detail_lot_unverified'),lotDiagnostic:'lot_identity_mismatch'};
+ const exactLotCount=lots.filter(r=>String(r.dspslGdsSeq??'')===identity.itemNo).length;
+ if(exactLotCount!==1)
+  return {...fail('detail_lot_unverified'),lotDiagnostic:exactLotCount===0?'lot_number_missing':'lot_number_ambiguous'};
  if(!Array.isArray(history)||history.length>500)
   return fail('detail_schedule_unavailable');
  const expected=calendarDay(snapshotDate.replaceAll('-',''));

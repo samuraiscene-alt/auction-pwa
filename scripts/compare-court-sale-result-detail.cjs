@@ -35,7 +35,20 @@ function compareSaleSearchWithDetail(search,detail,id,expectedDate){
  if(!lots.every(r=>r&&String(r.cortOfcCd??'')===id.courtCode&&String(r.csNo??'')===internal))
   return fail('inconsistent_detail_lots');
  const selected=lots.filter(r=>String(r.dspslGdsSeq??'')===id.itemNo);
- if(selected.length!==1)return fail('detail_lot_not_unique');
+ if(selected.length<1)return fail('detail_lot_not_unique');
+ if(selected.length>1){
+  // Only allow distinct rows which share exact official case/lot identity.
+  // Never de-duplicate components or treat them as separate auctions.
+  if(!selected.every(r=>r&&typeof r==='object'&&!Array.isArray(r)&&
+    String(r.cortOfcCd??'')===id.courtCode&&
+    String(r.csNo??'')===internal&&String(r.dspslGdsSeq??'')===id.itemNo))
+   return fail('detail_lot_not_unique');
+  const canonical=x=>JSON.stringify(x,(_key,v)=>v&&typeof v==='object'&&!Array.isArray(v)?
+   Object.fromEntries(Object.entries(v).sort(([a],[b])=>a.localeCompare(b))):v);
+  const representations=selected.map(canonical);
+  if(new Set(representations).size!==representations.length)
+   return fail('detail_lot_not_unique');
+ }
  const primary=safeDay(result.dxdyYmd);
  const secondary=safeDay(result.maeGiil);
  if(result.dxdyYmd!=null&&result.maeGiil!=null&&(!primary||!secondary||primary!==secondary))

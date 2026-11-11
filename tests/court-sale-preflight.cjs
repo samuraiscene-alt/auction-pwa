@@ -22,6 +22,17 @@ for(const response of [
  assert.equal(result.confirmed,false);
  assert.equal(result.legalStatusVerified,false);
 }
+for(const [lots,diagnostic] of [
+ [[], 'lot_list_invalid'],
+ [[{...lot,cortOfcCd:'B000214'}], 'lot_identity_mismatch'],
+ [[{...lot,dspslGdsSeq:'2'}], 'lot_number_missing'],
+ [[lot,{...lot}], 'lot_number_ambiguous']
+]){
+ const checked=check({...detail,data:{...detail.data,dlt_dspslGdsDspslObjctLst:lots}},id,'2026-11-10');
+ assert.equal(checked.reason,'detail_lot_unverified');
+ assert.equal(checked.lotDiagnostic,diagnostic);
+ assert.equal(checked.legalStatusVerified,false);
+}
 assert.equal(check(detail,id,'2026-02-29').confirmed,false);
 assert.equal(check(detail,id,'2026-11-10').reason,'snapshot_schedule_corresponds_to_official_detail');
 console.log('PASS: fresh official schedule preflight gate rejects changed/ambiguous/unverified dates');

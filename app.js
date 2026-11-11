@@ -1342,8 +1342,8 @@ function attachRightsEditor(){
     occupancy:t.occupancy,distributionDemand:'unknown',moveInOn:t.moveInOn,fixedDateOn:t.fixedDateOn,
     depositWon:t.depositWon,documentId:doc.id,notes:'PDF '+t.page+'쪽 자동 추출 · 원본 대조 필요',liabilityVerified:false}));
    const type=facts.documentType||doc.type;
-   if(!confirm('PDF 다시 분석 결과\\n종류: '+type+'\\n임차인 후보 '+facts.tenants.length+'명 (새로 입력 '+add.length+'명)\\n주의사항 '+facts.warnings.length+'개'+
-    (inspected.ocrError?'\\nOCR 오류: '+inspected.ocrError:'')+'\\n\\n원본과 대조하여 저장할까요?'))return;
+   if(!confirm('PDF 다시 분석 결과\n종류: '+type+'\n임차인 후보 '+facts.tenants.length+'명 (새로 입력 '+add.length+'명)\n주의사항 '+facts.warnings.length+'개'+
+    (inspected.ocrError?'\nOCR 오류: '+inspected.ocrError:'')+'\n\n원본과 대조하여 저장할까요?'))return;
    if(!validContext()||currentRightsDraft(propertyId)!==draft&&JSON.stringify(currentRightsDraft(propertyId))!==JSON.stringify(draft))throw Error('편집 도중 기록이 변경됐어요.');
    const updated=draft.documents.map(x=>x.id===doc.id?{...x,type,observations:facts.warnings}:x);
    saveRightsDraft({...draft,documents:updated,tenants:[...draft.tenants,...add]});render();showSavedCheck('PDF 분석 저장 완료');
@@ -1558,7 +1558,7 @@ function extractCourtFields(text){
  return {caseNum,court,valueWon:amount('감정평가액|감정가'),minWon:amount('최저매각가격|최저입찰가|최저매각가'),date,address};
 }
 async function readAuctionPdfFields(file,options={}){
- if(!file||file.type!=='application/pdf'&&!/\\.pdf$/i.test(file.name))throw Error('PDF를 선택해 주세요.');
+ if(!file||file.type!=='application/pdf'&&!/\.pdf$/i.test(file.name))throw Error('PDF를 선택해 주세요.');
  const engine=await loadPdfTextEngine();
  const pdf=await engine.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
  try{
@@ -1571,7 +1571,7 @@ async function readAuctionPdfFields(file,options={}){
    }
    groups.sort((a,b)=>b.y-a.y);
    lines.push(groups.map(row=>row.items.sort((a,b)=>(a.transform?.[4]||0)-(b.transform?.[4]||0))
-    .map(item=>item.str).join(' ')).join('\\n'));
+    .map(item=>item.str).join(' ')).join('\n'));
   }
   const basic=window.RightsPdfFacts?.parseCourtPdfFacts?.(lines,options.type);
   let usedOcr=false,ocrError=null;
@@ -1583,7 +1583,7 @@ async function readAuctionPdfFields(file,options={}){
     if(found.caseNos.length>basic.caseNos.length||found.tenants.length>basic.tenants.length){lines=ocr.pages;usedOcr=true;}
    }catch(err){ocrError=String(err.message||err);}
   }
-  const text=lines.join('\\n'),facts=window.RightsPdfFacts?.parseCourtPdfFacts?.(lines,options.type);
+  const text=lines.join('\n'),facts=window.RightsPdfFacts?.parseCourtPdfFacts?.(lines,options.type);
   return {fields:extractCourtFields(text),itemNos:facts?.itemNos||[],pages:lines,
    readPages:Math.min(15,pdf.numPages),totalPages:pdf.numPages,usedOcr,ocrError};
  }finally{await pdf.destroy();}

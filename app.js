@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.44';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.45';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -285,6 +285,7 @@ function prettyPrice(won){
 const DEMO_PRICES={demo1:875000000,demo2:336000000,demo3:413000000};
 const properties=[{id:'demo1',type:'아파트',name:'서울 강남구 아파트',court:'서울중앙지방법원',case:'2026타경12345',value:'12억 5,000만원',min:'8억 7,500만원',date:'2026.11.17',flag:'2회 유찰'},{id:'demo2',type:'빌라',name:'경기 성남시 다세대주택',court:'수원지방법원',case:'2026타경23456',value:'4억 8,000만원',min:'3억 3,600만원',date:'2026.11.18',flag:'추가 확인'},{id:'demo3',type:'단독주택',name:'서울 성북구 단독주택',court:'서울북부지방법원',case:'2026타경34567',value:'5억 9,000만원',min:'4억 1,300만원',date:'2026.11.20',flag:'1회 유찰'}];
 const OFFICIAL_AUCTION_URL='https://www.courtauction.go.kr/';
+const OFFICIAL_CASE_SEARCH_URL='https://www.courtauction.go.kr/pgj/index.on?w2xPath=/pgj/ui/pgj100/PGJ159M00.xml&pgjId=159M00';
 const COURT_VERIFY_URL='https://joon-auction-court.samuraiscene.workers.dev/case';
 const COURT_ITEM_URL='https://joon-auction-court.samuraiscene.workers.dev/item';
 function registeredProperties(){return Array.isArray(saved.realProperties)?saved.realProperties:[]}
@@ -2006,7 +2007,10 @@ function capital(){
    <button type="button" class="secondary full-secondary" data-capital-rights="${escapeHtml(x.id)}">⚖ 권리분석 · 인수 가능 금액 기록</button>
    <button type="button" class="secondary full-secondary" data-capital-check="${escapeHtml(x.id)}">법원 서버에서 이 물건 재조회</button>
    <p class="helper" data-capital-result="${escapeHtml(x.id)}" aria-live="polite">재조회 전 · 법원 원문 확인 필요</p>
-   <button type="button" class="secondary full-secondary" data-capital-official="1">법원 원문에서 사건 확인 ↗</button>
+   <div class="court-official-jump"><p class="helper">법원 원문 대조 · ${escapeHtml(x.courtName)} / ${escapeHtml(x.caseNo)} / 물건 ${escapeHtml(x.itemNo)}번</p>
+   <button type="button" class="secondary full-secondary" data-capital-copy="${escapeHtml(x.id)}">사건번호 복사</button>
+   <button type="button" class="secondary full-secondary" data-capital-official="1">법원 경매사건검색 바로 열기 ↗</button>
+   <p class="helper">법원 사이트가 사건별 바로가기를 제공하지 않아 검색 화면으로 연결해요. 복사한 사건번호와 법원을 확인하세요.</p></div>
   </div>`;
 
  };
@@ -2373,7 +2377,29 @@ document.querySelectorAll('[data-capital-rights]').forEach(button=>button.onclic
  nav('rights',{rightsPropertyId:id});
 });
 document.querySelectorAll('[data-capital-check]').forEach(button=>button.onclick=()=>void verifyCapitalItem(button.dataset.capitalCheck,button));
-document.querySelectorAll('[data-capital-official]').forEach(button=>button.onclick=()=>window.open(OFFICIAL_AUCTION_URL,'_blank','noopener,noreferrer'));
+document.querySelectorAll('[data-capital-copy]').forEach(button=>button.onclick=async()=>{
+ const item=capitalSnapshot?.validation?.passed===true?capitalSnapshot.items?.find(x=>x.id===button.dataset.capitalCopy):null;
+ if(!item){toast('물건번호를 확인할 수 없어요.');return;}
+ const value=item.caseNo;
+ try{
+  if(!navigator.clipboard?.writeText)throw Error('clipboard_unavailable');
+  await navigator.clipboard.writeText(value);
+  toast('사건번호 복사 완료 · '+item.caseNo);
+ }catch(error){
+  const input=document.createElement('input');
+  input.value=value;input.setAttribute('readonly','');
+  input.style.position='fixed';input.style.opacity='0';document.body.append(input);input.select();
+  try{if(document.execCommand('copy'))toast('사건번호 복사 완료 · '+item.caseNo);
+   else toast('사건번호: '+item.caseNo);}
+  catch{toast('사건번호: '+item.caseNo);}
+  finally{input.remove();}
+ }
+});
+document.querySelectorAll('[data-capital-official]').forEach(button=>button.onclick=()=>{
+ const url=new URL(OFFICIAL_CASE_SEARCH_URL);
+ if(url.origin!=='https://www.courtauction.go.kr')return;
+ window.open(url.href,'_blank','noopener,noreferrer');
+});
 if((state.page==='capital'||(state.page==='search'&&state.search.trim()))&&capitalLoadStatus==='unloaded')void loadCapital();
 if($('#officialUsageLarge')){
  const large=$('#officialUsageLarge'),middle=$('#officialUsageMedium'),small=$('#officialType');

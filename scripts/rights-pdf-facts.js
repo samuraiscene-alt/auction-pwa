@@ -72,12 +72,13 @@ function parseCourtPdfFacts(pages,selectedType){
     const afterAmount=amount?block.slice(block.indexOf(amount[1])+amount[1].length):block;
     const dates=[...afterAmount.matchAll(/20\d{2}\s*[.\/-]\s*\d{1,2}\s*[.\/-]\s*\d{1,2}/g)]
      .map(m=>normalizePdfDate(m[0])).filter(Boolean);
-    const allDates=[...evidence.matchAll(/20\d{2}\s*[.\/-]\s*\d{1,2}\s*[.\/-]\s*\d{1,2}/g)]
+    const allDates=[...block.matchAll(/20\d{2}\s*[.\/-]\s*\d{1,2}\s*[.\/-]\s*\d{1,2}/g)]
      .map(m=>normalizePdfDate(m[0])).filter(Boolean);
     // Never manufacture a deposit or an exact-date classification from an
     // unknown column. One unlabelled date is kept for manual review.
     tenants.push({name,depositWon,occupancy:/주거\s*임차인/.test(evidence)?'yes':'unknown',
-     moveInOn:hasDateHeaders&&dates.length>=2?dates[0]:null,
+     moveInOn:hasDateHeaders&&dates.length>=2?dates[0]:
+      (hasDateHeaders&&depositWon===null&&/현황조사/.test(block)&&dates.length===1?dates[0]:null),
      fixedDateOn:hasDateHeaders&&dates.length>=2?dates[1]:null,
      distributionDemand:'unknown',page:page.page,excerpt:evidence.slice(0,260),
      datesForReview:allDates.slice(0,7)});

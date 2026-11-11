@@ -1158,9 +1158,13 @@ function rightsEditor(p){
  if(!d)return '<p class="status">입력 검증 모듈을 불러오지 못했어요. 새로고침해 주세요.</p>';
  const docNames={registry:'등기사항증명서',sale_statement:'매각물건명세서',occupancy_report:'현황조사서',appraisal:'감정평가서',lease:'임대차 자료',other:'기타'};
  const docRows=d.documents.map(x=>'<li>'+escapeHtml(docNames[x.type]||x.type)+' · '+escapeHtml(x.reference||'자료명 미입력')+' ('+escapeHtml(x.issuedOn||'발급일 미확인')+') '+(x.fileId?'<button type="button" class="secondary" data-rights-openpdf="'+escapeHtml(x.id)+'">원본 PDF 열기</button>':'<small>서류 정보만 기록됨 · 원본 없음</small>')+' <button type="button" class="secondary" data-rights-remove="document" data-rights-id="'+escapeHtml(x.id)+'">삭제</button></li>').join('');
- const tenantRows=d.tenants.map(x=>'<li>임차인 기록 · 보증금 '+escapeHtml(x.depositWon===null?'미확인':prettyPrice(x.depositWon))+' · 전입 '+escapeHtml(x.moveInOn||'미확인')+' <button type="button" class="secondary" data-rights-remove="tenant" data-rights-id="'+escapeHtml(x.id)+'">삭제</button></li>').join('');
+ const tenantRows=d.tenants.map(x=>'<li>'+escapeHtml(x.name||'임차인 기록')+' · 보증금 '+escapeHtml(x.depositWon===null?'미확인':prettyPrice(x.depositWon))+' · 전입 '+escapeHtml(x.moveInOn||'미확인')+' <button type="button" class="secondary" data-rights-remove="tenant" data-rights-id="'+escapeHtml(x.id)+'">삭제</button></li>').join('');
  const rightRows=d.rights.map(x=>'<li>권리 기록 · '+escapeHtml(x.type)+' · 접수 '+escapeHtml(x.registeredOn||'미확인')+' <button type="button" class="secondary" data-rights-remove="right" data-rights-id="'+escapeHtml(x.id)+'">삭제</button></li>').join('');
- return rightsEvidenceMarkup(d)+rightsScenarioMarkup(p)+
+ const findings=d.documents.flatMap(doc=>(doc.observations||[]).map(o=>({doc,o})));
+ const findingMarkup=findings.length?'<section class="rights-findings"><h3>PDF에서 찾은 주의 문구</h3>'+findings.map(x=>
+  '<div class="rights-finding"><strong>'+escapeHtml(x.o.label)+'</strong> · '+escapeHtml(String(x.o.page))+'쪽<p>'+escapeHtml(x.o.excerpt)+'</p></div>').join('')+
+  '<p class="helper">원본 문구의 자동 발췌입니다. 법적 인수 여부는 미확정입니다.</p></section>':'';
+ return rightsEvidenceMarkup(d)+findingMarkup+rightsScenarioMarkup(p)+
  '<details class="auction-fold rights-manual-records"><summary>권리자료 직접 기록 · 서류 '+d.documents.length+'건 · 임차인 '+d.tenants.length+'건 · 등기 '+d.rights.length+'건</summary>'+
  '<p class="helper">자료는 사용자 기기에만 저장됩니다. PDF를 등록해도 자동 법률판정은 하지 않습니다.</p>'+
  '<details class="auction-fold"><summary>＋ 원본 PDF 가져오기 · 사건번호 확인</summary>'+
@@ -1255,20 +1259,29 @@ function attachRightsEditor(){
    const expectedCase=record.case||record.caseNo;
    const expectedCourt=record.court||record.courtName;
    const itemNo=String(Number(record.itemNo||'1'));
+   const facts=window.RightsPdfFacts?.parseCourtPdfFacts?.(inspected.pages,type);
+   if(facts?.caseNos?.length>1)throw Error('서로 다른 사건번호가 있어 자동 연결을 중단했어요.');
+   if(facts?.caseNos?.length===1&&!inspected.fields.caseNum)inspected.fields.caseNum=facts.caseNos[0];
    const verified=window.RightsSourceChecklist?.verifyPdfCaseIdentity?.({
     court:expectedCourt,caseNo:expectedCase,itemNo},inspected);
-   if(!verified?.ok){
+   let manualMatch=false;
+   if(!verified?.ok&&verified?.reason==='case_number_unreadable'){
+    manualMatch=confirm('PDF 글자 판독이 실패했습니다.\n원본을 직접 열어 사건 '+expectedCase+' / 물건 '+itemNo+'번을 대조했나요?\n확인하면 수동 대조로 기록하며, 자동 검증으로 표시하지 않습니다.');
+   }
+   if(!verified?.ok&&!manualMatch){
     const why={case_number_unreadable:'PDF에서 사건번호를 읽을 수 없어요.',
      different_case_number:'PDF 사건번호가 현재 사건과 달라요.',
      different_court:'PDF 법원이 현재 사건과 달라요.',
      different_or_multiple_lots:'PDF에 다른 물건번호 또는 여러 물건번호가 나와요.'};
     throw Error(why[verified?.reason]||'PDF 법원·사건·물건번호를 확인하지 못했어요.');
    }
+   const tenants=(facts?.tenants||[]);
+   const warnings=(facts?.warnings||[]);
    const lotWarning=inspected.itemNos.length?'물건번호 '+itemNo+'도 문서에서 발견됐어요.':
     'PDF에서 물건번호는 자동으로 확인되지 않았어요. 현재 물건 '+itemNo+'번의 서류인지 직접 확인해야 합니다.';
    if(!confirm('원본 PDF 검사 결과\n\n법원: '+expectedCourt+
      '\n사건: '+expectedCase+'\n'+lotWarning+
-     '\n파일: '+file.name+
+     '\n파일: '+file.name+'\n임차인 자동추출 후보: '+tenants.length+'명\n주의사항: '+warnings.map(w=>w.label).join(', ')+
      '\n\n이 PDF를 해당 물건의 근거서류로 보관할까요?\n문서 진위·권리관계는 확인되지 않습니다.')) {
     status.textContent='PDF 보관을 취소했어요.';return;
    }
@@ -1283,9 +1296,15 @@ function attachRightsEditor(){
     data:await readFileAsDataUrl(blob)};
    const documentRow={id:docId,type,source:'user_upload',
     issuedOn:$('#rightsPdfIssueDate').value||null,checkedOn:null,
-    reference:stored.name,fileId,officiallyVerified:false};
+    reference:stored.name,fileId,officiallyVerified:false,
+    matchMethod:manualMatch?'user_compared':'pdf_text',observations:warnings};
+   const added=tenants.filter(t=>!draft.tenants.some(x=>x.name===t.name&&x.depositWon===t.depositWon))
+    .slice(0,Math.max(0,100-draft.tenants.length)).map(t=>({id:nextId(),name:t.name,
+     occupancy:t.occupancy,distributionDemand:'unknown',moveInOn:null,fixedDateOn:null,
+     depositWon:t.depositWon,documentId:docId,
+     notes:('PDF '+t.page+'쪽에서 자동 추출. 날짜 열은 원본 대조 필요: '+t.datesForReview.join(', ')).slice(0,1000),liabilityVerified:false}));
    await rightsPdfPut(stored);
-   try{saveRightsDraft({...draft,documents:[...draft.documents,documentRow]});}
+   try{saveRightsDraft({...draft,documents:[...draft.documents,documentRow],tenants:[...draft.tenants,...added]});}
    catch(error){try{await rightsPdfDelete(fileId);}catch{}throw error;}
    if(validContext()){render();showSavedCheck('근거 PDF 보관 완료');}
   }catch(error){fail('PDF 연결 실패: '+String(error.message||error));}
@@ -1484,7 +1503,7 @@ function extractCourtFields(text){
  const s=String(text||'').normalize('NFKC').replace(/\r/g,'').replace(/[ \t]+/g,' ');
  const unique=a=>{const x=[...new Set(a.filter(Boolean))];return x.length===1?x[0]:''};
  const collect=(re,fn)=>unique([...s.matchAll(re)].map(fn));
- const caseNum=collect(/(?:사건번호|사건)\s*[:：]?\s*(20\d{2})\s*타\s*경\s*(\d{1,10})/g,m=>m[1]+'타경'+m[2]);
+ const caseNum=unique([...s.replace(/[\s\u200B-\u200D\u2060\uFEFF]/g,'').matchAll(/(?:사건(?:번호)?[:：]?)?(20\d{2})타경(\d{1,10})/g)].map(m=>m[1]+'타경'+m[2]));
  const court=collect(/(?:담당법원|관할법원|법원명|집행법원)\s*[:：]?\s*([가-힣]{2,20}(?:지방법원|지원|고등법원))/g,m=>m[1]);
  function amount(label){
   const re=new RegExp('(?:'+label+')\\s*[:：]?\\s*([0-9][0-9,]{2,17})\\s*원','g');
@@ -1508,14 +1527,22 @@ async function readAuctionPdfFields(file){
   for(let p=1;p<=Math.min(pdf.numPages,15);p++){
    const page=await pdf.getPage(p);
    const content=await page.getTextContent();
-   lines.push(content.items.map(x=>String(x.str||'')+(x.hasEOL?'\n':' ')).join(''));
+   const groups=[];
+   for(const item of content.items){if(!item.str?.trim())continue;
+    const y=Math.round(item.transform?.[5]||0);let row=groups.find(r=>Math.abs(r.y-y)<=3);
+    if(!row){row={y,items:[]};groups.push(row);}row.items.push(item);
+   }
+   groups.sort((a,b)=>b.y-a.y);
+   lines.push(groups.map(row=>row.items.sort((a,b)=>(a.transform?.[4]||0)-(b.transform?.[4]||0))
+    .map(item=>item.str).join(' ')).join('\n'));
   }
   const text=lines.join('\n');
   if(text.trim().length<12)throw Error('스캔 PDF는 글자 인식(OCR)이 필요해요.');
   const itemNos=[...new Set([...text.matchAll(/(?:물건\s*번호)\s*[:：]?\s*([1-9]\d{0,3})/g)]
    .map(m=>String(Number(m[1]))))];
-  return {fields:extractCourtFields(text),itemNos,
-   readPages:Math.min(15,pdf.numPages),totalPages:pdf.numPages};
+  const facts=window.RightsPdfFacts?.parseCourtPdfFacts?.(lines,'sale_statement');
+  return {fields:extractCourtFields(text),itemNos:facts?.itemNos?.length?facts.itemNos:itemNos,
+   pages:lines,readPages:Math.min(15,pdf.numPages),totalPages:pdf.numPages};
  }finally{await pdf.destroy();}
 }
 

@@ -1,2 +1,1 @@
-0.7.31
-Transfer the general search term and supported capital region to the separate validated partial court list, clearly distinguishing sources and unsupported filters.
+0.7.32

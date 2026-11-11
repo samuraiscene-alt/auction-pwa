@@ -1575,7 +1575,7 @@ async function readAuctionPdfFields(file,options={}){
   }
   const basic=window.RightsPdfFacts?.parseCourtPdfFacts?.(lines,options.type);
   let usedOcr=false,ocrError=null;
-  if(basic&&(!basic.caseNos.length||(options.type==='sale_statement'&&!basic.tenants.length))){
+  if(basic&&(!basic.caseNos.length||((options.type==='sale_statement'||basic.documentType==='sale_statement')&&!basic.tenants.length))){
    try{
     if(!window.RightsPdfOcr?.readScannedCourtPdf)throw Error('OCR 모듈을 찾지 못했어요.');
     const ocr=await window.RightsPdfOcr.readScannedCourtPdf(pdf,options.report);

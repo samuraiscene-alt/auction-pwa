@@ -25,4 +25,23 @@ function calculateLiabilityScenario({bidWon,assumedLiabilityWon,fees={}}={}){
   totalConfirmed:false,legalStatusVerified:false,
   disclaimer:'가정 시나리오 · 실제 인수 여부와 배당은 서류 및 법률 검토 필요'};
 }
-module.exports={calculateLiabilityScenario,validWon};
+
+// Reference-only 2026 ordinary house acquisition-tax estimate.
+// Both ordinary-rate eligibility (no surcharge/relief) and area require explicit confirmation.
+function estimateOrdinaryHouseAcquisitionTax({bidWon,ordinaryRateConfirmed=false,areaClass='unknown'}={}){
+ if(!validWon(bidWon)||bidWon===0)return {ok:false,reason:'bid_missing_or_invalid'};
+ if(ordinaryRateConfirmed!==true)return {ok:false,reason:'ordinary_rate_not_confirmed'};
+ if(!['at_most_85','over_85'].includes(areaClass))return {ok:false,reason:'area_unconfirmed'};
+ const rate=bidWon<=600_000_000?0.01:bidWon>900_000_000?0.03:
+  ((bidWon/100_000_000)*(2/3)-3)/100;
+ const acquisitionWon=Math.floor(bidWon*rate);
+ const educationWon=Math.floor(bidWon*rate*0.1);
+ const ruralWon=areaClass==='over_85'?Math.floor(bidWon*0.002):0;
+ const estimatedWon=acquisitionWon+educationWon+ruralWon;
+ if(!Number.isSafeInteger(estimatedWon)||estimatedWon>LIMIT)return {ok:false,reason:'sum_out_of_range'};
+ return {ok:true,estimatedWon,acquisitionWon,educationWon,ruralWon,ratePercent:rate*100,
+  confirmedTax:false,legalStatusVerified:false,
+  disclaimer:'2026 일반 주택 취득세 참고 추정액. 실제 중과·감면·예외·세액 처리 확인 필요'};
+}
+
+module.exports={calculateLiabilityScenario,estimateOrdinaryHouseAcquisitionTax,validWon};

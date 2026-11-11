@@ -31,6 +31,10 @@ for(const [lots,diagnostic] of [
  const checked=check({...detail,data:{...detail.data,dlt_dspslGdsDspslObjctLst:lots}},id,'2026-11-10');
  assert.equal(checked.reason,'detail_lot_unverified');
  assert.equal(checked.lotDiagnostic,diagnostic);
+ if(diagnostic==='lot_number_ambiguous'){
+  assert.equal(checked.lotRows,2);
+  assert.equal(checked.totalLotRows,2);
+ }
  assert.equal(checked.legalStatusVerified,false);
 }
 assert.equal(check(detail,id,'2026-02-29').confirmed,false);

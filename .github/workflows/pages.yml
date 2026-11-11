@@ -35,6 +35,8 @@ jobs:
           node tests/auction-price-analysis.cjs
           node tests/capital-price-history.cjs
           node tests/court-favorites.cjs
+          node tests/rights-liability-scenarios.cjs
+          node tests/rights-draft-schema.cjs
       - uses: actions/configure-pages@v5
         with:
           enablement: true

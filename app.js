@@ -1,4 +1,4 @@
-const $=s=>document.querySelector(s);const APP_VERSION='0.7.52';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
+const $=s=>document.querySelector(s);const APP_VERSION='0.7.53';const STORE='auction_skeleton_v1';let state={page:'home',filter:'전체',selected:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0')+'-'+String(new Date().getDate()).padStart(2,'0'),viewMonth:new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'),calendarFavoritesOnly:false,detail:null,note:null,search:'',region:'전체',minPrice:'',maxPrice:'',priceUnit:'원',detailTab:'overview',favoriteSort:'recent',favoriteType:'전체',capitalRegion:'전체',capitalType:'전체',capitalQuery:'',capitalLimit:40,capitalReviewDate:'',capitalReviewStage:'',capitalFocusId:'',editRealId:null,rightsPropertyId:null,noteQuery:'',noteSort:'recent',studyCategory:'전체',noteTopicDraft:''};let saved;try{saved=JSON.parse(localStorage.getItem(STORE))||{favorites:[],notes:[]}}catch{saved={favorites:[],notes:[]}}const write=()=>{
  const encoded=JSON.stringify(saved);
  localStorage.setItem(STORE,encoded);
  if(localStorage.getItem(STORE)!==encoded)throw Error('기기 저장 확인에 실패했어요.');
@@ -1160,10 +1160,11 @@ function rightsEditor(p){
  const docRows=d.documents.map(x=>'<li>'+escapeHtml(docNames[x.type]||x.type)+' · '+escapeHtml(x.reference||'자료명 미입력')+' ('+escapeHtml(x.issuedOn||'발급일 미확인')+') '+(x.fileId?'<button type="button" class="secondary" data-rights-openpdf="'+escapeHtml(x.id)+'">원본 PDF 열기</button>':'<small>서류 정보만 기록됨 · 원본 없음</small>')+' <button type="button" class="secondary" data-rights-remove="document" data-rights-id="'+escapeHtml(x.id)+'">삭제</button></li>').join('');
  const tenantRows=d.tenants.map(x=>'<li>'+escapeHtml(x.name||'임차인 기록')+' · 보증금 '+escapeHtml(x.depositWon===null?'미확인':prettyPrice(x.depositWon))+' · 전입 '+escapeHtml(x.moveInOn||'미확인')+' · 확정일자 '+escapeHtml(x.fixedDateOn||'미확인')+(x.notes?'<div class="helper">'+escapeHtml(x.notes)+'</div>':'')+' <button type="button" class="secondary" data-rights-remove="tenant" data-rights-id="'+escapeHtml(x.id)+'">삭제</button></li>').join('');
  const rightRows=d.rights.map(x=>'<li>권리 기록 · '+escapeHtml(x.type)+' · 접수 '+escapeHtml(x.registeredOn||'미확인')+' <button type="button" class="secondary" data-rights-remove="right" data-rights-id="'+escapeHtml(x.id)+'">삭제</button></li>').join('');
- const findings=d.documents.flatMap(doc=>(doc.observations||[]).map(o=>({doc,o})));
- const findingMarkup=findings.length?'<section class="rights-findings"><h3>PDF에서 찾은 주의 문구</h3>'+findings.map(x=>
-  '<div class="rights-finding"><strong>'+escapeHtml(x.o.label)+'</strong> · '+escapeHtml(String(x.o.page))+'쪽<p>'+escapeHtml(x.o.excerpt)+'</p></div>').join('')+
-  '<p class="helper">원본 문구의 자동 발췌입니다. 법적 인수 여부는 미확정입니다.</p></section>':'';
+ const rawFindings=d.documents.flatMap(doc=>(doc.observations||[]).map(o=>({doc,o})));
+ const findings=rawFindings.filter((x,i)=>rawFindings.findIndex(y=>y.o.label===x.o.label)===i).slice(0,8);
+ const findingMarkup=findings.length?'<section class="rights-findings"><h3>PDF 주의 문구 · '+findings.length+'개</h3>'+findings.map(x=>
+  '<details class="rights-finding"><summary><strong>'+escapeHtml(x.o.label)+'</strong> <small>'+escapeHtml(String(x.o.page))+'쪽 · 원문 보기</small></summary><p>'+escapeHtml(x.o.excerpt)+'</p></details>').join('')+
+  '<p class="helper">원본에서 자동 발췌했으며 법적 인수 여부는 미확정입니다.</p></section>':'';
  return rightsEvidenceMarkup(d)+findingMarkup+rightsScenarioMarkup(p)+
  '<details class="auction-fold rights-manual-records"><summary>권리자료 직접 기록 · 서류 '+d.documents.length+'건 · 임차인 '+d.tenants.length+'건 · 등기 '+d.rights.length+'건</summary>'+
  '<p class="helper">자료는 사용자 기기에만 저장됩니다. PDF를 등록해도 자동 법률판정은 하지 않습니다.</p>'+
@@ -1238,7 +1239,8 @@ function attachRightsEditor(){
  if(pdfForm)pdfForm.onsubmit=async e=>{
   e.preventDefault();
   const button=$('#rightsPdfSave'),status=$('#rightsPdfStatus');
-  const file=$('#rightsPdfInput')?.files?.[0],type=$('#rightsPdfType')?.value;
+  const file=$('#rightsPdfInput')?.files?.[0];
+  let type=$('#rightsPdfType')?.value;
   const fail=message=>{status.textContent=message;toast(message);};
   if(!file){fail('PDF 파일을 먼저 선택해 주세요.');$('#rightsPdfInput')?.focus();return;}
   if(file.size<=0||file.size>MAX_RIGHTS_PDF_BYTES){fail('8MB 이하 PDF만 등록할 수 있어요.');return;}
@@ -1260,6 +1262,14 @@ function attachRightsEditor(){
    const expectedCourt=record.court||record.courtName;
    const itemNo=String(Number(record.itemNo||'1'));
    const facts=window.RightsPdfFacts?.parseCourtPdfFacts?.(inspected.pages,type);
+   if(facts?.documentType&&facts.documentType!==type){
+    const names={registry:'등기사항증명서',sale_statement:'매각물건명세서',occupancy_report:'현황조사서',appraisal:'감정평가서'};
+    if(!confirm('원본 제목: '+names[facts.documentType]+'\n선택된 종류: '+(names[type]||type)+'\n\nPDF에서 확인된 원본 종류로 수정하고 계속할까요?')){
+     $('#rightsPdfType').value=facts.documentType;
+     throw Error('원본 종류를 확인한 뒤 다시 등록해 주세요.');
+    }
+    type=facts.documentType;$('#rightsPdfType').value=type;
+   }
    if(facts?.caseNos?.length>1)throw Error('서로 다른 사건번호가 있어 자동 연결을 중단했어요.');
    if(facts?.caseNos?.length===1&&!inspected.fields.caseNum)inspected.fields.caseNum=facts.caseNos[0];
    const verified=window.RightsSourceChecklist?.verifyPdfCaseIdentity?.({
@@ -1276,6 +1286,7 @@ function attachRightsEditor(){
     throw Error(why[verified?.reason]||'PDF 법원·사건·물건번호를 확인하지 못했어요.');
    }
    const tenants=(facts?.tenants||[]);
+   if(!tenants.length&&type==='sale_statement')status.textContent='임차인 표를 정확히 추출하지 못했어요. PDF는 보관하되 해당 임차인 정보는 미확인으로 유지됩니다.';
    const warnings=(facts?.warnings||[]);
    const lotWarning=inspected.itemNos.length?'물건번호 '+itemNo+'도 문서에서 발견됐어요.':
     'PDF에서 물건번호는 자동으로 확인되지 않았어요. 현재 물건 '+itemNo+'번의 서류인지 직접 확인해야 합니다.';

@@ -1146,7 +1146,7 @@ function rightsEvidenceMarkup(d){
     '</span></div>').join('')+
    '<p class="helper">여기 표시된 것은 서류 등록 현황이지, '+escapeHtml(row.label)+
    '의 권리 성립·소멸·인수 여부를 판정한 결과가 아닙니다.</p></div></details>').join('')+
-  '</section>';
+  '<button type="button" class="secondary full-secondary" id="rightsJumpPdf">＋ 원본 PDF 등록하기</button></section>';
 }
 
 function rightsEditor(p){
@@ -1197,6 +1197,14 @@ function rightsEditor(p){
 function attachRightsEditor(){
  const shell=$('#rightsDocumentForm');if(!shell)return;
  const propertyId=shell.dataset.propertyId;
+ if($('#rightsJumpPdf'))$('#rightsJumpPdf').onclick=()=>{
+  const group=document.querySelector('.rights-manual-records');
+  const pdf=$('#rightsPdfForm');
+  if(!group||!pdf)return;
+  group.open=true;const fold=pdf.closest('details');if(fold)fold.open=true;
+  pdf.scrollIntoView({behavior:'smooth',block:'center'});
+  $('#rightsPdfInput')?.focus();
+ };
  const validContext=()=>state.page==='rights'?state.rightsPropertyId===propertyId:
    state.page==='detail'&&state.detail===propertyId;
  const nextId=()=>('r'+Date.now().toString(36)+Math.random().toString(36).slice(2,8));
@@ -1319,7 +1327,7 @@ function detail(){
  if(tab==='overview'){
   panel=`<div class="row"><div class="metric"><div class="smTitle">감정가</div><b>${p.userRegistered?knownAuctionPrice(p,p.valueWon):escapeHtml(p.value)}</b></div><div class="metric"><div class="smTitle">최저입찰가</div><b class="detail-price">${compactAuctionPrice(knownAuctionPrice(p,propertyPrice(p)))}</b></div></div><div class="divider"></div><div class="line"><span class="muted">매각기일</span><strong>${escapeHtml(p.date||'미확인')} · ${p.userRegistered?escapeHtml(auctionDday(p.date)):'예시 '+escapeHtml(auctionDday(p.date))}</strong></div><div class="divider"></div><div class="line"><span class="muted">물건 종류</span><strong>${escapeHtml(p.type)}</strong></div><div class="line auction-detail-ident"><span class="muted">담당 법원</span><strong>${escapeHtml(p.court)}</strong></div><div class="line auction-detail-ident"><span class="muted">사건번호</span><strong>${escapeHtml(p.case)}</strong></div>${p.userRegistered?`<div class="line"><span class="muted">물건번호</span><strong>${escapeHtml(p.itemNo||'미확인')}</strong></div>`:''}${p.courtUsage?.names?.large?`<div class="line"><span class="muted">법원 분류</span><strong>${escapeHtml([p.courtUsage.names.large,p.courtUsage.names.medium,p.courtUsage.names.small].filter(Boolean).join(" › "))}</strong></div>`:""}${p.userRegistered&&p.court==='서울중앙지방법원'?'<div class="court-detail-recheck"><button type="button" class="secondary full-secondary" id="recheckRegisteredCourt">법원 정보 다시 조회해 빈 항목 보완</button><p class="helper" id="recheckRegisteredCourtStatus" role="status">기존 입력을 유지하며 확인된 빈 가격·기일만 저장해요.</p></div>':''}${p.userRegistered?'<div class="court-detail-pdf"><label class="official-pdf-label" for="detailPdfInput">▤ 법원 PDF에서 개요 보완</label><input type="file" id="detailPdfInput" accept="application/pdf,.pdf" hidden><p class="helper" id="detailPdfStatus">기존 사건번호와 법원을 대조하고 미확인 항목만 추가해요.</p></div>':''}<div class="divider"></div>${p.userRegistered?auctionFold('지도·로드뷰 확인',auctionMapControls(p.name,'사용자 입력 주소 기준 · 법원 원문과 대조 필요'),'auction-fold-map'):''}${auctionFold('감정가 대비 가격 분석',auctionPriceAnalysis(p.userRegistered?p.valueWon:null,propertyPrice(p),p.userRegistered?'사용자 입력 정보':'가상 예시 · 분석 제한'),'auction-fold-analysis')}${auctionFold('입찰보증금 계산기',auctionBidCalculator(propertyPrice(p),p.userRegistered?'사용자 입력 · 법원 미검증':'가상 예시 · 실입찰 사용 불가'),'auction-fold-calc')}${auctionPrebidChecklist()}<div class="status">⚠ 법원 서류와 점유관계는 아직 확인되지 않았어요.</div>`;
  }else if(tab==='rights'){
-  panel=`<div class="detail-panel-heading">권리분석</div><div class="status">⚠ 등기·임차인·점유 자료가 연결되지 않았어요.</div><div class="info-row"><span>말소기준권리</span><strong>확인 필요</strong></div><div class="info-row"><span>임차인 현황</span><strong>확인 필요</strong></div><div class="info-row"><span>인수 가능 권리</span><strong>확인 필요</strong></div><button class="secondary full-secondary" id="rightsBtn" type="button">권리분석 상세 보기 →</button>${rightsEditor(p)}`;
+  panel=`<div class="detail-panel-heading">권리분석</div>${rightsEditor(p)}<button class="secondary full-secondary" id="rightsBtn" type="button">권리분석 상세 화면 →</button>`;
  }else if(tab==='market'){
   panel=`<div class="detail-panel-heading">시세 정보</div><div class="status">ⓘ 실거래가·현재 매물 시세는 아직 연결되지 않았어요.</div><div class="info-row"><span>감정평가액 (${p.userRegistered?'사용자 입력':'예시'})</span><strong>${p.userRegistered?knownAuctionPrice(p,p.valueWon):escapeHtml(p.value)}</strong></div><div class="info-row"><span>최근 실거래가</span><strong>자료 미연동</strong></div><div class="info-row"><span>시세 대비 할인율</span><strong>계산 보류</strong></div><p class="helper">감정가를 실제 거래 시세로 표시하지 않아요.</p>`;
  }else{

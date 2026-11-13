@@ -4,21 +4,21 @@
   "collectionMode": "limited-pages-pilot",
   "complete": false,
   "source": "courtauction.go.kr",
-  "fetchedAt": "2026-11-12T23:36:12.328Z",
+  "fetchedAt": "2026-11-13T23:31:13.186Z",
   "regions": {
     "서울": {
       "returned": 400,
-      "total": 2840,
+      "total": 2750,
       "processedPages": 8
     },
     "경기": {
       "returned": 400,
-      "total": 7399,
+      "total": 7184,
       "processedPages": 8
     },
     "인천": {
       "returned": 400,
-      "total": 2170,
+      "total": 1787,
       "processedPages": 8
     }
   },
@@ -7908,77 +7908,6 @@
       ]
     },
     {
-      "id": "court-B000214|2023타경3943|1",
-      "region": "경기",
-      "courtCode": "B000214",
-      "courtName": "의정부지방법원",
-      "caseNo": "2023타경3943",
-      "itemNo": "1",
-      "address": "경기도 양주시 남면 411-2",
-      "saleDate": "2026-11-19",
-      "appraisalWon": 6716684940,
-      "minimumWon": 2303823000,
-      "largeCode": null,
-      "mediumCode": null,
-      "smallCode": null,
-      "components": [
-        {
-          "address": "경기도 양주시 남면 411-2",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10128"
-        },
-        {
-          "address": "경기도 양주시 남면 411-3",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10128"
-        },
-        {
-          "address": "경기도 양주시 남면 411-4",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10128"
-        },
-        {
-          "address": "경기도 양주시 남면 411-2",
-          "largeCode": "20000",
-          "mediumCode": "22100",
-          "smallCode": "22101"
-        },
-        {
-          "address": "경기도 양주시 남면 535",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10113"
-        },
-        {
-          "address": "경기도 양주시 남면 535",
-          "largeCode": "20000",
-          "mediumCode": "22100",
-          "smallCode": "22102"
-        },
-        {
-          "address": "경기도 양주시 남면 535-3",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10109"
-        },
-        {
-          "address": "경기도 양주시 남면 411-5",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10114"
-        },
-        {
-          "address": "경기도 양주시 남면 화합로465번길 58 위 지상 건물",
-          "largeCode": "40000",
-          "mediumCode": "40200",
-          "smallCode": null
-        }
-      ]
-    },
-    {
       "id": "court-B000214|2023타경74754|1",
       "region": "경기",
       "courtCode": "B000214",
@@ -8360,35 +8289,6 @@
       ]
     },
     {
-      "id": "court-B000214|2024타경76979|1",
-      "region": "경기",
-      "courtCode": "B000214",
-      "courtName": "의정부지방법원",
-      "caseNo": "2024타경76979",
-      "itemNo": "1",
-      "address": "경기도 연천군 전곡읍 29",
-      "saleDate": "2026-11-17",
-      "appraisalWon": 480921600,
-      "minimumWon": 235652000,
-      "largeCode": null,
-      "mediumCode": null,
-      "smallCode": null,
-      "components": [
-        {
-          "address": "경기도 연천군 전곡읍 29",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10104"
-        },
-        {
-          "address": "경기도 연천군 전곡읍 29",
-          "largeCode": "20000",
-          "mediumCode": "22100",
-          "smallCode": "22105"
-        }
-      ]
-    },
-    {
       "id": "court-B000214|2024타경79428|1",
       "region": "경기",
       "courtCode": "B000214",
@@ -8633,41 +8533,6 @@
           "largeCode": "20000",
           "mediumCode": "20100",
           "smallCode": "20104"
-        }
-      ]
-    },
-    {
-      "id": "court-B000214|2024타경90739|1",
-      "region": "경기",
-      "courtCode": "B000214",
-      "courtName": "의정부지방법원",
-      "caseNo": "2024타경90739",
-      "itemNo": "1",
-      "address": "경기도 포천시 선단동 578",
-      "saleDate": "2026-11-19",
-      "appraisalWon": 6400105400,
-      "minimumWon": 2195236000,
-      "largeCode": null,
-      "mediumCode": null,
-      "smallCode": null,
-      "components": [
-        {
-          "address": "경기도 포천시 선단동 578",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10109"
-        },
-        {
-          "address": "경기도 포천시 선단동 578",
-          "largeCode": "20000",
-          "mediumCode": "22100",
-          "smallCode": "22101"
-        },
-        {
-          "address": "경기도 포천시 선단동 578 토지 및 건물",
-          "largeCode": "40000",
-          "mediumCode": "40200",
-          "smallCode": "40201"
         }
       ]
     },
@@ -9307,41 +9172,6 @@
           "largeCode": "10000",
           "mediumCode": "10100",
           "smallCode": "10108"
-        }
-      ]
-    },
-    {
-      "id": "court-B000214|2025타경4322|1",
-      "region": "경기",
-      "courtCode": "B000214",
-      "courtName": "의정부지방법원",
-      "caseNo": "2025타경4322",
-      "itemNo": "1",
-      "address": "경기도 양주시 백석읍 203-2",
-      "saleDate": "2026-11-19",
-      "appraisalWon": 1254725000,
-      "minimumWon": 1254725000,
-      "largeCode": null,
-      "mediumCode": null,
-      "smallCode": null,
-      "components": [
-        {
-          "address": "경기도 양주시 백석읍 203-2",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10101"
-        },
-        {
-          "address": "경기도 양주시 백석읍 203-7",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10101"
-        },
-        {
-          "address": "경기도 양주시 백석읍 203-6",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10114"
         }
       ]
     },
@@ -13020,6 +12850,335 @@
       ]
     },
     {
+      "id": "court-B000214|2025타경72892|1",
+      "region": "경기",
+      "courtCode": "B000214",
+      "courtName": "의정부지방법원",
+      "caseNo": "2025타경72892",
+      "itemNo": "1",
+      "address": "경기도 의정부시 의정부동 481-4",
+      "saleDate": "2026-11-26",
+      "appraisalWon": 82026000,
+      "minimumWon": 57418000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20106",
+      "components": [
+        {
+          "address": "경기도 의정부시 의정부동 481-4",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20106"
+        }
+      ]
+    },
+    {
+      "id": "court-B000214|2025타경72920|1",
+      "region": "경기",
+      "courtCode": "B000214",
+      "courtName": "의정부지방법원",
+      "caseNo": "2025타경72920",
+      "itemNo": "1",
+      "address": "경기도 양주시 덕계동 451-46",
+      "saleDate": "2026-11-19",
+      "appraisalWon": 400016620,
+      "minimumWon": 280012000,
+      "largeCode": null,
+      "mediumCode": null,
+      "smallCode": null,
+      "components": [
+        {
+          "address": "경기도 양주시 덕계동 451-46",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10108"
+        },
+        {
+          "address": "경기도 양주시 덕계동 451-46",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20101"
+        }
+      ]
+    },
+    {
+      "id": "court-B000214|2025타경72923|1",
+      "region": "경기",
+      "courtCode": "B000214",
+      "courtName": "의정부지방법원",
+      "caseNo": "2025타경72923",
+      "itemNo": "1",
+      "address": "경기도 의정부시 의정부동 146-1",
+      "saleDate": "2026-11-26",
+      "appraisalWon": 862000000,
+      "minimumWon": 862000000,
+      "largeCode": "20000",
+      "mediumCode": "21100",
+      "smallCode": "21101",
+      "components": [
+        {
+          "address": "경기도 의정부시 의정부동 146-1",
+          "largeCode": "20000",
+          "mediumCode": "21100",
+          "smallCode": "21101"
+        }
+      ]
+    },
+    {
+      "id": "court-B000214|2025타경72923|2",
+      "region": "경기",
+      "courtCode": "B000214",
+      "courtName": "의정부지방법원",
+      "caseNo": "2025타경72923",
+      "itemNo": "2",
+      "address": "경기도 의정부시 의정부동 146-1",
+      "saleDate": "2026-11-26",
+      "appraisalWon": 838000000,
+      "minimumWon": 838000000,
+      "largeCode": "20000",
+      "mediumCode": "21100",
+      "smallCode": "21101",
+      "components": [
+        {
+          "address": "경기도 의정부시 의정부동 146-1",
+          "largeCode": "20000",
+          "mediumCode": "21100",
+          "smallCode": "21101"
+        }
+      ]
+    },
+    {
+      "id": "court-B000214|2025타경72923|3",
+      "region": "경기",
+      "courtCode": "B000214",
+      "courtName": "의정부지방법원",
+      "caseNo": "2025타경72923",
+      "itemNo": "3",
+      "address": "경기도 의정부시 의정부동 146-1",
+      "saleDate": "2026-11-26",
+      "appraisalWon": 728000000,
+      "minimumWon": 728000000,
+      "largeCode": "20000",
+      "mediumCode": "21100",
+      "smallCode": "21101",
+      "components": [
+        {
+          "address": "경기도 의정부시 의정부동 146-1",
+          "largeCode": "20000",
+          "mediumCode": "21100",
+          "smallCode": "21101"
+        }
+      ]
+    },
+    {
+      "id": "court-B000214|2025타경72923|4",
+      "region": "경기",
+      "courtCode": "B000214",
+      "courtName": "의정부지방법원",
+      "caseNo": "2025타경72923",
+      "itemNo": "4",
+      "address": "경기도 의정부시 의정부동 146-1",
+      "saleDate": "2026-11-26",
+      "appraisalWon": 670000000,
+      "minimumWon": 670000000,
+      "largeCode": "20000",
+      "mediumCode": "21100",
+      "smallCode": "21101",
+      "components": [
+        {
+          "address": "경기도 의정부시 의정부동 146-1",
+          "largeCode": "20000",
+          "mediumCode": "21100",
+          "smallCode": "21101"
+        }
+      ]
+    },
+    {
+      "id": "court-B000214|2025타경72932|1",
+      "region": "경기",
+      "courtCode": "B000214",
+      "courtName": "의정부지방법원",
+      "caseNo": "2025타경72932",
+      "itemNo": "1",
+      "address": "경기도 양주시 백석읍 180-26",
+      "saleDate": "2026-11-18",
+      "appraisalWon": 1220144300,
+      "minimumWon": 597871000,
+      "largeCode": null,
+      "mediumCode": null,
+      "smallCode": null,
+      "components": [
+        {
+          "address": "경기도 양주시 백석읍 180-26",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10108"
+        },
+        {
+          "address": "경기도 양주시 백석읍 180-1",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10108"
+        },
+        {
+          "address": "경기도 양주시 백석읍 180-1",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20101"
+        }
+      ]
+    },
+    {
+      "id": "court-B000214|2025타경72973|1",
+      "region": "경기",
+      "courtCode": "B000214",
+      "courtName": "의정부지방법원",
+      "caseNo": "2025타경72973",
+      "itemNo": "1",
+      "address": "경기도 동두천시 생연동 148",
+      "saleDate": "2026-11-19",
+      "appraisalWon": 193052000,
+      "minimumWon": 135136000,
+      "largeCode": "10000",
+      "mediumCode": "10100",
+      "smallCode": "10101",
+      "components": [
+        {
+          "address": "경기도 동두천시 생연동 148",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10101"
+        }
+      ]
+    },
+    {
+      "id": "court-B000214|2025타경72973|2",
+      "region": "경기",
+      "courtCode": "B000214",
+      "courtName": "의정부지방법원",
+      "caseNo": "2025타경72973",
+      "itemNo": "2",
+      "address": "경기도 동두천시 생연동 149",
+      "saleDate": "2026-11-19",
+      "appraisalWon": 2328842000,
+      "minimumWon": 1630189000,
+      "largeCode": null,
+      "mediumCode": null,
+      "smallCode": null,
+      "components": [
+        {
+          "address": "경기도 동두천시 생연동 149",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10101"
+        },
+        {
+          "address": "경기도 동두천시 생연동 149-20",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10101"
+        }
+      ]
+    },
+    {
+      "id": "court-B000214|2025타경72974|1",
+      "region": "경기",
+      "courtCode": "B000214",
+      "courtName": "의정부지방법원",
+      "caseNo": "2025타경72974",
+      "itemNo": "1",
+      "address": "경기도 포천시 신북면 834-4",
+      "saleDate": "2026-11-19",
+      "appraisalWon": 70000000,
+      "minimumWon": 49000000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20106",
+      "components": [
+        {
+          "address": "경기도 포천시 신북면 834-4",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20106"
+        }
+      ]
+    },
+    {
+      "id": "court-B000214|2025타경72977|1",
+      "region": "경기",
+      "courtCode": "B000214",
+      "courtName": "의정부지방법원",
+      "caseNo": "2025타경72977",
+      "itemNo": "1",
+      "address": "경기도 연천군 청산면 181",
+      "saleDate": "2026-11-19",
+      "appraisalWon": 251900000,
+      "minimumWon": 251900000,
+      "largeCode": null,
+      "mediumCode": null,
+      "smallCode": null,
+      "components": [
+        {
+          "address": "경기도 연천군 청산면 181",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10101"
+        },
+        {
+          "address": "경기도 연천군 청산면 182",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10101"
+        }
+      ]
+    },
+    {
+      "id": "court-B000214|2025타경72983|1",
+      "region": "경기",
+      "courtCode": "B000214",
+      "courtName": "의정부지방법원",
+      "caseNo": "2025타경72983",
+      "itemNo": "1",
+      "address": "경기도 양주시 옥정동 987-1",
+      "saleDate": "2026-11-26",
+      "appraisalWon": 424000000,
+      "minimumWon": 101802000,
+      "largeCode": "20000",
+      "mediumCode": "21100",
+      "smallCode": "21111",
+      "components": [
+        {
+          "address": "경기도 양주시 옥정동 987-1",
+          "largeCode": "20000",
+          "mediumCode": "21100",
+          "smallCode": "21111"
+        }
+      ]
+    },
+    {
+      "id": "court-B000214|2025타경72988|1",
+      "region": "경기",
+      "courtCode": "B000214",
+      "courtName": "의정부지방법원",
+      "caseNo": "2025타경72988",
+      "itemNo": "1",
+      "address": "경기도 연천군 군남면 산137",
+      "saleDate": "2026-11-24",
+      "appraisalWon": 578975000,
+      "minimumWon": 117096000,
+      "largeCode": "10000",
+      "mediumCode": "10100",
+      "smallCode": "10105",
+      "components": [
+        {
+          "address": "경기도 연천군 군남면 산137",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10105"
+        }
+      ]
+    },
+    {
       "id": "court-B000240|2021타경18766|1",
       "region": "인천",
       "courtCode": "B000240",
@@ -13782,64 +13941,6 @@
       ]
     },
     {
-      "id": "court-B000240|2024타경5754|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경5754",
-      "itemNo": "1",
-      "address": "인천광역시 중구 항동1가 1-10",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 2695820600,
-      "minimumWon": 924666000,
-      "largeCode": null,
-      "mediumCode": null,
-      "smallCode": null,
-      "components": [
-        {
-          "address": "인천광역시 중구 항동1가 1-10",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10108"
-        },
-        {
-          "address": "인천광역시 중구 항동1가 1-10",
-          "largeCode": "20000",
-          "mediumCode": "21100",
-          "smallCode": "21101"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경5754|2",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경5754",
-      "itemNo": "2",
-      "address": "인천광역시 중구 항동1가 1-12",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 808026600,
-      "minimumWon": 277152000,
-      "largeCode": null,
-      "mediumCode": null,
-      "smallCode": null,
-      "components": [
-        {
-          "address": "인천광역시 중구 항동1가 1-12",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10108"
-        },
-        {
-          "address": "인천광역시 중구 항동1가 1-12",
-          "largeCode": "20000",
-          "mediumCode": "21100",
-          "smallCode": "21101"
-        }
-      ]
-    },
-    {
       "id": "court-B000240|2024타경8326|1",
       "region": "인천",
       "courtCode": "B000240",
@@ -14058,29 +14159,6 @@
           "largeCode": "20000",
           "mediumCode": "21100",
           "smallCode": "21101"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경12011|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경12011",
-      "itemNo": "1",
-      "address": "인천광역시 강화군 송해면 산18-1",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 107407000,
-      "minimumWon": 107407000,
-      "largeCode": "10000",
-      "mediumCode": "10100",
-      "smallCode": "10105",
-      "components": [
-        {
-          "address": "인천광역시 강화군 송해면 산18-1",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10105"
         }
       ]
     },
@@ -14490,64 +14568,6 @@
       ]
     },
     {
-      "id": "court-B000240|2024타경15867|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경15867",
-      "itemNo": "1",
-      "address": "인천광역시 미추홀구 숭의동 162-31",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 2216692000,
-      "minimumWon": 2216692000,
-      "largeCode": null,
-      "mediumCode": null,
-      "smallCode": null,
-      "components": [
-        {
-          "address": "인천광역시 미추홀구 숭의동 162-31",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10108"
-        },
-        {
-          "address": "인천광역시 미추홀구 숭의동 162-69",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10108"
-        },
-        {
-          "address": "인천광역시 미추홀구 숭의동 162-76",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10108"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경15898|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경15898",
-      "itemNo": "1",
-      "address": "인천광역시 서구 석남동 589-9",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 100000000,
-      "minimumWon": 49000000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20106",
-      "components": [
-        {
-          "address": "인천광역시 서구 석남동 589-9",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20106"
-        }
-      ]
-    },
-    {
       "id": "court-B000240|2024타경15980|1",
       "region": "인천",
       "courtCode": "B000240",
@@ -14617,99 +14637,6 @@
       ]
     },
     {
-      "id": "court-B000240|2024타경16198|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경16198",
-      "itemNo": "1",
-      "address": "인천광역시 옹진군 자월면 산174",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 138800000,
-      "minimumWon": 138800000,
-      "largeCode": "10000",
-      "mediumCode": "10100",
-      "smallCode": "10105",
-      "components": [
-        {
-          "address": "인천광역시 옹진군 자월면 산174",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10105"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경16198|2",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경16198",
-      "itemNo": "2",
-      "address": "인천광역시 옹진군 자월면 산213",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 240157000,
-      "minimumWon": 240157000,
-      "largeCode": "10000",
-      "mediumCode": "10100",
-      "smallCode": "10105",
-      "components": [
-        {
-          "address": "인천광역시 옹진군 자월면 산213",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10105"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경16198|3",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경16198",
-      "itemNo": "3",
-      "address": "인천광역시 옹진군 덕적면 75",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 227850800,
-      "minimumWon": 227850800,
-      "largeCode": null,
-      "mediumCode": null,
-      "smallCode": null,
-      "components": [
-        {
-          "address": "인천광역시 옹진군 덕적면 75",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10105"
-        },
-        {
-          "address": "인천광역시 옹진군 덕적면 89",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10108"
-        },
-        {
-          "address": "인천광역시 옹진군 덕적면 산53",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10105"
-        },
-        {
-          "address": "인천광역시 옹진군 덕적면 산57-1",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10105"
-        },
-        {
-          "address": "인천광역시 옹진군 덕적면 산57-3",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10105"
-        }
-      ]
-    },
-    {
       "id": "court-B000240|2024타경16655|1",
       "region": "인천",
       "courtCode": "B000240",
@@ -14729,29 +14656,6 @@
           "largeCode": "20000",
           "mediumCode": "20100",
           "smallCode": "20104"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경16938|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경16938",
-      "itemNo": "1",
-      "address": "인천광역시 서구 청라동 167-23",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 4077000000,
-      "minimumWon": 4077000000,
-      "largeCode": "20000",
-      "mediumCode": "21100",
-      "smallCode": "21101",
-      "components": [
-        {
-          "address": "인천광역시 서구 청라동 167-23",
-          "largeCode": "20000",
-          "mediumCode": "21100",
-          "smallCode": "21101"
         }
       ]
     },
@@ -14920,29 +14824,6 @@
           "largeCode": "20000",
           "mediumCode": "20100",
           "smallCode": "20104"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경506899|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경506899",
-      "itemNo": "1",
-      "address": "인천광역시 미추홀구 숭의동 164-17",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 262000000,
-      "minimumWon": 183400000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20110",
-      "components": [
-        {
-          "address": "인천광역시 미추홀구 숭의동 164-17",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20110"
         }
       ]
     },
@@ -15312,29 +15193,6 @@
           "largeCode": "40000",
           "mediumCode": "40200",
           "smallCode": "40201"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경525791|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경525791",
-      "itemNo": "1",
-      "address": "인천광역시 부평구 부평동 406-8",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 122000000,
-      "minimumWon": 29292000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20104",
-      "components": [
-        {
-          "address": "인천광역시 부평구 부평동 406-8",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20104"
         }
       ]
     },
@@ -15879,29 +15737,6 @@
       "components": [
         {
           "address": "인천광역시 미추홀구 주안동 126-1",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20104"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경554935|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경554935",
-      "itemNo": "1",
-      "address": "인천광역시 계양구 효성동 101-5",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 184000000,
-      "minimumWon": 184000000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20104",
-      "components": [
-        {
-          "address": "인천광역시 계양구 효성동 101-5",
           "largeCode": "20000",
           "mediumCode": "20100",
           "smallCode": "20104"
@@ -16507,29 +16342,6 @@
       ]
     },
     {
-      "id": "court-B000240|2024타경565980|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경565980",
-      "itemNo": "1",
-      "address": "인천광역시 옹진군 북도면 산41",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 65472000,
-      "minimumWon": 32081000,
-      "largeCode": "10000",
-      "mediumCode": "10100",
-      "smallCode": "10105",
-      "components": [
-        {
-          "address": "인천광역시 옹진군 북도면 산41",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10105"
-        }
-      ]
-    },
-    {
       "id": "court-B000240|2024타경566167|1",
       "region": "인천",
       "courtCode": "B000240",
@@ -16629,29 +16441,6 @@
       ]
     },
     {
-      "id": "court-B000240|2024타경567023|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경567023",
-      "itemNo": "1",
-      "address": "인천광역시 부평구 산곡동 145",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 331000000,
-      "minimumWon": 331000000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20104",
-      "components": [
-        {
-          "address": "인천광역시 부평구 산곡동 145",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20104"
-        }
-      ]
-    },
-    {
       "id": "court-B000240|2024타경567436|1",
       "region": "인천",
       "courtCode": "B000240",
@@ -16671,29 +16460,6 @@
           "largeCode": "20000",
           "mediumCode": "20100",
           "smallCode": "20104"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경567641|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경567641",
-      "itemNo": "1",
-      "address": "인천광역시 남동구 구월동 1108-8",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 130000000,
-      "minimumWon": 130000000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20106",
-      "components": [
-        {
-          "address": "인천광역시 남동구 구월동 1108-8",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20106"
         }
       ]
     },
@@ -16819,52 +16585,6 @@
       ]
     },
     {
-      "id": "court-B000240|2024타경568613|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경568613",
-      "itemNo": "1",
-      "address": "인천광역시 계양구 병방동 104-1",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 65000000,
-      "minimumWon": 65000000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20106",
-      "components": [
-        {
-          "address": "인천광역시 계양구 병방동 104-1",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20106"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경568941|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경568941",
-      "itemNo": "1",
-      "address": "인천광역시 부평구 부평동 205-2",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 13000000,
-      "minimumWon": 2185000,
-      "largeCode": "20000",
-      "mediumCode": "21100",
-      "smallCode": "21101",
-      "components": [
-        {
-          "address": "인천광역시 부평구 부평동 205-2",
-          "largeCode": "20000",
-          "mediumCode": "21100",
-          "smallCode": "21101"
-        }
-      ]
-    },
-    {
       "id": "court-B000240|2024타경569500|4",
       "region": "인천",
       "courtCode": "B000240",
@@ -16904,29 +16624,6 @@
       "components": [
         {
           "address": "인천광역시 부평구 십정동 583-18",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20106"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경569821|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경569821",
-      "itemNo": "1",
-      "address": "인천광역시 서구 당하동 943-16",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 201000000,
-      "minimumWon": 201000000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20106",
-      "components": [
-        {
-          "address": "인천광역시 서구 당하동 943-16",
           "largeCode": "20000",
           "mediumCode": "20100",
           "smallCode": "20106"
@@ -17026,52 +16723,6 @@
       ]
     },
     {
-      "id": "court-B000240|2024타경571930|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경571930",
-      "itemNo": "1",
-      "address": "인천광역시 부평구 부평동 409-20",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 111000000,
-      "minimumWon": 26651000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20104",
-      "components": [
-        {
-          "address": "인천광역시 부평구 부평동 409-20",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20104"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경572704|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경572704",
-      "itemNo": "1",
-      "address": "인천광역시 미추홀구 학익동 719",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 317000000,
-      "minimumWon": 53278000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20104",
-      "components": [
-        {
-          "address": "인천광역시 미추홀구 학익동 719",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20104"
-        }
-      ]
-    },
-    {
       "id": "court-B000240|2024타경573004|1",
       "region": "인천",
       "courtCode": "B000240",
@@ -17091,29 +16742,6 @@
           "largeCode": "20000",
           "mediumCode": "21100",
           "smallCode": "21108"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경573035|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경573035",
-      "itemNo": "1",
-      "address": "인천광역시 서구 신현동 304-1",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 670000000,
-      "minimumWon": 670000000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20104",
-      "components": [
-        {
-          "address": "인천광역시 서구 신현동 304-1",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20104"
         }
       ]
     },
@@ -17298,58 +16926,6 @@
       ]
     },
     {
-      "id": "court-B000240|2024타경574151|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경574151",
-      "itemNo": "1",
-      "address": "인천광역시 중구 항동7가 58-131",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 4574287560,
-      "minimumWon": 4574287560,
-      "largeCode": null,
-      "mediumCode": null,
-      "smallCode": null,
-      "components": [
-        {
-          "address": "인천광역시 중구 항동7가 58-131",
-          "largeCode": "10000",
-          "mediumCode": "10100",
-          "smallCode": "10108"
-        },
-        {
-          "address": "인천광역시 중구 항동7가 58-131",
-          "largeCode": "20000",
-          "mediumCode": "21100",
-          "smallCode": "21112"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경574878|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경574878",
-      "itemNo": "1",
-      "address": "인천광역시 부평구 부평동 250-18",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 290000000,
-      "minimumWon": 203000000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20110",
-      "components": [
-        {
-          "address": "인천광역시 부평구 부평동 250-18",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20110"
-        }
-      ]
-    },
-    {
       "id": "court-B000240|2024타경575345|1",
       "region": "인천",
       "courtCode": "B000240",
@@ -17392,29 +16968,6 @@
           "largeCode": "20000",
           "mediumCode": "20100",
           "smallCode": "20106"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경576874|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경576874",
-      "itemNo": "1",
-      "address": "인천광역시 계양구 계산동 1085-2",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 388000000,
-      "minimumWon": 388000000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20104",
-      "components": [
-        {
-          "address": "인천광역시 계양구 계산동 1085-2",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20104"
         }
       ]
     },
@@ -17507,52 +17060,6 @@
           "largeCode": "20000",
           "mediumCode": "20100",
           "smallCode": "20104"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경577884|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경577884",
-      "itemNo": "1",
-      "address": "인천광역시 남동구 남촌동 347-4",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 77000000,
-      "minimumWon": 77000000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20106",
-      "components": [
-        {
-          "address": "인천광역시 남동구 남촌동 347-4",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20106"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2024타경577884|2",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2024타경577884",
-      "itemNo": "2",
-      "address": "인천광역시 서구 석남동 589-9",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 102000000,
-      "minimumWon": 102000000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20106",
-      "components": [
-        {
-          "address": "인천광역시 서구 석남동 589-9",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20106"
         }
       ]
     },
@@ -17937,29 +17444,6 @@
       ]
     },
     {
-      "id": "court-B000240|2025타경442|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2025타경442",
-      "itemNo": "1",
-      "address": "인천광역시 서구 원당동 1033-7",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 457000000,
-      "minimumWon": 457000000,
-      "largeCode": "20000",
-      "mediumCode": "21100",
-      "smallCode": "21101",
-      "components": [
-        {
-          "address": "인천광역시 서구 원당동 1033-7",
-          "largeCode": "20000",
-          "mediumCode": "21100",
-          "smallCode": "21101"
-        }
-      ]
-    },
-    {
       "id": "court-B000240|2025타경748|1",
       "region": "인천",
       "courtCode": "B000240",
@@ -18031,52 +17515,6 @@
           "largeCode": "20000",
           "mediumCode": "20100",
           "smallCode": "20101"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2025타경789|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2025타경789",
-      "itemNo": "1",
-      "address": "인천광역시 계양구 장기동 151-7",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 175000000,
-      "minimumWon": 175000000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20106",
-      "components": [
-        {
-          "address": "인천광역시 계양구 장기동 151-7",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20106"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2025타경794|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2025타경794",
-      "itemNo": "1",
-      "address": "인천광역시 남동구 남촌동 350-8",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 55000000,
-      "minimumWon": 55000000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20106",
-      "components": [
-        {
-          "address": "인천광역시 남동구 남촌동 350-8",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20106"
         }
       ]
     },
@@ -18479,29 +17917,6 @@
       ]
     },
     {
-      "id": "court-B000240|2025타경968|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2025타경968",
-      "itemNo": "1",
-      "address": "인천광역시 연수구 연수동 599-5",
-      "saleDate": "2026-11-19",
-      "appraisalWon": 233000000,
-      "minimumWon": 114170000,
-      "largeCode": "20000",
-      "mediumCode": "21100",
-      "smallCode": "21104",
-      "components": [
-        {
-          "address": "인천광역시 연수구 연수동 599-5",
-          "largeCode": "20000",
-          "mediumCode": "21100",
-          "smallCode": "21104"
-        }
-      ]
-    },
-    {
       "id": "court-B000240|2025타경988|1",
       "region": "인천",
       "courtCode": "B000240",
@@ -18677,52 +18092,6 @@
       ]
     },
     {
-      "id": "court-B000240|2025타경1089|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2025타경1089",
-      "itemNo": "1",
-      "address": "인천광역시 서구 가좌동 274-1",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 733000000,
-      "minimumWon": 733000000,
-      "largeCode": "20000",
-      "mediumCode": "22100",
-      "smallCode": "22101",
-      "components": [
-        {
-          "address": "인천광역시 서구 가좌동 274-1",
-          "largeCode": "20000",
-          "mediumCode": "22100",
-          "smallCode": "22101"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2025타경1089|2",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2025타경1089",
-      "itemNo": "2",
-      "address": "인천광역시 서구 가좌동 274-1",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 733000000,
-      "minimumWon": 733000000,
-      "largeCode": "20000",
-      "mediumCode": "22100",
-      "smallCode": "22101",
-      "components": [
-        {
-          "address": "인천광역시 서구 가좌동 274-1",
-          "largeCode": "20000",
-          "mediumCode": "22100",
-          "smallCode": "22101"
-        }
-      ]
-    },
-    {
       "id": "court-B000240|2025타경1100|1",
       "region": "인천",
       "courtCode": "B000240",
@@ -18806,52 +18175,6 @@
           "largeCode": "20000",
           "mediumCode": "20100",
           "smallCode": "20106"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2025타경1131|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2025타경1131",
-      "itemNo": "1",
-      "address": "인천광역시 서구 오류동 1656-1",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 357000000,
-      "minimumWon": 357000000,
-      "largeCode": "20000",
-      "mediumCode": "22100",
-      "smallCode": "22101",
-      "components": [
-        {
-          "address": "인천광역시 서구 오류동 1656-1",
-          "largeCode": "20000",
-          "mediumCode": "22100",
-          "smallCode": "22101"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2025타경1131|2",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2025타경1131",
-      "itemNo": "2",
-      "address": "인천광역시 서구 오류동 1656-1",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 376000000,
-      "minimumWon": 376000000,
-      "largeCode": "20000",
-      "mediumCode": "22100",
-      "smallCode": "22101",
-      "components": [
-        {
-          "address": "인천광역시 서구 오류동 1656-1",
-          "largeCode": "20000",
-          "mediumCode": "22100",
-          "smallCode": "22101"
         }
       ]
     },
@@ -18954,75 +18277,6 @@
       ]
     },
     {
-      "id": "court-B000240|2025타경1226|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2025타경1226",
-      "itemNo": "1",
-      "address": "인천광역시 연수구 선학동 442",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 636000000,
-      "minimumWon": 636000000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20104",
-      "components": [
-        {
-          "address": "인천광역시 연수구 선학동 442",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20104"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2025타경1288|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2025타경1288",
-      "itemNo": "1",
-      "address": "인천광역시 미추홀구 숭의동 33-227",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 247000000,
-      "minimumWon": 247000000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20106",
-      "components": [
-        {
-          "address": "인천광역시 미추홀구 숭의동 33-227",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20106"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2025타경1319|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2025타경1319",
-      "itemNo": "1",
-      "address": "인천광역시 부평구 갈산동 94",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 715000000,
-      "minimumWon": 715000000,
-      "largeCode": "20000",
-      "mediumCode": "21100",
-      "smallCode": "21101",
-      "components": [
-        {
-          "address": "인천광역시 부평구 갈산동 94",
-          "largeCode": "20000",
-          "mediumCode": "21100",
-          "smallCode": "21101"
-        }
-      ]
-    },
-    {
       "id": "court-B000240|2025타경1320|1",
       "region": "인천",
       "courtCode": "B000240",
@@ -19042,29 +18296,6 @@
           "largeCode": "20000",
           "mediumCode": "21100",
           "smallCode": "21101"
-        }
-      ]
-    },
-    {
-      "id": "court-B000240|2025타경1324|1",
-      "region": "인천",
-      "courtCode": "B000240",
-      "courtName": "인천지방법원",
-      "caseNo": "2025타경1324",
-      "itemNo": "1",
-      "address": "인천광역시 계양구 효성동 689",
-      "saleDate": "2026-11-13",
-      "appraisalWon": 527000000,
-      "minimumWon": 527000000,
-      "largeCode": "20000",
-      "mediumCode": "20100",
-      "smallCode": "20104",
-      "components": [
-        {
-          "address": "인천광역시 계양구 효성동 689",
-          "largeCode": "20000",
-          "mediumCode": "20100",
-          "smallCode": "20104"
         }
       ]
     },
@@ -19270,41 +18501,870 @@
           "largeCode": "10000",
           "mediumCode": "10100",
           "smallCode": "10105"
+        },
+        {
+          "address": "인천광역시 옹진군 영흥면 1311-17",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10105"
+        },
+        {
+          "address": "인천광역시 옹진군 영흥면 1311-18",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10105"
+        },
+        {
+          "address": "인천광역시 옹진군 영흥면 1311-19",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10105"
+        },
+        {
+          "address": "인천광역시 옹진군 영흥면 1311-20",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10105"
+        },
+        {
+          "address": "인천광역시 옹진군 영흥면 1311-21",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10105"
+        },
+        {
+          "address": "인천광역시 옹진군 영흥면 1311-22",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10105"
+        },
+        {
+          "address": "인천광역시 옹진군 영흥면 1311-23",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10105"
+        },
+        {
+          "address": "인천광역시 옹진군 영흥면 1311-24",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10105"
+        },
+        {
+          "address": "인천광역시 옹진군 영흥면 1311-25",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10105"
+        },
+        {
+          "address": "인천광역시 옹진군 영흥면 1311-27",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10105"
+        },
+        {
+          "address": "인천광역시 옹진군 영흥면 1311-28",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10105"
+        },
+        {
+          "address": "인천광역시 옹진군 영흥면 1311-29",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10105"
+        },
+        {
+          "address": "인천광역시 옹진군 영흥면 1311-30",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10105"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1386|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1386",
+      "itemNo": "1",
+      "address": "인천광역시 남동구 구월동 1143-29",
+      "saleDate": "2026-11-19",
+      "appraisalWon": 240000000,
+      "minimumWon": 240000000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20105",
+      "components": [
+        {
+          "address": "인천광역시 남동구 구월동 1143-29",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20105"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1405|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1405",
+      "itemNo": "1",
+      "address": "인천광역시 부평구 부평동 767-171",
+      "saleDate": "2026-11-17",
+      "appraisalWon": 93000000,
+      "minimumWon": 93000000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20106",
+      "components": [
+        {
+          "address": "인천광역시 부평구 부평동 767-171",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20106"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1409|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1409",
+      "itemNo": "1",
+      "address": "인천광역시 중구 운서동 3092-7",
+      "saleDate": "2026-11-20",
+      "appraisalWon": 490000000,
+      "minimumWon": 168070000,
+      "largeCode": "20000",
+      "mediumCode": "21100",
+      "smallCode": "21101",
+      "components": [
+        {
+          "address": "인천광역시 중구 운서동 3092-7",
+          "largeCode": "20000",
+          "mediumCode": "21100",
+          "smallCode": "21101"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1410|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1410",
+      "itemNo": "1",
+      "address": "인천광역시 미추홀구 학익동 401-58",
+      "saleDate": "2026-11-23",
+      "appraisalWon": 722000000,
+      "minimumWon": 722000000,
+      "largeCode": "20000",
+      "mediumCode": "21100",
+      "smallCode": "21101",
+      "components": [
+        {
+          "address": "인천광역시 미추홀구 학익동 401-58",
+          "largeCode": "20000",
+          "mediumCode": "21100",
+          "smallCode": "21101"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1413|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1413",
+      "itemNo": "1",
+      "address": "인천광역시 미추홀구 주안동 1468-12",
+      "saleDate": "2026-11-18",
+      "appraisalWon": 235000000,
+      "minimumWon": 164500000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20110",
+      "components": [
+        {
+          "address": "인천광역시 미추홀구 주안동 1468-12",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20110"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1419|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1419",
+      "itemNo": "1",
+      "address": "인천광역시 연수구 옥련동 634-1",
+      "saleDate": "2026-11-19",
+      "appraisalWon": 256000000,
+      "minimumWon": 256000000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20104",
+      "components": [
+        {
+          "address": "인천광역시 연수구 옥련동 634-1",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20104"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1422|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1422",
+      "itemNo": "1",
+      "address": "인천광역시 미추홀구 문학동 문학도시개발구역12블록4로트",
+      "saleDate": "2026-11-16",
+      "appraisalWon": 363000000,
+      "minimumWon": 177870000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20106",
+      "components": [
+        {
+          "address": "인천광역시 미추홀구 문학동 문학도시개발구역12블록4로트",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20106"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1436|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1436",
+      "itemNo": "1",
+      "address": "인천광역시 서구 경서동 경서3구역도시개발지구25블록2로트",
+      "saleDate": "2026-11-18",
+      "appraisalWon": 585000000,
+      "minimumWon": 585000000,
+      "largeCode": "20000",
+      "mediumCode": "21100",
+      "smallCode": "21104",
+      "components": [
+        {
+          "address": "인천광역시 서구 경서동 경서3구역도시개발지구25블록2로트",
+          "largeCode": "20000",
+          "mediumCode": "21100",
+          "smallCode": "21104"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1447|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1447",
+      "itemNo": "1",
+      "address": "인천광역시 부평구 부평동 416-28",
+      "saleDate": "2026-11-19",
+      "appraisalWon": 262000000,
+      "minimumWon": 262000000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20110",
+      "components": [
+        {
+          "address": "인천광역시 부평구 부평동 416-28",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20110"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1457|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1457",
+      "itemNo": "1",
+      "address": "인천광역시 미추홀구 주안동 1292-42",
+      "saleDate": "2026-11-24",
+      "appraisalWon": 154000000,
+      "minimumWon": 25883000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20106",
+      "components": [
+        {
+          "address": "인천광역시 미추홀구 주안동 1292-42",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20106"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1463|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1463",
+      "itemNo": "1",
+      "address": "인천광역시 중구 운서동 3096-3",
+      "saleDate": "2026-11-23",
+      "appraisalWon": 460000000,
+      "minimumWon": 225400000,
+      "largeCode": "20000",
+      "mediumCode": "21100",
+      "smallCode": "21101",
+      "components": [
+        {
+          "address": "인천광역시 중구 운서동 3096-3",
+          "largeCode": "20000",
+          "mediumCode": "21100",
+          "smallCode": "21101"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1472|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1472",
+      "itemNo": "1",
+      "address": "인천광역시 서구 청라동 102-3",
+      "saleDate": "2026-11-19",
+      "appraisalWon": 681000000,
+      "minimumWon": 681000000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20104",
+      "components": [
+        {
+          "address": "인천광역시 서구 청라동 102-3",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20104"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1474|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1474",
+      "itemNo": "1",
+      "address": "인천광역시 연수구 송도동 30-3",
+      "saleDate": "2026-11-18",
+      "appraisalWon": 631000000,
+      "minimumWon": 631000000,
+      "largeCode": "20000",
+      "mediumCode": "21100",
+      "smallCode": "21111",
+      "components": [
+        {
+          "address": "인천광역시 연수구 송도동 30-3",
+          "largeCode": "20000",
+          "mediumCode": "21100",
+          "smallCode": "21111"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1486|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1486",
+      "itemNo": "1",
+      "address": "인천광역시 남동구 간석동 216-5",
+      "saleDate": "2026-11-20",
+      "appraisalWon": 47000000,
+      "minimumWon": 47000000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20106",
+      "components": [
+        {
+          "address": "인천광역시 남동구 간석동 216-5",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20106"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1486|2",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1486",
+      "itemNo": "2",
+      "address": "인천광역시 남동구 간석동 216-5",
+      "saleDate": "2026-11-20",
+      "appraisalWon": 46000000,
+      "minimumWon": 46000000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20106",
+      "components": [
+        {
+          "address": "인천광역시 남동구 간석동 216-5",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20106"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1486|3",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1486",
+      "itemNo": "3",
+      "address": "인천광역시 남동구 간석동 216-5",
+      "saleDate": "2026-11-20",
+      "appraisalWon": 45000000,
+      "minimumWon": 45000000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20106",
+      "components": [
+        {
+          "address": "인천광역시 남동구 간석동 216-5",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20106"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1486|4",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1486",
+      "itemNo": "4",
+      "address": "인천광역시 남동구 간석동 216-5",
+      "saleDate": "2026-11-20",
+      "appraisalWon": 45000000,
+      "minimumWon": 45000000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20106",
+      "components": [
+        {
+          "address": "인천광역시 남동구 간석동 216-5",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20106"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1498|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1498",
+      "itemNo": "1",
+      "address": "인천광역시 서구 검암동 675-16",
+      "saleDate": "2026-11-19",
+      "appraisalWon": 146000000,
+      "minimumWon": 146000000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20106",
+      "components": [
+        {
+          "address": "인천광역시 서구 검암동 675-16",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20106"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1501|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1501",
+      "itemNo": "1",
+      "address": "인천광역시 중구 중산동 1894-13",
+      "saleDate": "2026-11-16",
+      "appraisalWon": 1816994100,
+      "minimumWon": 1271896000,
+      "largeCode": null,
+      "mediumCode": null,
+      "smallCode": null,
+      "components": [
+        {
+          "address": "인천광역시 중구 중산동 1894-13",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20101"
+        },
+        {
+          "address": "인천광역시 중구 중산동 1894-13",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10108"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1509|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1509",
+      "itemNo": "1",
+      "address": "인천광역시 계양구 동양동 629-6",
+      "saleDate": "2026-11-16",
+      "appraisalWon": 143000000,
+      "minimumWon": 70070000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20106",
+      "components": [
+        {
+          "address": "인천광역시 계양구 동양동 629-6",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20106"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1509|3",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1509",
+      "itemNo": "3",
+      "address": "인천광역시 계양구 동양동 593-4",
+      "saleDate": "2026-11-16",
+      "appraisalWon": 138000000,
+      "minimumWon": 67620000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20106",
+      "components": [
+        {
+          "address": "인천광역시 계양구 동양동 593-4",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20106"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1509|4",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1509",
+      "itemNo": "4",
+      "address": "인천광역시 계양구 동양동 614-6",
+      "saleDate": "2026-11-16",
+      "appraisalWon": 144000000,
+      "minimumWon": 70560000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20106",
+      "components": [
+        {
+          "address": "인천광역시 계양구 동양동 614-6",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20106"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1509|5",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1509",
+      "itemNo": "5",
+      "address": "인천광역시 계양구 동양동 594-6",
+      "saleDate": "2026-11-16",
+      "appraisalWon": 131000000,
+      "minimumWon": 64190000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20106",
+      "components": [
+        {
+          "address": "인천광역시 계양구 동양동 594-6",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20106"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1519|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1519",
+      "itemNo": "1",
+      "address": "인천광역시 중구 운서동 3091-13",
+      "saleDate": "2026-11-18",
+      "appraisalWon": 138000000,
+      "minimumWon": 138000000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20110",
+      "components": [
+        {
+          "address": "인천광역시 중구 운서동 3091-13",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20110"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1524|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1524",
+      "itemNo": "1",
+      "address": "인천광역시 미추홀구 용현동 659",
+      "saleDate": "2026-11-19",
+      "appraisalWon": 280000000,
+      "minimumWon": 280000000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20110",
+      "components": [
+        {
+          "address": "인천광역시 미추홀구 용현동 659",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20110"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1526|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1526",
+      "itemNo": "1",
+      "address": "인천광역시 옹진군 영흥면 452",
+      "saleDate": "2026-11-16",
+      "appraisalWon": 38804000,
+      "minimumWon": 27163000,
+      "largeCode": "10000",
+      "mediumCode": "10100",
+      "smallCode": "10101",
+      "components": [
+        {
+          "address": "인천광역시 옹진군 영흥면 452",
+          "largeCode": "10000",
+          "mediumCode": "10100",
+          "smallCode": "10101"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1561|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1561",
+      "itemNo": "1",
+      "address": "인천광역시 중구 신흥동2가 1-84",
+      "saleDate": "2026-11-16",
+      "appraisalWon": 85000000,
+      "minimumWon": 41650000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20104",
+      "components": [
+        {
+          "address": "인천광역시 중구 신흥동2가 1-84",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20104"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1569|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1569",
+      "itemNo": "1",
+      "address": "인천광역시 서구 마전동 995-3",
+      "saleDate": "2026-11-24",
+      "appraisalWon": 130000000,
+      "minimumWon": 91000000,
+      "largeCode": "20000",
+      "mediumCode": "20100",
+      "smallCode": "20104",
+      "components": [
+        {
+          "address": "인천광역시 서구 마전동 995-3",
+          "largeCode": "20000",
+          "mediumCode": "20100",
+          "smallCode": "20104"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1574|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1574",
+      "itemNo": "1",
+      "address": "인천광역시 서구 청라동 96-16",
+      "saleDate": "2026-11-18",
+      "appraisalWon": 1300000000,
+      "minimumWon": 1300000000,
+      "largeCode": "20000",
+      "mediumCode": "21100",
+      "smallCode": "21101",
+      "components": [
+        {
+          "address": "인천광역시 서구 청라동 96-16",
+          "largeCode": "20000",
+          "mediumCode": "21100",
+          "smallCode": "21101"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1574|2",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1574",
+      "itemNo": "2",
+      "address": "인천광역시 서구 청라동 96-16",
+      "saleDate": "2026-11-18",
+      "appraisalWon": 1300000000,
+      "minimumWon": 1300000000,
+      "largeCode": "20000",
+      "mediumCode": "21100",
+      "smallCode": "21101",
+      "components": [
+        {
+          "address": "인천광역시 서구 청라동 96-16",
+          "largeCode": "20000",
+          "mediumCode": "21100",
+          "smallCode": "21101"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1577|1",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1577",
+      "itemNo": "1",
+      "address": "인천광역시 미추홀구 주안동 695-10",
+      "saleDate": "2026-11-27",
+      "appraisalWon": 583000000,
+      "minimumWon": 199969000,
+      "largeCode": "20000",
+      "mediumCode": "21100",
+      "smallCode": "21101",
+      "components": [
+        {
+          "address": "인천광역시 미추홀구 주안동 695-10",
+          "largeCode": "20000",
+          "mediumCode": "21100",
+          "smallCode": "21101"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1577|2",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1577",
+      "itemNo": "2",
+      "address": "인천광역시 미추홀구 주안동 695-10",
+      "saleDate": "2026-11-27",
+      "appraisalWon": 673000000,
+      "minimumWon": 230839000,
+      "largeCode": "20000",
+      "mediumCode": "21100",
+      "smallCode": "21101",
+      "components": [
+        {
+          "address": "인천광역시 미추홀구 주안동 695-10",
+          "largeCode": "20000",
+          "mediumCode": "21100",
+          "smallCode": "21101"
+        }
+      ]
+    },
+    {
+      "id": "court-B000240|2025타경1577|3",
+      "region": "인천",
+      "courtCode": "B000240",
+      "courtName": "인천지방법원",
+      "caseNo": "2025타경1577",
+      "itemNo": "3",
+      "address": "인천광역시 미추홀구 주안동 695-10",
+      "saleDate": "2026-11-27",
+      "appraisalWon": 452000000,
+      "minimumWon": 155036000,
+      "largeCode": "20000",
+      "mediumCode": "21100",
+      "smallCode": "21101",
+      "components": [
+        {
+          "address": "인천광역시 미추홀구 주안동 695-10",
+          "largeCode": "20000",
+          "mediumCode": "21100",
+          "smallCode": "21101"
         }
       ]
     }
   ],
   "validation": {
     "passed": true,
-    "checkedAt": "2026-11-12T23:36:12.337Z",
-    "validatedItems": 746,
+    "checkedAt": "2026-11-13T23:31:13.195Z",
+    "validatedItems": 750,
     "regions": {
       "서울": 327,
-      "경기": 181,
-      "인천": 238
+      "경기": 190,
+      "인천": 233
     },
     "comparedWithPrevious": true,
-    "overlap": 671,
-    "changed": 2,
-    "notSeenInNewSample": 84,
+    "overlap": 704,
+    "changed": 0,
+    "notSeenInNewSample": 42,
     "note": "형식·표본 비교 검사이며 법원 원문 및 현재 매각 상태를 보증하지 않음",
     "warnings": [
-      "같은 물건에서 값 변경 감지 2건 (가격·기일 등 법원 원문 재확인 권장)",
-      "이전 시범 목록에서 보이지 않는 물건 84건 (페이지 이동·수집 범위 차이 가능; 낙찰·취하로 단정 금지)"
+      "이전 시범 목록에서 보이지 않는 물건 42건 (페이지 이동·수집 범위 차이 가능; 낙찰·취하로 단정 금지)"
     ],
-    "changeSamples": [
-      {
-        "id": "court-B000214|2025타경72885|1",
-        "fields": [
-          "smallCode"
-        ]
-      },
-      {
-        "id": "court-B000240|2025타경1351|1",
-        "fields": [
-          "smallCode"
-        ]
-      }
-    ]
+    "changeSamples": []
   }
 }
